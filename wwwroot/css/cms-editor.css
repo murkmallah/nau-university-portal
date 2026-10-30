@@ -1,0 +1,1023 @@
+/* ===== NAU CMS inline editor — admin-only styles ===== */
+
+.cms-mode-banner {
+    background: #ffb300;
+    color: #0b2c4d;
+    text-align: center;
+    padding: 10px 16px;
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+}
+.cms-mode-banner a {
+    color: #0b2c4d;
+    text-decoration: underline;
+    margin-left: 10px;
+}
+
+.cms-toolbar {
+    position: fixed;
+    bottom: 98px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #0b2c4d;
+    padding: 10px 14px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    font-family: "Poppins", sans-serif;
+}
+
+/* When a page has more than one editable region (e.g. the About page's
+   "History of CAA" and "History of CATI" sections), stack their toolbars
+   instead of letting them overlap in the same corner. */
+.cms-toolbar-label {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    opacity: .8;
+    margin-right: 2px;
+    white-space: nowrap;
+}
+#cmsToolbar-cati {
+    bottom: 160px;
+}
+#cmsToolbar-mgmt {
+    bottom: 224px;
+}
+
+.cms-btn {
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: "Poppins", sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity .15s;
+}
+.cms-btn:hover { opacity: 0.85; }
+
+.cms-btn-edit  { background: #1e8e3e; color: #fff; }
+.cms-btn-save  { background: #1e8e3e; color: #fff; }
+.cms-btn-cancel{ background: #b3261e; color: #fff; }
+
+.cms-status {
+    color: #fff;
+    font-size: 13px;
+    max-width: 220px;
+}
+
+/* Editing state: show a dashed outline so admin can see the editable area.
+   Matches any region whose id starts with "cms-editable-region" (e.g. the
+   About page's "-caa" and "-cati" sections), not just a single fixed id. */
+body.cms-editing [id^="cms-editable-region"][contenteditable="true"] {
+    outline: 3px dashed #1e8e3e;
+    outline-offset: 4px;
+}
+
+body.cms-editing [id^="cms-editable-region"] [contenteditable="true"]:hover {
+    outline: 2px dashed #ffb300;
+    outline-offset: 2px;
+    cursor: text;
+}
+
+/* Image hover overlay for swapping pictures */
+.cms-img-wrap {
+    position: relative;
+    display: inline-block;
+}
+.rector-img .cms-img-wrap {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+body.cms-editing .cms-img-wrap:hover .cms-img-change-btn {
+    display: flex;
+}
+.cms-img-change-btn {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(11,44,77,0.9);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
+}
+.cms-img-change-btn:hover { background: #1e8e3e; }
+
+/* ===== Fix: the scrolling announcement-bar text uses a CSS animation
+   (.scroll) that keeps shifting position, which makes it impossible to
+   click into and edit. Freeze it while the admin is in edit mode. ===== */
+body.cms-editing .scroll {
+    animation: none !important;
+    transform: none !important;
+    white-space: normal !important;
+    padding-left: 0 !important;
+}
+
+/* ===== Background-image slides (e.g. hero slideshow) =====
+   NOTE: .hero-slide already has position:absolute in home.css (needed for
+   the slideshow stacking) -- we deliberately do NOT set position on .cms-bg-wrap
+   so we don't break that layout. absolute is a valid positioning context for
+   our overlay button too. */
+body.cms-editing .cms-bg-wrap:hover .cms-bg-change-btn,
+body.cms-editing .cms-bg-wrap.active .cms-bg-change-btn {
+    display: flex;
+}
+.cms-bg-change-btn {
+    display: none;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(11,44,77,0.9);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    align-items: center;
+    gap: 6px;
+    z-index: 50;
+}
+.cms-bg-change-btn:hover { background: #1e8e3e; }
+
+/* ===== Video slides ===== */
+.cms-video-wrap { position: relative; }
+body.cms-editing .cms-video-wrap:hover .cms-video-change-btn {
+    display: flex;
+}
+.cms-video-change-btn {
+    display: none;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(11,44,77,0.9);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    align-items: center;
+    gap: 6px;
+    z-index: 50;
+}
+.cms-video-change-btn:hover { background: #1e8e3e; }
+
+/* The hero slide's video button sits directly on the slide (no wrapper --
+   there may not be a <video> there yet), so reveal it the same way the
+   background-slide button is revealed: on hover, or on the currently
+   active slide. */
+body.cms-editing .hero-slide:hover .cms-hero-video-btn,
+body.cms-editing .hero-slide.active .cms-hero-video-btn {
+    display: flex;
+}
+
+/* ===== Gallery & Placeholder Image Controls ===== */
+body.cms-editing .gallery-item {
+    position: relative !important;
+}
+body.cms-editing .gallery-item:hover .cms-placeholder-change-btn,
+body.cms-editing .gallery-item:hover .cms-img-change-btn,
+body.cms-editing .gallery-item.active .cms-placeholder-change-btn {
+    display: flex !important;
+}
+
+.cms-placeholder-change-btn {
+    display: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(11, 44, 77, 0.92);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    align-items: center;
+    gap: 6px;
+    z-index: 100;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    transition: background .2s, transform .15s, box-shadow .2s;
+}
+.cms-placeholder-change-btn:hover {
+    background: #1e8e3e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(30, 142, 62, 0.4);
+}
+
+/* Drag and drop active feedback */
+.cms-drag-target {
+    position: relative;
+    transition: box-shadow .2s, outline .2s;
+}
+body.cms-editing .cms-drag-target.cms-drag-active {
+    outline: 3px dashed #1e8e3e !important;
+    outline-offset: -3px !important;
+    box-shadow: 0 0 24px rgba(30, 142, 62, 0.5) !important;
+    filter: brightness(1.05);
+}
+
+/* ===== Image Modal (Upload, Drag & Drop, URL from Internet) ===== */
+.cms-image-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(7, 26, 47, 0.75);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: cmsModalFadeIn .2s ease;
+}
+
+.cms-image-modal {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 540px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    font-family: 'Poppins', sans-serif;
+    animation: cmsModalSlideUp .25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cms-image-modal-head {
+    background: #0b2c4d;
+    color: #fff;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.cms-image-modal-head h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+}
+.cms-image-modal-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity .2s, transform .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+.cms-image-modal-close:hover { opacity: 1; transform: scale(1.1); }
+
+.cms-image-modal-tabs {
+    display: flex;
+    border-bottom: 1px solid #eef0f4;
+    background: #f8fafc;
+}
+.cms-image-modal-tab {
+    flex: 1;
+    padding: 14px 16px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all .2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Poppins', sans-serif;
+}
+.cms-image-modal-tab.active {
+    color: #0b2c4d;
+    border-bottom-color: #1e8e3e;
+    background: #fff;
+}
+
+.cms-image-modal-body {
+    padding: 24px;
+}
+
+.cms-dropzone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 32px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #f8fafc;
+    transition: all .2s;
+}
+.cms-dropzone:hover, .cms-dropzone.dragover {
+    border-color: #1e8e3e;
+    background: #f0faf4;
+    transform: scale(1.01);
+}
+.cms-dropzone i {
+    font-size: 38px;
+    color: #1e8e3e;
+    margin-bottom: 10px;
+    display: block;
+}
+.cms-dropzone-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0b2c4d;
+    margin-bottom: 4px;
+}
+.cms-dropzone-sub {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.cms-url-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.cms-url-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0b2c4d;
+}
+.cms-url-input {
+    width: 100%;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color .2s, box-shadow .2s;
+}
+.cms-url-input:focus {
+    border-color: #1e8e3e;
+    box-shadow: 0 0 0 3px rgba(30,142,62,0.15);
+}
+
+.cms-url-preview-box {
+    width: 100%;
+    height: 150px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    margin-top: 4px;
+    position: relative;
+}
+.cms-url-preview-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.cms-url-preview-placeholder {
+    color: #94a3b8;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+.cms-url-preview-placeholder i {
+    font-size: 24px;
+}
+
+.cms-modal-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #eef0f4;
+}
+.cms-modal-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.cms-modal-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .2s;
+}
+.cms-modal-btn-primary {
+    background: #1e8e3e;
+    color: #fff;
+}
+.cms-modal-btn-primary:hover { background: #166f30; }
+.cms-modal-btn-danger {
+    background: #fdeceb;
+    color: #b3261e;
+    border: 1px solid #f9bdbb;
+}
+.cms-modal-btn-danger:hover {
+    background: #b3261e;
+    color: #fff;
+}
+.cms-modal-btn-cancel {
+    background: #e2e8f0;
+    color: #475569;
+}
+.cms-modal-btn-cancel:hover { background: #cbd5e1; }
+
+/* ===== Interactive Draggable Image Preview ===== */
+.cms-preview-section {
+    margin-top: 14px;
+}
+.cms-preview-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0b2c4d;
+    margin-bottom: 8px;
+}
+.cms-preview-container {
+    background: #0f172a;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px;
+    border: 1.5px solid #cbd5e1;
+    overflow: hidden;
+}
+.cms-preview-wrapper {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    display: block;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    border: 2px solid #475569;
+    touch-action: none;
+    background: #1e293b;
+    flex-shrink: 0;
+}
+.cms-preview-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+.cms-preview-wrapper img:active {
+    cursor: grabbing !important;
+}
+.cms-drag-hint {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(11, 44, 77, 0.92);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    pointer-events: none;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Enable pointer cursor on editable images in live page */
+body.cms-editing .gallery-item img,
+body.cms-editing .cms-img-wrap img {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+body.cms-editing .gallery-item img:active,
+body.cms-editing .cms-img-wrap img:active {
+    cursor: grabbing;
+}
+
+/* Image Action Hover Group (Change, Position, Remove) */
+.cms-img-btn-group {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+    z-index: 100;
+}
+body.cms-editing .cms-img-wrap:hover .cms-img-btn-group,
+body.cms-editing .gallery-item:hover .cms-img-btn-group,
+body.cms-editing .gallery-item.active .cms-img-btn-group,
+body.cms-editing .cms-bg-wrap:hover .cms-img-btn-group {
+    display: flex !important;
+}
+
+.cms-action-btn {
+    background: rgba(11, 44, 77, 0.92);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 7px 11px;
+    font-size: 11.5px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    transition: background .2s, transform .15s, box-shadow .2s;
+}
+.cms-action-btn:hover {
+    background: #1e8e3e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(30, 142, 62, 0.4);
+}
+.cms-action-btn.cms-btn-danger:hover {
+    background: #b3261e;
+    box-shadow: 0 6px 16px rgba(179, 38, 30, 0.4);
+}
+
+@keyframes cmsModalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes cmsModalSlideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===== HERO SLIDE MANAGER & CONTROLS ===== */
+body.cms-editing .cms-text-editable {
+    outline: 1px dashed rgba(30, 142, 62, 0.4);
+    outline-offset: 2px;
+    border-radius: 4px;
+    transition: outline-color .2s, background-color .2s;
+    cursor: text;
+}
+body.cms-editing .cms-text-editable:hover,
+body.cms-editing .cms-text-editable:focus {
+    outline: 2px solid #1e8e3e;
+    background-color: rgba(30, 142, 62, 0.08);
+}
+
+.cms-hero-controls {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    z-index: 120;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: rgba(11, 44, 77, 0.95);
+    padding: 8px 14px;
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    pointer-events: auto !important;
+    user-select: none;
+}
+
+.cms-hero-ctrl-btn {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: all .2s;
+    pointer-events: auto !important;
+}
+
+.cms-hero-ctrl-btn:hover {
+    background: #1e8e3e;
+    border-color: #1e8e3e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(30, 142, 62, 0.4);
+}
+
+.cms-hero-ctrl-btn.cms-btn-accent {
+    background: #1e8e3e;
+    border-color: #1e8e3e;
+}
+.cms-hero-ctrl-btn.cms-btn-accent:hover {
+    background: #166f30;
+}
+
+
+
+/* Hero Slide Manager Modal */
+.cms-hsm-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 44, 77, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 1000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: cmsModalFadeIn .2s ease-out;
+}
+
+.cms-hsm-modal-card {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 760px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    animation: cmsModalSlideUp .25s ease-out;
+}
+
+.cms-hsm-modal-header {
+    background: #0b2c4d;
+    color: #fff;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cms-hsm-modal-header h3 {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cms-hsm-modal-header .cms-hsm-count {
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 12px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.cms-hsm-close-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all .15s;
+}
+
+.cms-hsm-close-btn:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.cms-hsm-modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cms-hsm-slide-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.cms-hsm-slide-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(11, 44, 77, 0.06);
+}
+
+.cms-hsm-slide-card.active-preview {
+    border-color: #1e8e3e;
+    background: #f0fdf4;
+}
+
+.cms-hsm-slide-num {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: #0b2c4d;
+    min-width: 32px;
+    text-align: center;
+}
+
+.cms-hsm-thumb-wrap {
+    width: 90px;
+    height: 56px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0b2c4d;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    border: 1px solid #cbd5e1;
+}
+
+.cms-hsm-thumb-video {
+    color: #fff;
+    font-size: 20px;
+    opacity: 0.85;
+}
+
+.cms-hsm-slide-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cms-hsm-slide-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+}
+
+.cms-hsm-type-image {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.cms-hsm-type-video {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.cms-hsm-slide-src {
+    font-size: 12px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cms-hsm-slide-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.cms-hsm-action-btn {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    border-radius: 6px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .15s;
+}
+
+.cms-hsm-action-btn:hover {
+    background: #0b2c4d;
+    color: #fff;
+    border-color: #0b2c4d;
+}
+
+.cms-hsm-action-btn.cms-action-del:hover {
+    background: #b3261e;
+    color: #fff;
+    border-color: #b3261e;
+}
+
+.cms-hsm-modal-footer {
+    background: #f1f5f9;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e2e8f0;
+}
+
+.cms-hsm-footer-btns {
+    display: flex;
+    gap: 10px;
+}
+
+.cms-hsm-main-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .15s;
+    border: none;
+}
+
+.cms-hsm-btn-primary {
+    background: #1e8e3e;
+    color: #fff;
+}
+.cms-hsm-btn-primary:hover {
+    background: #166f30;
+}
+
+.cms-hsm-btn-secondary {
+    background: #0b2c4d;
+    color: #fff;
+}
+.cms-hsm-btn-secondary:hover {
+    background: #0d3a6e;
+}
+
+.cms-hsm-btn-done {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+/* ===== FLOATING TEXT FORMATTING TOOLBAR ===== */
+.cms-text-format-toolbar {
+    position: absolute;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    background: #0f172a;
+    color: #ffffff;
+    padding: 6px 14px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    backdrop-filter: blur(12px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    user-select: none;
+}
+.cms-text-format-toolbar.visible {
+    display: flex;
+    animation: cmsToolbarFadeIn 0.2s ease-out;
+}
+@keyframes cmsToolbarFadeIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cms-tf-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.cms-tf-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 4px;
+}
+
+.cms-tf-select {
+    background: #1e293b;
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+}
+.cms-tf-select option {
+    background: #0f172a;
+    color: #fff;
+}
+
+.cms-tf-btn {
+    background: transparent;
+    color: #cbd5e1;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s ease;
+}
+.cms-tf-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+}
+.cms-tf-btn.active {
+    background: #0284c7;
+    color: #ffffff;
+}
+
+.cms-tf-color-picker-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: #1e293b;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+.cms-tf-color-input {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.cms-tf-swatch {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+.cms-tf-swatch:hover {
+    transform: scale(1.25);
+}
+.cms-hsm-btn-done:hover {
+    background: #cbd5e1;
+}
+

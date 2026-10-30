@@ -1,0 +1,1528 @@
+@model IEnumerable<NAU_Web.Models.School>
+@{
+    Layout = null;
+    bool canEdit = ViewBag.CanEdit == true;
+    bool editMode = ViewBag.EditMode == true;   // true only when reached via Admin Panel "Short Courses" link
+    var userPerms = (ViewBag.UserPermissions as List<string>) ?? new List<string>();
+    bool isSuperAdmin = ViewBag.IsSuperAdmin == true || (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"));
+    bool isAdmin = User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Staff"));
+    int totalCourses = Model.Sum(s => s.Courses.Count);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schools - National Aviation University</title>
+<partial name="_Favicon" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/courses-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/cms-icon-picker.css" asp-append-version="true">
+<style>
+  /* Admin-only quick-add controls (not part of the original static design) */
+  .acc-add-btn{ background:rgba(255,255,255,0.18); border:1px solid rgba(255,255,255,0.35); color:#fff; padding:7px 14px; border-radius:20px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; margin-right:14px; }
+  .acc-add-btn:hover{ background:rgba(255,255,255,0.3); }
+  tr.course-row-new td{ background:#f0faf4; }
+  tr.course-row-new input{ width:100%; border:1px solid #cfe8d8; border-radius:6px; padding:6px 8px; font-size:12.5px; font-family:"Poppins",sans-serif; }
+  .qa-actions{ display:flex; gap:6px; }
+  .qa-save,.qa-cancel{ border:none; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; }
+  .qa-save{ background:var(--green); color:#fff; }
+  .qa-cancel{ background:#eee; color:#555; }
+  .qa-error{ color:#c0392b; font-size:11.5px; margin-top:4px; }
+  .row-delete-btn{ background:#fdeceb; color:#c0392b; border:1px solid #f4c7c3; border-radius:6px; padding:5px 9px; font-size:12px; cursor:pointer; }
+  .row-delete-btn:hover{ background:#c0392b; color:#fff; }
+  .row-delete-btn:disabled{ opacity:.5; cursor:default; }
+
+  /* ===== Account dropdown (Sign Up / Log In) ===== */
+  .account-dropdown{ position:relative; display:inline-block; }
+  .account-dropdown > .apply-btn::after{
+    content:"\f078";
+    font-family:"Font Awesome 6 Free"; font-weight:900;
+    font-size:10px; margin-left:8px; opacity:.85; display:inline-block;
+    transition:transform .2s;
+  }
+  .account-dropdown.open > .apply-btn::after,
+  .account-dropdown:hover > .apply-btn::after{ transform:rotate(180deg); }
+  .account-dropdown-menu{
+    display:none;
+    position:absolute;
+    top:calc(100% + 8px);
+    right:0;
+    background:#fff;
+    min-width:150px;
+    border-radius:8px;
+    box-shadow:0 10px 28px rgba(0,0,0,0.2);
+    overflow:hidden;
+    z-index:2000;
+  }
+  .account-dropdown.open .account-dropdown-menu,
+  .account-dropdown:hover .account-dropdown-menu{ display:block; }
+  .account-dropdown-menu a{
+    display:block;
+    padding:11px 16px;
+    color:#0b2c4d;
+    text-decoration:none;
+    font-size:13.5px;
+    font-weight:600;
+    border-bottom:1px solid #f0f2f5;
+  }
+  .account-dropdown-menu a:last-child{ border-bottom:none; }
+  .account-dropdown-menu a:hover{ background:#f5f7fb; color:#1e8e3e; }
+
+  /* ===== Save/Delete confirmation toast ===== */
+  #qaToast{
+    position:fixed; top:20px; right:20px; z-index:3000;
+    background:#1e8e3e; color:#fff; padding:14px 20px; border-radius:10px;
+    box-shadow:0 10px 28px rgba(0,0,0,0.25); font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; gap:10px; opacity:0; transform:translateY(-12px);
+    transition:opacity .25s, transform .25s; pointer-events:none; max-width:320px;
+  }
+  #qaToast.show{ opacity:1; transform:translateY(0); }
+  #qaToast.error{ background:#c0392b; }
+
+  /* ===== Course detail modal (ported from the static reference page) ===== */
+  .course-modal-backdrop {
+    display:none; position:fixed; inset:0;
+    background:rgba(8,20,40,.78); z-index:10000;
+    align-items:center; justify-content:center;
+    backdrop-filter:blur(6px); padding:20px;
+  }
+  .course-modal-backdrop.open { display:flex; animation:cmFadeIn .22s ease; }
+  @@keyframes cmFadeIn { from{opacity:0;} to{opacity:1;} }
+  .course-modal {
+    background:#fff; border-radius:22px; width:100%; max-width:580px;
+    max-height:92vh; overflow-y:auto;
+    box-shadow:0 28px 90px rgba(0,0,0,.28);
+    animation:cmSlide .25s ease;
+  }
+  @@keyframes cmSlide { from{transform:scale(.93) translateY(12px);opacity:0;} to{transform:scale(1) translateY(0);opacity:1;} }
+  .cm-hero { padding:34px 36px 30px; border-radius:22px 22px 0 0; position:relative; }
+  .cm-close {
+    position:absolute; top:16px; right:16px;
+    background:rgba(255,255,255,.18); border:none; border-radius:50%;
+    width:36px; height:36px; font-size:15px; cursor:pointer; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s;
+  }
+  .cm-close:hover { background:rgba(255,255,255,.35); }
+  .cm-school-label { font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:rgba(255,255,255,.65); margin-bottom:6px; }
+  .cm-title { font-family:'Poppins',sans-serif; font-size:22px; font-weight:800; color:#fff; line-height:1.3; margin-bottom:0; }
+  .cm-meta-row { display:flex; align-items:center; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .cm-badge {
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3);
+    color:#fff; font-size:11px; font-weight:600;
+    padding:5px 12px; border-radius:20px; backdrop-filter:blur(4px);
+  }
+  .cm-body { padding:28px 36px 36px; }
+  .cm-desc { font-size:14px; color:#555; line-height:1.8; margin-bottom:24px; }
+  .cm-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+  .cm-info-item { background:#f5f7fb; border-radius:10px; padding:14px 16px; }
+  .cm-info-item label { display:block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#aaa; margin-bottom:5px; }
+  .cm-info-item span { font-size:14px; font-weight:700; color:#0b2c4d; }
+  .cm-section-title { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#1e8e3e; margin:0 0 10px; }
+  .cm-topics { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+  .cm-topic-tag { background:#f0f4f8; color:#333; border-radius:20px; padding:5px 14px; font-size:12px; font-weight:500; }
+  .cm-points { list-style:none; display:flex; flex-direction:column; gap:8px; margin-bottom:24px; padding:0; }
+  .cm-points li { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:#444; line-height:1.55; }
+  .cm-points li i { color:#1e8e3e; font-size:12px; margin-top:3px; flex-shrink:0; }
+  .cm-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+  .cm-btn {
+    flex:1; padding:12px 18px; border-radius:9px;
+    font-family:"Poppins",sans-serif; font-size:13px; font-weight:600;
+    cursor:pointer; border:none; text-decoration:none;
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    transition:all .2s; min-width:130px;
+  }
+  .cm-btn.primary { background:#1e8e3e; color:#fff; }
+  .cm-btn.primary:hover { background:#166f30; }
+  .cm-btn.secondary { background:#f0f4f8; color:#0b2c4d; border:1.5px solid #dde2ea; }
+  .cm-btn.secondary:hover { background:#e4ecf4; }
+  @@media(max-width:600px){
+    .cm-hero { padding:24px 22px 22px; }
+    .cm-body { padding:20px 22px 28px; }
+    .cm-title { font-size:18px; }
+    .cm-info-grid { grid-template-columns:1fr; }
+  }
+
+  /* Edit-mode fields inside the modal */
+  .cm-edit-fields { margin-top:16px; border-top:1px solid #eef0f4; padding-top:16px; }
+  .cm-edit-field { margin-bottom:12px; }
+  .cm-edit-field label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#667; margin-bottom:4px; }
+  .cm-edit-field input, .cm-edit-field textarea, .cm-edit-field select {
+    width:100%; border:1px solid #cfe0f4; border-radius:7px; padding:7px 10px;
+    font-size:13px; font-family:"Poppins",sans-serif;
+  }
+  .cm-row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cm-dates-wrap { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cm-checkbox-label { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; color:#0b2c4d; cursor:pointer; margin-bottom:8px; }
+  .cm-checkbox-label input { width:auto; }
+  .row-edit-btn{ background:#eaf2fb; color:#0b6dbf; border:1px solid #cfe0f4; border-radius:6px; padding:5px 9px; font-size:12px; cursor:pointer; margin-right:6px; }
+  .row-edit-btn:hover{ background:#0b6dbf; color:#fff; }
+</style>
+</head>
+<body>
+
+<div id="qaToast"></div>
+
+<!-- ===== COURSE DETAIL MODAL ===== -->
+<div id="courseModal" class="course-modal-backdrop" onclick="if(event.target===this)closeCourseModal()">
+  <div class="course-modal">
+    <div class="cm-hero" id="cmHero">
+      <button class="cm-close" onclick="closeCourseModal()" type="button"><i class="fas fa-times"></i></button>
+      <div class="cm-school-label" id="cmSchool"></div>
+      <div class="cm-title" id="cmTitle"></div>
+      <div class="cm-meta-row" id="cmMeta"></div>
+    </div>
+    <div class="cm-body" id="cmBodyView">
+      <p class="cm-desc" id="cmDesc"></p>
+      <div class="cm-info-grid" id="cmInfoGrid"></div>
+      <p class="cm-section-title" id="cmTopicsLabel" style="margin-bottom:10px;">Key Topics</p>
+      <div class="cm-topics" id="cmTopics"></div>
+      <p class="cm-section-title" style="margin-bottom:10px;">Course Highlights</p>
+      <ul class="cm-points" id="cmPoints"></ul>
+      <div class="cm-actions" id="cmActionsView">
+        <a href="/Account/Register" class="cm-btn primary"><i class="fas fa-user-plus"></i> Enroll Now</a>
+        @if (canEdit || isAdmin || editMode)
+        {
+            <button class="cm-btn secondary" id="cmBtnEdit" type="button" onclick="switchToCourseEditMode()" style="background:#0284c7;color:#fff;border-color:#0284c7;"><i class="fas fa-pen"></i> Edit Course</button>
+        }
+        <button class="cm-btn secondary" type="button" onclick="closeCourseModal()"><i class="fas fa-times"></i> Close</button>
+      </div>
+    </div>
+    @if (canEdit || isAdmin || editMode)
+    {
+        <div class="cm-body" id="cmBodyEdit" style="display:none;">
+            <div class="cm-edit-field"><label>Course Title</label><input type="text" id="cmEditTitle" placeholder="e.g. Advanced Radar Navigation Course"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                <div class="cm-edit-field"><label>Duration</label><input type="text" id="cmEditDuration" placeholder="e.g. 04 Weeks"></div>
+                <div class="cm-edit-field"><label>Start Date</label><input type="text" id="cmEditStart" placeholder="e.g. 05 Jan 2027 or TBD"></div>
+                <div class="cm-edit-field"><label>End Date</label><input type="text" id="cmEditEnd" placeholder="e.g. 10 Feb 2027 or TBD"></div>
+            </div>
+            <div class="cm-edit-field"><label>Description</label><textarea id="cmEditDesc" rows="3" placeholder="Enter detailed course overview description..."></textarea></div>
+            <div class="cm-edit-field"><label>Key Topics (separate multiple topics with ;)</label><textarea id="cmEditTopics" rows="2" placeholder="Topic 1; Topic 2; Topic 3"></textarea></div>
+            <div class="cm-edit-field"><label>Course Highlights (separate multiple highlights with ;)</label><textarea id="cmEditHighlights" rows="3" placeholder="Highlight 1; Highlight 2; Highlight 3"></textarea></div>
+            <div class="cm-edit-field"><label>Certificate Label</label><input type="text" id="cmEditCertificate" placeholder="e.g. NAU Certified"></div>
+            <div class="qa-error" id="cmEditError" style="display:none;margin-bottom:12px;"></div>
+            <div class="cm-actions">
+                <button class="cm-btn primary" id="cmBtnSaveCourse" type="button" onclick="saveCourseModal(this)" style="background:var(--green);border-color:var(--green);"><i class="fas fa-save"></i> Save Course</button>
+                <button class="cm-btn secondary" id="cmBtnBackView" type="button" onclick="switchToCourseViewMode()"><i class="fas fa-arrow-left"></i> Back to View</button>
+                <button class="cm-btn secondary" type="button" onclick="closeCourseModal()"><i class="fas fa-times"></i> Cancel</button>
+            </div>
+        </div>
+    }
+  </div>
+</div>
+
+@if (editMode)
+{
+    <div style="background:#0b2c4d;color:#fff;text-align:center;padding:12px 20px;font-family:'Poppins',sans-serif;font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:14px;position:sticky;top:0;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,0.25);">
+        <span><i class="fas fa-shield-halved" style="color:#38bdf8;"></i> You are viewing schools &amp; courses in <strong>Admin Edit Mode</strong>.</span>
+        <a href="/Courses/Public" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;padding:5px 12px;border-radius:6px;font-size:12px;"><i class="fas fa-eye"></i> View Live</a>
+        <a href="/Admin" style="background:#0284c7;color:#fff;text-decoration:none;padding:5px 12px;border-radius:6px;font-size:12px;"><i class="fas fa-arrow-left"></i> Staff Control Panel</a>
+    </div>
+}
+
+<partial name="_SiteHeader" />
+
+<section class="hero">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-deco"></div>
+  <div class="hero-content">
+    <div class="hero-breadcrumb">
+      <a href="/">Home</a>
+      <i class="fas fa-chevron-right"></i>
+      <span style="color:rgba(255,255,255,0.85)">Schools</span>
+    </div>
+    <div class="hero-eyebrow">Professional Development</div>
+    <h1>Our <em>Schools</em></h1>
+    <p>Explore our specialized schools offering industry-focused, certification-based training designed for aviation professionals &mdash; sharpen your skills, stay current, and advance your career.</p>
+  </div>
+</section>
+
+<div class="filter-bar" style="background:#fff;padding:16px 48px;border-bottom:1px solid #eef0f4;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+  <span style="font-size:13px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;"><i class="fas fa-search" style="color:var(--green)"></i> Search:</span>
+  <div class="course-search-wrap">
+    <i class="fas fa-search"></i>
+    <input type="text" id="courseSearch" class="course-search-input" placeholder="Search courses..." oninput="searchCourses(this.value)">
+  </div>
+  <span style="font-size:13px;color:var(--text-light);margin-left:auto;">Total: <strong id="totalCount" style="color:var(--navy);">@totalCourses courses</strong></span>
+</div>
+
+<section class="accordion-section">
+  <div class="accordion-inner">
+    <div class="accordion-top">
+      <div>
+        <span class="eyebrow" style="color:var(--green);font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">Training Catalog</span>
+        <h2 style="font-family:'Montserrat',sans-serif;font-weight:800;color:var(--navy);font-size:24px;margin-top:4px;">Specialized Training Schools</h2>
+      </div>
+      @if (editMode && isSuperAdmin)
+      {
+          <button type="button" class="btn-primary" onclick="openAddSchoolModal()" style="padding:10px 18px;font-size:13px;">
+              <i class="fas fa-plus"></i> Add New School
+          </button>
+      }
+    </div>
+
+    <div id="accordionContainer">
+    @{ int idx = 0; }
+    @foreach (var school in Model)
+    {
+        var courses = school.Courses.OrderBy(c => c.CourseId).ToList();
+        var sName = (school.Name ?? "").ToLowerInvariant();
+        bool canEditThisSchool = editMode && (isSuperAdmin || userPerms.Contains("School.All") ||
+            (sName.Contains("navigation") || sName.Contains("ans") ? userPerms.Contains("School.ANS") : false) ||
+            (sName.Contains("airport") ? userPerms.Contains("School.Airport") : false) ||
+            (sName.Contains("regulatory") || sName.Contains("safety") ? userPerms.Contains("School.Regulatory") : false) ||
+            (sName.Contains("management") ? userPerms.Contains("School.Management") : false));
+
+        <div class="accordion-block" id="acc-@idx" data-school-id="@school.SchoolId" data-school-name="@school.Name">
+            <div class="acc-header-shell" style="position:relative;">
+                @if (canEditThisSchool)
+                {
+                    <button type="button" class="row-edit-btn school-edit-btn" data-school-id="@school.SchoolId" data-school-name="@school.Name" data-school-icon="@school.Icon" data-school-color="@school.ColorHex" style="position:absolute; top:50%; right:112px; transform:translateY(-50%); z-index:5;" title="Edit this school" onclick="event.stopPropagation(); editSchoolBlock(this)">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button type="button" class="row-delete-btn school-delete-btn" data-school-id="@school.SchoolId" data-school-name="@school.Name" style="position:absolute; top:50%; right:72px; transform:translateY(-50%); z-index:5;" title="Delete this school" onclick="event.stopPropagation(); deleteSchoolBlock(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                }
+                <button class="acc-header" onclick="toggleAcc(@idx)" style="background:linear-gradient(135deg, @(string.IsNullOrEmpty(school.ColorHex) ? "#0b3a5c" : school.ColorHex), @(string.IsNullOrEmpty(school.ColorHex) ? "#0f7490" : school.ColorHex)); @(canEditThisSchool ? "padding-right:170px;" : "")">
+                    <div class="acc-left">
+                        @{
+                            string rawIcon = string.IsNullOrWhiteSpace(school.Icon) ? "fas fa-graduation-cap" : school.Icon.Trim();
+                            string iconClass = rawIcon;
+                            if (!iconClass.StartsWith("fa", StringComparison.OrdinalIgnoreCase))
+                            {
+                                iconClass = "fas fa-" + iconClass;
+                            }
+                            else if (!iconClass.StartsWith("fas ", StringComparison.OrdinalIgnoreCase) && 
+                                     !iconClass.StartsWith("far ", StringComparison.OrdinalIgnoreCase) && 
+                                     !iconClass.StartsWith("fab ", StringComparison.OrdinalIgnoreCase) && 
+                                     !iconClass.StartsWith("fa-solid ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                iconClass = "fas " + iconClass;
+                            }
+                        }
+                        <div class="acc-icon-wrap"><i class="@iconClass"></i></div>
+                        <div class="acc-title-wrap">
+                            <span class="acc-school">@school.Name</span>
+                            <span class="acc-sub">National Aviation University &mdash; Hyderabad</span>
+                        </div>
+                    </div>
+                    <div class="acc-right">
+                        <span class="acc-count" id="acc-count-@idx">@courses.Count Courses</span>
+                        <i class="fas fa-chevron-down acc-chevron"></i>
+                </div>
+            </button>
+            </div>
+            <div class="acc-body">
+                <div class="acc-table-wrap">
+                    @if (canEditThisSchool)
+                    {
+                        <div style="padding:14px 18px 0; text-align:right; display:flex; justify-content:flex-end; gap:8px;">
+                            <button type="button" class="acc-add-btn" style="background:var(--green);border-color:var(--green);color:#fff;" onclick="openAddCourseModal(@idx, @school.SchoolId, '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(school.Name ?? ""))')">
+                                <i class="fas fa-plus"></i> Add New Course
+                            </button>
+                        </div>
+                    }
+                    <table class="acc-table">
+                        <thead>
+                            <tr>
+                                <th width="40">#</th>
+                                <th>Course Title</th>
+                                <th width="110">Duration</th>
+                                <th width="100">Start Date</th>
+                                <th width="100">End Date</th>
+                                @if (canEditThisSchool)
+                                {
+                                    <th width="50"></th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody id="acc-tbody-@idx">
+                        @{ int rowNum = 1; }
+                        @foreach (var c in courses)
+                        {
+                            <tr class="course-row" data-course-id="@c.CourseId">
+                                <td class="row-num">@rowNum</td>
+                                <td class="row-name">
+                                    <span class="row-name-inner" onclick="openCourseModal(@c.CourseId)">@c.Title <i class="fas fa-chevron-right row-arrow"></i></span>
+                                </td>
+                                <td><span class="dur-pill">@(c.Duration ?? "-")</span></td>
+                                <td class="row-date">@(c.IsTbd || c.StartDate == null ? "TBD" : c.StartDate.Value.ToString("dd MMM yyyy"))</td>
+                                <td class="row-date">@(c.IsTbd || c.EndDate == null ? "TBD" : c.EndDate.Value.ToString("dd MMM yyyy"))</td>
+                                @if (canEditThisSchool)
+                                {
+                                    <td>
+                                        <button type="button" class="row-edit-btn" title="Edit this course" onclick="openCourseModal(@c.CourseId, true)">
+                                            <i class="fas fa-pen"></i>
+                                        </button>
+                                        <button type="button" class="row-delete-btn" title="Delete this course" onclick="deleteCourseRow(this, @c.CourseId, @idx)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                }
+                            </tr>
+                            rowNum++;
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        idx++;
+    }
+    </div>
+
+    @if (editMode)
+    {
+        <div style="text-align:center; padding:22px 0 6px;">
+            <button type="button" id="addSchoolBtn" class="acc-add-btn" style="background:var(--green);border-color:var(--green);color:#fff;display:inline-flex;" onclick="addSchoolBlock()">
+                <i class="fas fa-plus"></i> Add School
+            </button>
+        </div>
+    }
+  </div>
+</section>
+
+<script>
+  /* ===== Mega-menu nav search icon/box ===== */
+  function toggleSearch() {
+    const box = document.getElementById("searchBox");
+    box.classList.toggle("open");
+    if (box.classList.contains("open")) box.focus();
+  }
+  function closeSearch() {
+    setTimeout(() => { document.getElementById("searchBox").classList.remove("open"); }, 150);
+  }
+
+  // Full detail data for every course, keyed by CourseId, so the modal can
+  // show real info without extra network round-trips.
+  var courseData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+      Model.SelectMany(s => s.Courses.Select(c => new
+      {
+          id = c.CourseId,
+          schoolId = s.SchoolId,
+          schoolName = s.Name,
+          schoolColor = string.IsNullOrEmpty(s.ColorHex) ? "#0b3a5c" : s.ColorHex,
+          title = c.Title,
+          duration = c.Duration ?? "-",
+          startDate = c.IsTbd || c.StartDate == null ? "TBD" : c.StartDate.Value.ToString("dd MMM yyyy"),
+          endDate = c.IsTbd || c.EndDate == null ? "TBD" : c.EndDate.Value.ToString("dd MMM yyyy"),
+          description = c.Description ?? "",
+          topics = c.Topics ?? "",
+          highlights = c.Highlights ?? "",
+          certificate = string.IsNullOrEmpty(c.Certificate) ? "NAU Certified" : c.Certificate
+      })).ToDictionary(x => x.id.ToString(), x => x)
+  ).Replace("</", "<\\/"));
+</script>
+
+<section class="cta-strip">
+  @if (editMode)
+  {
+      <div style="max-width:640px;margin:0 auto 18px;text-align:left;background:rgba(255,255,255,0.12);border:1px dashed rgba(255,255,255,0.5);border-radius:10px;padding:16px 18px;">
+          <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">HEADING</label>
+          <input id="ctaTitleInput" type="text" value="@ViewBag.CtaTitle" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:15px;margin-bottom:10px;">
+          <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">TEXT</label>
+          <textarea id="ctaTextInput" rows="2" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:13.5px;resize:vertical;">@ViewBag.CtaText</textarea>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+              <button type="button" class="qa-save" onclick="saveCtaText(this)">Save</button>
+              <span id="ctaSaveMsg" style="font-size:12px;color:#fff;"></span>
+          </div>
+      </div>
+  }
+  <h2 id="ctaTitleDisplay">@ViewBag.CtaTitle</h2>
+  <p id="ctaTextDisplay">@ViewBag.CtaText</p>
+  <a href="/Account/Register" class="cta-btn"><i class="fas fa-user-plus"></i> Apply Now</a>
+</section>
+
+<partial name="_SiteFooter" />
+
+@if (editMode)
+{
+    @Html.AntiForgeryToken()
+}
+
+<script>
+function toggleAcc(i){
+  var block = document.getElementById('acc-' + i);
+  if (!block) return;
+  block.classList.toggle('open');
+}
+
+function searchCourses(q){
+  q = q.trim().toLowerCase();
+  document.querySelectorAll('.accordion-block').forEach(function(block){
+    var anyMatch = false;
+    block.querySelectorAll('tr.course-row').forEach(function(row){
+      var text = row.querySelector('.row-name') ? row.querySelector('.row-name').textContent.toLowerCase() : '';
+      var isMatch = (q === '' || text.includes(q));
+      row.style.display = isMatch ? '' : 'none';
+      if (isMatch) anyMatch = true;
+    });
+
+    if (q === ''){
+      block.style.display = '';
+    } else {
+      block.classList.toggle('open', anyMatch);
+      block.style.display = anyMatch ? '' : 'none';
+    }
+  });
+}
+
+/* ===== Course detail modal (Accessible by ALL users) ===== */
+var currentModalCourseId = null;
+
+var defaultSchoolInfo = {
+  navigation: {
+    desc: "The School of Air Navigation Services (ANS) provides world-class training in air traffic management, radar operations, communication, navigation, and surveillance systems.",
+    topics: ["Air Traffic Management (ATM)", "Radar & Non-Radar Control", "CNS/ATM Systems & Avionics", "Aerodrome Control Procedures", "Search & Rescue (SAR)", "Aeronautical Meteorology"],
+    highlights: [
+      "State-of-the-art 360-degree aerodrome & radar simulators",
+      "ICAO Doc 9868 (PANS-TRG) compliant competency-based training",
+      "Experienced instructors with real-world ATC operations background",
+      "Endorsed by Civil Aviation Authority & internationally benchmarked",
+      "Practical on-the-job training modules included"
+    ]
+  },
+  regulatory: {
+    desc: "The School of Regulatory Services specializes in aviation safety oversight, state safety programs, regulatory compliance, quality management, and aerodrome auditing.",
+    topics: ["State Safety Programme (SSP)", "Safety Management Systems (SMS)", "ICAO Universal Safety Oversight (USOAP)", "Aerodrome Certification & Auditing", "Aviation Law & Regulations", "Quality Assurance & Compliance"],
+    highlights: [
+      "Aligned with ICAO Annex 19 & ICAO USOAP standards",
+      "Comprehensive case-study based compliance training",
+      "Prepares inspectors and auditors for certification tasks",
+      "Continuous regulatory updates and international best practices",
+      "Accredited certificates recognized across global aviation bodies"
+    ]
+  },
+  airport: {
+    desc: "The School of Airport Services provides specialized operational training in airport rescue & firefighting, ground handling, terminal management, and emergency response.",
+    topics: ["Airport Rescue & Firefighting (ARFF)", "Emergency Preparedness & Response", "Ground Handling & Ramp Operations", "Terminal Management & Operations", "Dangerous Goods Regulations (DGR)", "Wildlife Hazard Management"],
+    highlights: [
+      "Hands-on fire simulation and rescue drills",
+      "ICAO Doc 9137 Airport Services Manual compliance",
+      "Live airport environment practical sessions",
+      "Covers Aerodrome Emergency Plan (AEP) procedures",
+      "Internationally benchmarked assessment criteria"
+    ]
+  },
+  management: {
+    desc: "The School of Aviation Management develops leadership, strategic management, and essential professional skills for aviation executives, managers, and staff cadres.",
+    topics: ["Leadership & Executive Management", "Emotional Intelligence & Communication", "Ethics in Aviation Operations", "Aviation HR Development", "Strategic Airline & Airport Planning", "Organizational Behavior & Crisis Management"],
+    highlights: [
+      "Designed for both officers and staff cadres",
+      "Facilitated by senior aviation management professionals",
+      "Interactive workshops and group activities",
+      "Applicable across all aviation departments",
+      "Focus on real-world aviation organizational challenges"
+    ]
+  }
+};
+
+function getSchoolDefaults(schoolName) {
+  var s = (schoolName || '').toLowerCase();
+  if (s.includes('navigation') || s.includes('ans') || s.includes('traffic')) return defaultSchoolInfo.navigation;
+  if (s.includes('regulatory') || s.includes('safety') || s.includes('compliance')) return defaultSchoolInfo.regulatory;
+  if (s.includes('airport') || s.includes('fire') || s.includes('rescue')) return defaultSchoolInfo.airport;
+  if (s.includes('management') || s.includes('business')) return defaultSchoolInfo.management;
+  return defaultSchoolInfo.navigation;
+}
+
+function splitList(text){
+  return (text || '').split(';').map(function(s){ return s.trim(); }).filter(Boolean);
+}
+
+function renderCourseModal(data){
+  var defaults = getSchoolDefaults(data.schoolName);
+  var heroColor = data.schoolColor || '#0b3a5c';
+
+  document.getElementById('cmHero').style.background =
+    'linear-gradient(135deg, ' + heroColor + ', ' + heroColor + ')';
+  document.getElementById('cmSchool').textContent = data.schoolName || 'School Course';
+  document.getElementById('cmTitle').textContent = data.title || 'Course Details';
+
+  var dur = data.duration || '-';
+  var start = data.startDate || 'TBD';
+  var end = data.endDate || 'TBD';
+  var cert = data.certificate || 'NAU Certified';
+
+  document.getElementById('cmMeta').innerHTML =
+    '<span class="cm-badge"><i class="fas fa-clock"></i> ' + dur + '</span>' +
+    '<span class="cm-badge"><i class="fas fa-calendar"></i> ' + start + ' &ndash; ' + end + '</span>' +
+    '<span class="cm-badge"><i class="fas fa-certificate"></i> ' + cert + '</span>';
+
+  document.getElementById('cmDesc').textContent = data.description || defaults.desc;
+
+  document.getElementById('cmInfoGrid').innerHTML =
+    '<div class="cm-info-item"><label>Duration</label><span>' + dur + '</span></div>' +
+    '<div class="cm-info-item"><label>Start Date</label><span>' + start + '</span></div>' +
+    '<div class="cm-info-item"><label>End Date</label><span>' + end + '</span></div>' +
+    '<div class="cm-info-item"><label>Certificate</label><span>' + cert + '</span></div>';
+
+  var topicsList = splitList(data.topics);
+  if (topicsList.length === 0) topicsList = defaults.topics;
+  document.getElementById('cmTopics').innerHTML = topicsList.map(function(t){
+    return '<span class="cm-topic-tag">' + t + '</span>';
+  }).join('');
+
+  var pointsList = splitList(data.highlights);
+  if (pointsList.length === 0) pointsList = defaults.highlights;
+  document.getElementById('cmPoints').innerHTML = pointsList.map(function(h){
+    return '<li><i class="fas fa-check-circle"></i> ' + h + '</li>';
+  }).join('');
+}
+
+var currentModalSchoolId = null;
+var currentModalAccIdx = null;
+
+function openCourseModal(courseId, startInEditMode){
+  var data = courseData[courseId];
+  if (!data) return;
+  currentModalCourseId = courseId;
+  currentModalSchoolId = data.schoolId || null;
+
+  // Highlight the row on the page
+  var row = document.querySelector('tr.course-row[data-course-id="' + courseId + '"]');
+  if (row) {
+    document.querySelectorAll('tr.course-row').forEach(function(r){ r.classList.remove('highlighted-course'); });
+    row.classList.add('highlighted-course');
+  }
+
+  renderCourseModal(data);
+
+  var viewBody = document.getElementById('cmBodyView');
+  var editBody = document.getElementById('cmBodyEdit');
+  var saveBtn = document.getElementById('cmBtnSaveCourse');
+  if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-save"></i> Save Course';
+
+  if (startInEditMode && editBody){
+    if (typeof fillCourseEditForm === 'function') fillCourseEditForm(data);
+    if (viewBody) viewBody.style.display = 'none';
+    editBody.style.display = 'block';
+  } else {
+    if (viewBody) viewBody.style.display = 'block';
+    if (editBody) editBody.style.display = 'none';
+  }
+  var err = document.getElementById('cmEditError');
+  if (err){ err.style.display = 'none'; }
+
+  document.getElementById('courseModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function switchToCourseEditMode(){
+  if (currentModalCourseId && currentModalCourseId !== 0) {
+    var data = courseData[currentModalCourseId];
+    if (data && typeof fillCourseEditForm === 'function') fillCourseEditForm(data);
+  }
+  var viewBody = document.getElementById('cmBodyView');
+  var editBody = document.getElementById('cmBodyEdit');
+  if (viewBody) viewBody.style.display = 'none';
+  if (editBody) editBody.style.display = 'block';
+  var saveBtn = document.getElementById('cmBtnSaveCourse');
+  if (saveBtn) {
+    saveBtn.innerHTML = (currentModalCourseId === 0) ? '<i class="fas fa-plus"></i> Create & Save Course' : '<i class="fas fa-save"></i> Save Course';
+  }
+}
+
+function switchToCourseViewMode(){
+  if (currentModalCourseId === 0) {
+    closeCourseModal();
+    return;
+  }
+  var viewBody = document.getElementById('cmBodyView');
+  var editBody = document.getElementById('cmBodyEdit');
+  if (viewBody) viewBody.style.display = 'block';
+  if (editBody) editBody.style.display = 'none';
+}
+
+function openAddCourseModal(accIdx, schoolId, schoolName){
+  currentModalCourseId = 0;
+  currentModalSchoolId = schoolId;
+  currentModalAccIdx = accIdx;
+
+  var defaults = getSchoolDefaults(schoolName);
+  var schoolBlock = document.querySelector('.accordion-block[data-school-id="' + schoolId + '"]');
+  var schoolColor = schoolBlock ? (schoolBlock.getAttribute('data-school-color') || '#0b3a5c') : '#0b3a5c';
+
+  var draftData = {
+    id: 0,
+    schoolId: schoolId,
+    schoolName: schoolName || 'School',
+    schoolColor: schoolColor,
+    title: '',
+    duration: '01 Week',
+    startDate: 'TBD',
+    endDate: 'TBD',
+    description: defaults.desc,
+    topics: defaults.topics.join('; '),
+    highlights: defaults.highlights.join('; '),
+    certificate: 'NAU Certified'
+  };
+
+  renderCourseModal(draftData);
+  fillCourseEditForm(draftData);
+
+  var viewBody = document.getElementById('cmBodyView');
+  var editBody = document.getElementById('cmBodyEdit');
+  if (viewBody) viewBody.style.display = 'none';
+  if (editBody) editBody.style.display = 'block';
+
+  var saveBtn = document.getElementById('cmBtnSaveCourse');
+  if (saveBtn) saveBtn.innerHTML = '<i class="fas fa-plus"></i> Create & Save Course';
+
+  var err = document.getElementById('cmEditError');
+  if (err){ err.style.display = 'none'; }
+
+  document.getElementById('courseModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  var titleInput = document.getElementById('cmEditTitle');
+  if (titleInput) {
+    titleInput.focus();
+  }
+}
+
+function closeCourseModal(){
+  document.getElementById('courseModal').classList.remove('open');
+  document.body.style.overflow = '';
+  currentModalCourseId = null;
+}
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeCourseModal();
+});
+
+/* ===== Clickable Course Rows ===== */
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('tr.course-row').forEach(function(row){
+    row.addEventListener('click', function(e){
+      if (e.target.closest('.row-edit-btn, .row-delete-btn, input, button')) return;
+      var cid = row.getAttribute('data-course-id');
+      if (cid) {
+        openCourseModal(cid);
+      }
+    });
+  });
+});
+
+/* ===== Deep-linking from Academics nav menu (?school=...&course=...) ===== */
+(function(){
+  var params = new URLSearchParams(window.location.search);
+  var wantedSchool = (params.get('school') || '').trim().toLowerCase();
+  var wantedCourse = (params.get('course') || params.get('courseId') || params.get('courseTitle') || '').trim().toLowerCase();
+
+  var hash = window.location.hash ? window.location.hash.replace('#', '').trim() : '';
+  if (!wantedCourse && hash.startsWith('course-')) {
+    wantedCourse = hash.replace('course-', '');
+  }
+
+  var targetSchoolBlock = null;
+  if (wantedSchool) {
+    var blocks = document.querySelectorAll('.accordion-block');
+    blocks.forEach(function(block){
+      if (targetSchoolBlock) return;
+      var name = (block.getAttribute('data-school-name') || '').toLowerCase();
+      if (name.indexOf(wantedSchool) !== -1) {
+        targetSchoolBlock = block;
+      }
+    });
+  }
+
+  var targetRow = null;
+  if (wantedCourse) {
+    document.querySelectorAll('tr.course-row').forEach(function(r){
+      if (targetRow) return;
+      var cid = (r.getAttribute('data-course-id') || '').toLowerCase();
+      var name = (r.querySelector('.row-name') ? r.querySelector('.row-name').textContent : '').toLowerCase();
+      if (cid === wantedCourse || name.indexOf(wantedCourse) !== -1 || wantedCourse.indexOf(name) !== -1) {
+        targetRow = r;
+      }
+    });
+  }
+
+  if (targetRow) {
+    var parentBlock = targetRow.closest('.accordion-block');
+    if (parentBlock) {
+      parentBlock.classList.add('open');
+    }
+    document.querySelectorAll('tr.course-row').forEach(function(r){ r.classList.remove('highlighted-course'); });
+    targetRow.classList.add('highlighted-course');
+
+    setTimeout(function(){
+      targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  } else if (targetSchoolBlock) {
+    targetSchoolBlock.classList.add('open');
+    targetSchoolBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+})();
+
+@if (editMode)
+{
+    <text>
+    function getAntiForgeryToken(){
+      var el = document.querySelector('input[name="__RequestVerificationToken"]');
+      return el ? el.value : '';
+    }
+
+    function addCourseRow(accIdx, schoolId){
+      var tbody = document.getElementById('acc-tbody-' + accIdx);
+      if (!tbody) return;
+      if (tbody.querySelector('tr.course-row-new')) return;
+
+      var tr = document.createElement('tr');
+      tr.className = 'course-row-new';
+      tr.innerHTML =
+        '<td class="row-num">+</td>' +
+        '<td><input type="text" placeholder="Course title" class="qa-title"></td>' +
+        '<td><input type="text" placeholder="e.g. 04 Weeks" class="qa-duration"></td>' +
+        '<td><input type="text" placeholder="e.g. 05 Jan 2027 or TBD" class="qa-start"></td>' +
+        '<td>' +
+          '<input type="text" placeholder="e.g. 10 Feb 2027 or TBD" class="qa-end" style="margin-bottom:6px;">' +
+          '<div class="qa-actions">' +
+            '<button type="button" class="qa-save" onclick="saveCourseRow(this, ' + accIdx + ', ' + schoolId + ')">Save</button>' +
+            '<button type="button" class="qa-cancel" onclick="this.closest(\'tr\').remove()">Cancel</button>' +
+          '</div>' +
+          '<div class="qa-error" style="display:none;"></div>' +
+        '</td>' +
+        '<td></td>';
+      tbody.appendChild(tr);
+      tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      tr.querySelector('.qa-title').focus();
+    }
+
+    async function saveCourseRow(btn, accIdx, schoolId){
+      var tr = btn.closest('tr');
+      var tbody = tr.closest('tbody');
+      var title = tr.querySelector('.qa-title').value.trim();
+      var duration = tr.querySelector('.qa-duration').value.trim();
+      var start = tr.querySelector('.qa-start').value.trim();
+      var end = tr.querySelector('.qa-end').value.trim();
+      var errorBox = tr.querySelector('.qa-error');
+      errorBox.style.display = 'none';
+
+      if (!title){
+        errorBox.textContent = 'Course title is required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch('@Url.Action("QuickAdd", "Courses")', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': getAntiForgeryToken()
+          },
+          body: JSON.stringify({ SchoolId: schoolId, Title: title, Duration: duration, StartDate: start, EndDate: end })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save the course.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+
+        var serialNum = tbody.querySelectorAll('tr.course-row').length + 1;
+
+        var schoolEditBtn = document.querySelector('.school-edit-btn[data-school-id="' + schoolId + '"]');
+        courseData[data.courseId] = {
+          id: data.courseId,
+          schoolId: schoolId,
+          schoolName: data.schoolName,
+          schoolColor: schoolEditBtn ? schoolEditBtn.getAttribute('data-school-color') : '#0b3a5c',
+          title: data.title,
+          duration: data.duration || '-',
+          startDate: data.startDate,
+          endDate: data.endDate,
+          description: data.description,
+          topics: data.topics,
+          highlights: data.highlights,
+          certificate: data.certificate
+        };
+
+        var newTr = document.createElement('tr');
+        newTr.className = 'course-row';
+        newTr.setAttribute('data-course-id', data.courseId);
+        newTr.innerHTML =
+          '<td class="row-num">' + serialNum + '</td>' +
+          '<td class="row-name"><span class="row-name-inner" onclick="openCourseModal(' + data.courseId + ')">' + data.title + ' <i class="fas fa-chevron-right row-arrow"></i></span></td>' +
+          '<td><span class="dur-pill">' + (data.duration || '-') + '</span></td>' +
+          '<td class="row-date">' + data.startDate + '</td>' +
+          '<td class="row-date">' + data.endDate + '</td>' +
+          '<td>' +
+            '<button type="button" class="row-edit-btn" title="Edit this course" onclick="openCourseModal(' + data.courseId + ', true)"><i class="fas fa-pen"></i></button>' +
+            '<button type="button" class="row-delete-btn" title="Delete this course" onclick="deleteCourseRow(this, ' + data.courseId + ', ' + accIdx + ')"><i class="fas fa-trash"></i></button>' +
+          '</td>';
+        tr.replaceWith(newTr);
+
+        newTr.addEventListener('click', function(e){
+          if (e.target.closest('.row-edit-btn, .row-delete-btn, input, button')) return;
+          openCourseModal(data.courseId);
+        });
+
+        var countEl = document.getElementById('acc-count-' + accIdx);
+        if (countEl){
+          var n = parseInt(countEl.textContent, 10) || 0;
+          countEl.textContent = (n + 1) + ' Courses';
+        }
+        var totalEl = document.getElementById('totalCount');
+        if (totalEl){
+          var t = parseInt(totalEl.textContent, 10) || 0;
+          totalEl.textContent = (t + 1) + ' courses';
+        }
+
+        showQaToast('✅ "' + data.title + '" saved to the database (course #' + serialNum + ').');
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    async function deleteCourseRow(btn, courseId, accIdx){
+      if (!confirm('Delete this course permanently from the database?')) return;
+
+      btn.disabled = true;
+      var tr = btn.closest('tr');
+
+      try {
+        var res = await fetch('@Url.Action("QuickDelete", "Courses")', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': getAntiForgeryToken()
+          },
+          body: JSON.stringify({ CourseId: courseId })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          showQaToast(data.message || 'Could not delete the course.', true);
+          btn.disabled = false;
+          return;
+        }
+
+        var title = tr.querySelector('.row-name') ? tr.querySelector('.row-name').textContent : 'Course';
+        tr.remove();
+
+        var countEl = document.getElementById('acc-count-' + accIdx);
+        if (countEl){
+          var n = parseInt(countEl.textContent, 10) || 0;
+          countEl.textContent = Math.max(0, n - 1) + ' Courses';
+        }
+        var totalEl = document.getElementById('totalCount');
+        if (totalEl){
+          var t = parseInt(totalEl.textContent, 10) || 0;
+          totalEl.textContent = Math.max(0, t - 1) + ' courses';
+        }
+
+        var tbody = document.getElementById('acc-tbody-' + accIdx);
+        if (tbody){
+          var rows = tbody.querySelectorAll('tr.course-row .row-num');
+          rows.forEach(function(cell, i){ cell.textContent = (i + 1); });
+        }
+
+        showQaToast('🗑️ "' + title + '" removed from the database.');
+      } catch (err){
+        showQaToast('Network error, please try again.', true);
+        btn.disabled = false;
+      }
+    }
+
+    var qaToastTimer;
+    function showQaToast(message, isError){
+      var toast = document.getElementById('qaToast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.className = isError ? 'show error' : 'show';
+      clearTimeout(qaToastTimer);
+      qaToastTimer = setTimeout(function(){ toast.className = ''; }, 3500);
+
+      if (!isError && typeof window.refreshCalendarData === 'function'){
+        window.refreshCalendarData();
+      }
+    }
+
+    function fillCourseEditForm(data){
+      var f = function(id){ return document.getElementById(id); };
+      if (!f('cmEditTitle')) return;
+      f('cmEditTitle').value = data.title || '';
+      f('cmEditDuration').value = (data.duration === '-' ? '' : data.duration) || '';
+      f('cmEditStart').value = data.startDate || '';
+      f('cmEditEnd').value = data.endDate || '';
+      f('cmEditDesc').value = data.description || '';
+      f('cmEditTopics').value = data.topics || '';
+      f('cmEditHighlights').value = data.highlights || '';
+      f('cmEditCertificate').value = data.certificate || '';
+    }
+
+    async function saveCourseModal(btn){
+      if (currentModalCourseId === null || currentModalCourseId === undefined) return;
+      var f = function(id){ return document.getElementById(id) ? document.getElementById(id).value.trim() : ''; };
+      var errorBox = document.getElementById('cmEditError');
+      var title = f('cmEditTitle');
+
+      if (!title){
+        if (errorBox){
+          errorBox.textContent = 'Course title is required.';
+          errorBox.style.display = 'block';
+        }
+        return;
+      }
+      if (errorBox) errorBox.style.display = 'none';
+      btn.disabled = true;
+      var originalText = btn.innerHTML;
+      btn.innerHTML = 'Saving...';
+
+      var isNew = (currentModalCourseId === 0);
+      var url = isNew ? '@Url.Action("QuickAdd", "Courses")' : '@Url.Action("QuickUpdateCourse", "Courses")';
+      var payload = {
+        SchoolId: isNew ? currentModalSchoolId : undefined,
+        CourseId: isNew ? undefined : currentModalCourseId,
+        Title: title,
+        Duration: f('cmEditDuration'),
+        StartDate: f('cmEditStart'),
+        EndDate: f('cmEditEnd'),
+        Description: f('cmEditDesc'),
+        Topics: f('cmEditTopics'),
+        Highlights: f('cmEditHighlights'),
+        Certificate: f('cmEditCertificate')
+      };
+
+      try {
+        var res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify(payload)
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          if (errorBox){
+            errorBox.textContent = data.message || 'Could not save the course.';
+            errorBox.style.display = 'block';
+          }
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          return;
+        }
+
+        if (isNew) {
+          currentModalCourseId = data.courseId;
+          data.schoolColor = courseData[data.courseId] ? courseData[data.courseId].schoolColor : '#0b3a5c';
+          courseData[data.courseId] = data;
+
+          // Add row to table
+          var accIdx = currentModalAccIdx !== null ? currentModalAccIdx : 0;
+          var tbody = document.getElementById('acc-tbody-' + accIdx);
+          if (tbody) {
+            var serialNum = tbody.querySelectorAll('tr.course-row').length + 1;
+            var tr = document.createElement('tr');
+            tr.className = 'course-row';
+            tr.setAttribute('data-course-id', data.courseId);
+            tr.innerHTML =
+              '<td class="row-num">' + serialNum + '</td>' +
+              '<td class="row-name">' +
+                '<span class="row-name-inner" onclick="openCourseModal(' + data.courseId + ')">' + data.title + ' <i class="fas fa-chevron-right row-arrow"></i></span>' +
+              '</td>' +
+              '<td><span class="dur-pill">' + (data.duration || '-') + '</span></td>' +
+              '<td class="row-date">' + data.startDate + '</td>' +
+              '<td class="row-date">' + data.endDate + '</td>' +
+              '<td>' +
+                '<button type="button" class="row-edit-btn" title="Edit this course" onclick="openCourseModal(' + data.courseId + ', true)"><i class="fas fa-pen"></i></button>' +
+                '<button type="button" class="row-delete-btn" title="Delete this course" onclick="deleteCourseRow(this, ' + data.courseId + ', ' + accIdx + ')"><i class="fas fa-trash"></i></button>' +
+              '</td>';
+            tbody.appendChild(tr);
+
+            // Click handler for newly created row
+            tr.addEventListener('click', function(e){
+              if (e.target.closest('.row-edit-btn, .row-delete-btn, input, button')) return;
+              openCourseModal(data.courseId);
+            });
+          }
+
+          // Update counters
+          var countEl = document.getElementById('acc-count-' + accIdx);
+          if (countEl) {
+            var n = parseInt(countEl.textContent, 10) || 0;
+            countEl.textContent = (n + 1) + ' Courses';
+          }
+          var totalEl = document.getElementById('totalCount');
+          if (totalEl) {
+            var t = parseInt(totalEl.textContent, 10) || 0;
+            totalEl.textContent = (t + 1) + ' courses';
+          }
+        } else {
+          data.schoolColor = courseData[currentModalCourseId] ? courseData[currentModalCourseId].schoolColor : '#0b3a5c';
+          courseData[currentModalCourseId] = data;
+
+          var tr = document.querySelector('tr.course-row[data-course-id="' + currentModalCourseId + '"]');
+          if (tr){
+            var nameSpan = tr.querySelector('.row-name-inner');
+            if (nameSpan) nameSpan.innerHTML = data.title + ' <i class="fas fa-chevron-right row-arrow"></i>';
+            var durPill = tr.querySelector('.dur-pill');
+            if (durPill) durPill.textContent = data.duration || '-';
+            var dateCells = tr.querySelectorAll('.row-date');
+            if (dateCells[0]) dateCells[0].textContent = data.startDate;
+            if (dateCells[1]) dateCells[1].textContent = data.endDate;
+          }
+        }
+
+        renderCourseModal(data);
+        var viewBody = document.getElementById('cmBodyView');
+        var editBody = document.getElementById('cmBodyEdit');
+        if (viewBody) viewBody.style.display = 'block';
+        if (editBody) editBody.style.display = 'none';
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        showQaToast('✅ "' + data.title + '" ' + (isNew ? 'created' : 'updated') + ' and saved to the database.');
+      } catch (err){
+        if (errorBox){
+          errorBox.textContent = 'Network error, please try again.';
+          errorBox.style.display = 'block';
+        }
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    /* ===== Edit School ===== */
+    function editSchoolBlock(btn){
+      var wrap = document.getElementById('addSchoolWrap');
+      if (wrap) return;
+
+      var schoolId = btn.getAttribute('data-school-id');
+      var name = btn.getAttribute('data-school-name');
+      var icon = btn.getAttribute('data-school-icon');
+      var color = btn.getAttribute('data-school-color');
+
+      var addBtn = document.getElementById('addSchoolBtn');
+      wrap = document.createElement('div');
+      wrap.id = 'addSchoolWrap';
+      wrap.style.cssText = 'max-width:560px;margin:0 auto;background:#eaf2fb;border:1px dashed #cfe0f4;border-radius:12px;padding:20px 22px;text-align:left;';
+      wrap.innerHTML =
+        '<label style="display:block;font-size:11.5px;font-weight:700;color:#0b2c4d;margin-bottom:4px;">SCHOOL NAME</label>' +
+        '<input type="text" id="editSchoolName" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe0f4;font-family:\'Poppins\',sans-serif;font-size:13.5px;margin-bottom:10px;">' +
+        '<label style="display:block;font-size:11.5px;font-weight:700;color:#0b2c4d;margin-bottom:4px;">ICON (Font Awesome class, optional)</label>' +
+        '<input type="text" id="editSchoolIcon" placeholder="e.g. fas fa-plane" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe0f4;font-family:\'Poppins\',sans-serif;font-size:13.5px;margin-bottom:10px;">' +
+        '<label style="display:block;font-size:11.5px;font-weight:700;color:#0b2c4d;margin-bottom:4px;">COLOR (hex, optional)</label>' +
+        '<input type="text" id="editSchoolColor" placeholder="e.g. #0b3a5c" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe0f4;font-family:\'Poppins\',sans-serif;font-size:13.5px;margin-bottom:12px;">' +
+        '<div class="qa-actions">' +
+          '<button type="button" class="qa-save" onclick="saveSchoolEdit(this, ' + schoolId + ')">Save</button>' +
+          '<button type="button" class="qa-cancel" onclick="cancelSchoolBlock()">Cancel</button>' +
+        '</div>' +
+        '<div class="qa-error" id="editSchoolError" style="display:none;"></div>';
+
+      addBtn.parentNode.insertBefore(wrap, addBtn);
+      addBtn.style.display = 'none';
+      document.getElementById('editSchoolName').value = name || '';
+      document.getElementById('editSchoolIcon').value = icon || '';
+      document.getElementById('editSchoolColor').value = color || '';
+      document.getElementById('editSchoolName').focus();
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    async function saveSchoolEdit(btn, schoolId){
+      var name = document.getElementById('editSchoolName').value.trim();
+      var icon = document.getElementById('editSchoolIcon').value.trim();
+      var color = document.getElementById('editSchoolColor').value.trim();
+      var errorBox = document.getElementById('editSchoolError');
+      errorBox.style.display = 'none';
+
+      if (!name){
+        errorBox.textContent = 'School name is required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch('@Url.Action("QuickUpdateSchool", "Courses")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ SchoolId: schoolId, Name: name, Icon: icon, ColorHex: color })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save the school.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+
+        var editBtn = document.querySelector('.school-edit-btn[data-school-id="' + schoolId + '"]');
+        var delBtn = document.querySelector('.school-delete-btn[data-school-id="' + schoolId + '"]');
+        var headerBtn = delBtn ? delBtn.closest('.accordion-block').querySelector('.acc-header') : null;
+        if (headerBtn){
+          headerBtn.style.background = 'linear-gradient(135deg, ' + data.colorHex + ', ' + data.colorHex + ')';
+          headerBtn.querySelector('.acc-school').textContent = data.name;
+          headerBtn.querySelector('.acc-icon-wrap i').className = data.icon;
+        }
+        if (editBtn){
+          editBtn.setAttribute('data-school-name', data.name);
+          editBtn.setAttribute('data-school-icon', data.icon);
+          editBtn.setAttribute('data-school-color', data.colorHex);
+        }
+        if (delBtn) delBtn.setAttribute('data-school-name', data.name);
+
+        Object.keys(courseData).forEach(function(id){
+          if (courseData[id].schoolId == schoolId){
+            courseData[id].schoolName = data.name;
+            courseData[id].schoolColor = data.colorHex;
+          }
+        });
+
+        cancelSchoolBlock();
+        showQaToast('✅ School updated and saved to the database.');
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    async function deleteSchoolBlock(btn){
+      var schoolId = btn.getAttribute('data-school-id');
+      var schoolName = btn.getAttribute('data-school-name') || 'this school';
+      if (!confirm('Delete "' + schoolName + '" permanently from the database?')) return;
+
+      btn.disabled = true;
+      var block = btn.closest('.accordion-block');
+
+      try {
+        var res = await fetch('@Url.Action("QuickDeleteSchool", "Courses")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ SchoolId: schoolId })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          showQaToast(data.message || 'Could not delete the school.', true);
+          btn.disabled = false;
+          return;
+        }
+
+        if (block) block.remove();
+        showQaToast('🗑️ "' + schoolName + '" removed from the database.');
+      } catch (err){
+        showQaToast('Network error, please try again.', true);
+        btn.disabled = false;
+      }
+    }
+
+    /* ===== Add School (new accordion block) ===== */
+    function addSchoolBlock(){
+      var wrap = document.getElementById('addSchoolWrap');
+      if (wrap) return;
+
+      var addBtn = document.getElementById('addSchoolBtn');
+      wrap = document.createElement('div');
+      wrap.id = 'addSchoolWrap';
+      wrap.style.cssText = 'max-width:560px;margin:0 auto;background:#f0faf4;border:1px dashed #cfe8d8;border-radius:12px;padding:20px 22px;text-align:left;';
+      wrap.innerHTML =
+        '<label style="display:block;font-size:11.5px;font-weight:700;color:#0b2c4d;margin-bottom:4px;">SCHOOL NAME</label>' +
+        '<input type="text" id="newSchoolName" placeholder="e.g. School of Cabin Crew Training" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:\'Poppins\',sans-serif;font-size:13.5px;margin-bottom:10px;">' +
+        '<label style="display:block;font-size:11.5px;font-weight:700;color:#0b2c4d;margin-bottom:4px;">ICON (Font Awesome class, optional)</label>' +
+        '<input type="text" id="newSchoolIcon" placeholder="e.g. fas fa-plane" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:\'Poppins\',sans-serif;font-size:13.5px;margin-bottom:10px;">' +
+        '<label style="display:block;font-size:11.5px;font-weight:700;color:#0b2c4d;margin-bottom:4px;">COLOR (hex, optional)</label>' +
+        '<input type="text" id="newSchoolColor" placeholder="e.g. #0b3a5c" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:\'Poppins\',sans-serif;font-size:13.5px;margin-bottom:12px;">' +
+        '<div class="qa-actions">' +
+          '<button type="button" class="qa-save" onclick="saveSchoolBlock(this)">Save</button>' +
+          '<button type="button" class="qa-cancel" onclick="cancelSchoolBlock()">Cancel</button>' +
+        '</div>' +
+        '<div class="qa-error" id="newSchoolError" style="display:none;"></div>';
+
+      addBtn.parentNode.insertBefore(wrap, addBtn);
+      addBtn.style.display = 'none';
+      document.getElementById('newSchoolName').focus();
+    }
+
+    function cancelSchoolBlock(){
+      var wrap = document.getElementById('addSchoolWrap');
+      if (wrap) wrap.remove();
+      var addBtn = document.getElementById('addSchoolBtn');
+      if (addBtn) addBtn.style.display = '';
+    }
+
+    async function saveSchoolBlock(btn){
+      var name = document.getElementById('newSchoolName').value.trim();
+      var icon = document.getElementById('newSchoolIcon').value.trim();
+      var color = document.getElementById('newSchoolColor').value.trim();
+      var errorBox = document.getElementById('newSchoolError');
+      errorBox.style.display = 'none';
+
+      if (!name){
+        errorBox.textContent = 'School name is required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch('@Url.Action("QuickAddSchool", "Courses")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ Name: name, Icon: icon, ColorHex: color })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save the school.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+
+        var container = document.getElementById('accordionContainer');
+        var newIdx = container.querySelectorAll('.accordion-block').length;
+        var c1 = data.colorHex || '#0b3a5c';
+        var c2 = data.colorHex ? data.colorHex : '#0f7490';
+        var block = document.createElement('div');
+        block.className = 'accordion-block';
+        block.id = 'acc-' + newIdx;
+        block.innerHTML =
+          '<div class="acc-header-shell" style="position:relative;">' +
+          '<button type="button" class="row-edit-btn school-edit-btn" data-school-id="' + data.schoolId + '" data-school-name="' + data.name + '" data-school-icon="' + (data.icon || 'fas fa-graduation-cap') + '" data-school-color="' + c1 + '" style="position:absolute; top:50%; right:112px; transform:translateY(-50%); z-index:5;" title="Edit this school" onclick="event.stopPropagation(); editSchoolBlock(this)"><i class="fas fa-pen"></i></button>' +
+          '<button type="button" class="row-delete-btn school-delete-btn" data-school-id="' + data.schoolId + '" data-school-name="' + data.name + '" style="position:absolute; top:50%; right:72px; transform:translateY(-50%); z-index:5;" title="Delete this school" onclick="event.stopPropagation(); deleteSchoolBlock(this)"><i class="fas fa-trash"></i></button>' +
+          '<button class="acc-header" onclick="toggleAcc(' + newIdx + ')" style="background:linear-gradient(135deg, ' + c1 + ', ' + c2 + '); padding-right:170px;">' +
+            '<div class="acc-left">' +
+              '<div class="acc-icon-wrap"><i class="' + (data.icon || 'fas fa-graduation-cap') + '"></i></div>' +
+              '<div class="acc-title-wrap">' +
+                '<span class="acc-school">' + data.name + '</span>' +
+                '<span class="acc-sub">National Aviation University &mdash; Hyderabad</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="acc-right">' +
+              '<span class="acc-count" id="acc-count-' + newIdx + '">0 Courses</span>' +
+              '<i class="fas fa-chevron-down acc-chevron"></i>' +
+            '</div>' +
+          '</button>' +
+          '</div>' +
+          '<div class="acc-body">' +
+            '<div class="acc-table-wrap">' +
+              '<div style="padding:14px 18px 0; text-align:right;">' +
+                '<button type="button" class="acc-add-btn" style="background:var(--green);border-color:var(--green);color:#fff;" onclick="addCourseRow(' + newIdx + ', ' + data.schoolId + ')"><i class="fas fa-plus"></i> Add Course</button>' +
+              '</div>' +
+              '<table class="acc-table">' +
+                '<thead><tr><th width="40">#</th><th>Course Title</th><th width="110">Duration</th><th width="100">Start Date</th><th width="100">End Date</th><th width="50"></th></tr></thead>' +
+                '<tbody id="acc-tbody-' + newIdx + '"></tbody>' +
+              '</table>' +
+            '</div>' +
+          '</div>';
+
+        cancelSchoolBlock();
+        container.appendChild(block);
+        block.classList.add('open');
+        showQaToast('✅ "' + data.name + '" added to the database as a new school.');
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    /* ===== Save CTA heading/paragraph ===== */
+    async function saveCtaText(btn){
+      var title = document.getElementById('ctaTitleInput').value.trim();
+      var text = document.getElementById('ctaTextInput').value.trim();
+      var msg = document.getElementById('ctaSaveMsg');
+
+      if (!title){
+        msg.textContent = 'Heading is required.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      msg.textContent = '';
+
+      try {
+        var res = await fetch('@Url.Action("QuickUpdateCta", "Courses")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ Title: title, Text: text })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          msg.textContent = data.message || 'Could not save.';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+
+        document.getElementById('ctaTitleDisplay').textContent = data.title;
+        document.getElementById('ctaTextDisplay').textContent = data.text;
+        showQaToast('✅ Section text saved to the database.');
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      } catch (err){
+        msg.textContent = 'Network error, please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+    </text>
+}
+</script>
+
+<!-- ===== ACCOUNT DROPDOWN (Log In / Sign Up, or user name + Log Out) =====
+     Same dynamic behaviour as the Homepage. ===== -->
+<script>
+window.NAU_AUTH = {
+    isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+    isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+    userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewBag.CurrentUserName ?? "")))
+};
+
+(function setupAccountDropdown() {
+    var enhancedButtons = new WeakSet();
+    var auth = window.NAU_AUTH || { isAuthenticated: false, isAdmin: false, userName: '' };
+
+    function enhance(btn) {
+        if (enhancedButtons.has(btn)) return;
+        var alreadyWrapped = !!btn.closest('.account-dropdown');
+        var isPristineAccountBtn = btn.textContent.trim().toLowerCase() === 'account';
+        if (!alreadyWrapped && !isPristineAccountBtn) return;
+        enhancedButtons.add(btn);
+
+        var wrap = btn.closest('.account-dropdown');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'account-dropdown';
+            btn.parentNode.insertBefore(wrap, btn);
+            wrap.appendChild(btn);
+        }
+
+        btn.removeAttribute('href');
+        btn.setAttribute('role', 'button');
+
+        if (auth.isAuthenticated) {
+            btn.innerHTML = '<i class="fas fa-circle-user" style="margin-right:6px;"></i>' + (auth.userName || 'My Account');
+        } else {
+            btn.innerHTML = 'Account';
+        }
+
+        var menu = document.createElement('div');
+        menu.className = 'account-dropdown-menu';
+        if (auth.isAuthenticated) {
+            menu.innerHTML =
+                '<a href="#" id="navLogoutLink"><i class="fas fa-right-from-bracket" style="margin-right:8px;"></i>Log Out</a>';
+        } else {
+            menu.innerHTML =
+                '<a href="/Account/Login"><i class="fas fa-right-to-bracket" style="margin-right:8px;"></i>Log In</a>';
+        }
+        menu.style.position = 'fixed';
+        menu.style.display = 'none';
+        menu.style.zIndex = '2147483647';
+        menu.style.background = '#fff';
+        menu.style.minWidth = '150px';
+        menu.style.borderRadius = '8px';
+        menu.style.boxShadow = '0 10px 28px rgba(0,0,0,0.2)';
+        menu.style.overflow = 'hidden';
+        document.body.appendChild(menu);
+
+        if (auth.isAuthenticated) {
+            var logoutLink = menu.querySelector('#navLogoutLink');
+            logoutLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/Account/Logout';
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+
+        function positionMenu() {
+            var r = btn.getBoundingClientRect();
+            menu.style.top = (r.bottom + 8) + 'px';
+            menu.style.left = 'auto';
+            menu.style.right = (window.innerWidth - r.right) + 'px';
+        }
+
+        var closeTimer;
+        function openMenu() {
+            clearTimeout(closeTimer);
+            positionMenu();
+            menu.style.display = 'block';
+            wrap.classList.add('open');
+        }
+        function closeMenu() {
+            closeTimer = setTimeout(function () {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }, 150);
+        }
+
+        wrap.addEventListener('mouseenter', openMenu);
+        wrap.addEventListener('mouseleave', closeMenu);
+        menu.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        menu.addEventListener('mouseleave', closeMenu);
+
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            } else {
+                openMenu();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrap.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (menu.style.display === 'block') positionMenu();
+        }, true);
+        window.addEventListener('resize', function () {
+            if (menu.style.display === 'block') positionMenu();
+        });
+    }
+
+    function run() {
+        document.querySelectorAll('.apply-btn').forEach(enhance);
+    }
+
+    run();
+    var observer = new MutationObserver(run);
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+
+
+<script src="~/js/global-search.js" asp-append-version="true"></script>
+<script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+<script src="~/js/schools-submenu.js" asp-append-version="true"></script>
+
+<partial name="_PublicModals" />
+<script src="~/js/public-modals.js" asp-append-version="true"></script>
+<script src="~/js/cms-icon-picker.js" asp-append-version="true"></script>
+</body>
+</html>

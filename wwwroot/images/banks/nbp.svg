@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="nbpGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006039"/>
+      <stop offset="100%" stop-color="#004024"/>
+    </linearGradient>
+    <linearGradient id="nbpGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fed136"/>
+      <stop offset="100%" stop-color="#d49400"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="20" fill="url(#nbpGreen)"/>
+  
+  <!-- Outer Gold Ring -->
+  <circle cx="60" cy="50" r="32" fill="none" stroke="url(#nbpGold)" stroke-width="2.5"/>
+  <circle cx="60" cy="50" r="29" fill="#004024" stroke="none"/>
+  
+  <!-- Palm Leaf / Tree Symbol -->
+  <g fill="url(#nbpGold)" transform="translate(60, 52)">
+    <!-- Central trunk -->
+    <rect x="-1.5" y="-12" width="3" height="20" rx="1.5"/>
+    <!-- Left fronds -->
+    <path d="M -1,-10 C -12,-16 -18,-10 -20,-3 C -14,-7 -6,-6 -1,-4 Z"/>
+    <path d="M -1,-4 C -14,-7 -19,1 -18,8 C -12,3 -5,2 -1,0 Z"/>
+    <path d="M -1,2 C -12,1 -16,8 -14,14 C -9,9 -4,6 -1,4 Z"/>
+    <!-- Right fronds -->
+    <path d="M 1,-10 C 12,-16 18,-10 20,-3 C 14,-7 6,-6 1,-4 Z"/>
+    <path d="M 1,-4 C 14,-7 19,1 18,8 C 12,3 5,2 1,0 Z"/>
+    <path d="M 1,2 C 12,1 16,8 14,14 C 9,9 4,6 1,4 Z"/>
+    <!-- Top crescent & star -->
+    <path d="M 0,-24 A 6 6 0 1 0 6,-18 A 5 5 0 1 1 0,-24 Z" fill="#ffffff"/>
+    <polygon points="3,-22 4,-19 7,-19 4.5,-17 5.5,-14 3,-16 0.5,-14 1.5,-17 -1,-19 2,-19" fill="#ffffff" transform="scale(0.6) translate(4, -10)"/>
+  </g>
+
+  <!-- NBP Wordmark -->
+  <text x="60" y="103" text-anchor="middle" fill="#ffffff" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="20" letter-spacing="2.5">NBP</text>
+</svg>

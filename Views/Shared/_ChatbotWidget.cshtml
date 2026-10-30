@@ -1,0 +1,80 @@
+@* ===== NAU REAL-TIME AI CHATBOT WIDGET =====
+   Connects website visitors directly to live CMS and Database knowledge. *@
+
+<link rel="stylesheet" href="~/css/chatbot.css" asp-append-version="true" />
+
+<!-- Floating Launcher Button -->
+<button type="button" id="nauChatLauncher" class="nau-chatbot-launcher" aria-label="Open NAU AI Chatbot">
+    <i class="fas fa-comments launcher-chat-icon"></i>
+    <i class="fas fa-times launcher-close-icon"></i>
+    <span class="launcher-badge"></span>
+</button>
+<div class="nau-chatbot-tooltip">Ask NAU AI Assistant</div>
+
+<!-- Chat Window -->
+<div id="nauChatWindow" class="nau-chatbot-window" role="dialog" aria-modal="true" aria-label="NAU AI Virtual Assistant">
+    <!-- Header -->
+    <div class="nau-chat-header">
+        <div class="nau-chat-brand">
+            <div class="nau-chat-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="nau-chat-title-wrap">
+                <span class="nau-chat-title">NAU AI Assistant</span>
+                <span class="nau-chat-status">
+                    <span class="nau-chat-status-dot"></span> Online &bull; Live Database
+                </span>
+            </div>
+        </div>
+        <div class="nau-chat-header-actions">
+            <button type="button" id="nauChatClearBtn" class="nau-chat-icon-btn" title="Clear Chat History">
+                <i class="fas fa-rotate-right"></i>
+            </button>
+            <button type="button" id="nauChatCloseBtn" class="nau-chat-icon-btn" title="Minimize Chat">
+                <i class="fas fa-minus"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Suggestion Chips Carousel with Left/Right Arrows -->
+    <div class="nau-chat-suggestions-wrap">
+        <button type="button" id="nauChatSuggestPrev" class="nau-chat-suggest-arrow prev" aria-label="Scroll left" title="Scroll left">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div id="nauChatSuggestions" class="nau-chat-suggestions">
+            <button type="button" class="nau-chat-chip" data-query="Admissions 2026"><i class="fas fa-graduation-cap"></i> Admissions 2026</button>
+            <button type="button" class="nau-chat-chip" data-query="What degree programs do you offer?"><i class="fas fa-award"></i> Degree Programs</button>
+            <button type="button" class="nau-chat-chip" data-query="How many courses do you offer?"><i class="fas fa-book-open"></i> Short Courses &amp; ATP</button>
+            <button type="button" class="nau-chat-chip" data-query="What is the fee structure?"><i class="fas fa-coins"></i> Fee Structure</button>
+            <button type="button" class="nau-chat-chip" data-query="What are the campus facilities and hostels?"><i class="fas fa-building-columns"></i> Hostels &amp; Campus</button>
+            <button type="button" class="nau-chat-chip" data-query="What flight simulators do you have?"><i class="fas fa-plane-departure"></i> Flight Simulators</button>
+            <button type="button" class="nau-chat-chip" data-query="What faculties do you have?"><i class="fas fa-university"></i> Faculties</button>
+            <button type="button" class="nau-chat-chip" data-query="Contact and location of NAU"><i class="fas fa-headset"></i> Contact Us</button>
+        </div>
+        <button type="button" id="nauChatSuggestNext" class="nau-chat-suggest-arrow next" aria-label="Scroll right" title="Scroll right">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Messages Body -->
+    <div id="nauChatMessages" class="nau-chat-messages">
+        <!-- Messages are rendered dynamically by chatbot.js -->
+        <div id="nauChatTyping" class="nau-chat-typing">
+            <div class="nau-chat-dot"></div>
+            <div class="nau-chat-dot"></div>
+            <div class="nau-chat-dot"></div>
+        </div>
+    </div>
+
+    <!-- Input Footer -->
+    <div class="nau-chat-footer">
+        <div class="nau-chat-input-wrap">
+            <input type="text" id="nauChatInput" class="nau-chat-input" placeholder="Ask about courses, admissions, fees..." autocomplete="off" />
+        </div>
+        <button type="button" id="nauChatSendBtn" class="nau-chat-send-btn" aria-label="Send message">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<script src="~/js/chatbot.js" asp-append-version="true"></script>

@@ -1,0 +1,692 @@
+@model List<NAU_Web.Models.School>
+@{
+    ViewData["Title"] = "Specialized Schools Manager";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Specialized Schools Manager - NAU CMS</title>
+    <partial name="_Favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071f36;
+            --indigo: #6366f1;
+            --sky: #0284c7;
+            --green: #1e8e3e;
+            --gray-bg: #f4f7fa;
+            --border: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        /* Top Header */
+        .admin-nav-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            padding: 24px 36px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .header-left i.title-icon {
+            font-size: 28px;
+            color: #38bdf8;
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .header-left h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+        .header-left p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            margin-top: 2px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        .btn-nav-outline {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-nav-outline:hover {
+            background: rgba(255,255,255,0.22);
+        }
+        .btn-nav-accent {
+            background: #10b981;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .btn-nav-accent:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 32px auto 0;
+            padding: 0 24px;
+        }
+
+        /* Status Banner */
+        .status-alert {
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+        .status-alert.success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        .status-alert.error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* Card Section */
+        .card-panel {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 20px 28px;
+            background: #fafbfc;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-body {
+            padding: 28px;
+        }
+
+        /* Table Grid */
+        .schools-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .schools-table th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+        }
+        .schools-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        .schools-table tr:hover td {
+            background: #f8fafc;
+        }
+        .img-thumb {
+            width: 100px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0b2c4d;
+        }
+        .badge-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-status.active {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        .badge-status.inactive {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .icon-preview-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+            border-color: #94a3b8;
+        }
+        .btn-icon.danger {
+            color: #ef4444;
+        }
+        .btn-icon.danger:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #0284c7;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(2,132,199,0.25);
+        }
+        .btn-add:hover {
+            background: #0369a1;
+            transform: translateY(-1px);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 650px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: modalIn 0.25s ease-out;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        @@keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            padding: 18px 24px;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h3 { font-size: 16px; font-weight: 700; }
+        .modal-header button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .modal-header button:hover { color: #fff; }
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+        }
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .form-group { margin-bottom: 14px; }
+        .form-group.full { grid-column: 1 / -1; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-dark);
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+        .image-preview-container {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px dashed var(--border);
+        }
+        .preview-img-tag {
+            width: 120px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0b2c4d;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Bar -->
+    <header class="admin-nav-header">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-school title-icon"></i>
+                <div>
+                    <h1>Specialized Schools Manager</h1>
+                    <p>Manage School cards, titles, descriptions, card images, and display orders on the homepage.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/Admin" class="btn-nav btn-nav-outline"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                <a href="/" target="_blank" class="btn-nav btn-nav-outline"><i class="fas fa-globe"></i> View Site</a>
+                <button type="button" class="btn-nav btn-nav-accent" onclick="openAddSchoolModal()"><i class="fas fa-plus"></i> Add New School</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Status Alert -->
+        <div id="statusAlert" class="status-alert"></div>
+
+        <!-- Schools List Panel -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h2><i class="fas fa-university"></i> University Specialized Schools (@Model.Count)</h2>
+                <button type="button" class="btn-add" onclick="openAddSchoolModal()"><i class="fas fa-plus"></i> Add School Card</button>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="schools-table">
+                    <thead>
+                        <tr>
+                            <th>Card Image</th>
+                            <th>School Name &amp; Description</th>
+                            <th>Icon &amp; Color</th>
+                            <th>Order</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:30px;color:var(--text-muted);">
+                                    No schools found. Click "Add School Card" to create one.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var s in Model)
+                            {
+                                var imgPath = !string.IsNullOrWhiteSpace(s.ImageUrl) ? s.ImageUrl : "/images/schools/school_ans.jpg";
+                                var color = !string.IsNullOrWhiteSpace(s.ColorHex) ? s.ColorHex : "#0b2c4d";
+                                <tr>
+                                    <td>
+                                        <img src="@imgPath" alt="@s.Name" class="img-thumb" onerror="this.src='/images/schools/school_ans.jpg'">
+                                    </td>
+                                    <td>
+                                        <div style="font-weight:700;color:var(--primary);font-size:15px;">@s.Name</div>
+                                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">@s.Description</div>
+                                        <div style="font-size:11px;color:#0284c7;margin-top:2px;font-family:monospace;">Slug: /Courses/Public?school=@s.Slug</div>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:10px;">
+                                            <div class="icon-preview-box" style="background:@color;">
+                                                <i class="@(s.Icon ?? "fas fa-school")"></i>
+                                            </div>
+                                            <span style="font-size:12px;font-family:monospace;color:var(--text-muted);">@color</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style="font-weight:600;">@s.DisplayOrder</span>
+                                    </td>
+                                    <td>
+                                        @if (s.IsActive)
+                                        {
+                                            <span class="badge-status active"><i class="fas fa-check-circle"></i> Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-status inactive"><i class="fas fa-times-circle"></i> Inactive</span>
+                                        }
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <button type="button" class="btn-icon" title="Edit School" onclick="editSchool(@s.SchoolId, '@JavaScriptEncode(s.Name)', '@JavaScriptEncode(s.Description ?? "")', '@JavaScriptEncode(s.ImageUrl ?? "")', '@JavaScriptEncode(s.Icon ?? "")', '@JavaScriptEncode(s.ColorHex ?? "")', '@JavaScriptEncode(s.Slug ?? "")', @s.DisplayOrder, @(s.IsActive ? "true" : "false"))"><i class="fas fa-pen"></i> Edit</button>
+                                        <button type="button" class="btn-icon danger" title="Delete School" onclick="deleteSchool(@s.SchoolId, '@JavaScriptEncode(s.Name)')"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADD / EDIT SCHOOL MODAL ===== -->
+    <div id="schoolModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add New School Card</h3>
+                <button type="button" onclick="closeSchoolModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="schoolForm" onsubmit="saveSchoolForm(event)" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="inpSchoolId" name="SchoolId" value="0">
+
+                    <div class="form-grid">
+                        <div class="form-group full">
+                            <label for="inpName">School Name *</label>
+                            <input type="text" id="inpName" name="Name" required placeholder="e.g. School of Air Navigation Services (ANS)">
+                        </div>
+
+                        <div class="form-group full">
+                            <label for="inpDescription">Description / Overview *</label>
+                            <textarea id="inpDescription" name="Description" required placeholder="e.g. Air Traffic Control (ATC), Radar Operations, and CNS/ATM Systems Training"></textarea>
+                        </div>
+
+                        <!-- IMAGE UPLOAD / URL SECTION -->
+                        <div class="form-group full">
+                            <label>School Card Image (Upload File OR Enter Image URL)</label>
+                            <div style="display:flex;gap:10px;margin-bottom:8px;">
+                                <input type="file" id="inpImageFile" name="imageFile" accept="image/*" onchange="previewUploadFile(this)" style="flex:1;">
+                            </div>
+                            <input type="text" id="inpImageUrl" name="ImageUrl" placeholder="OR enter image URL (e.g. /images/schools/school_ans.jpg)" oninput="updateImagePreview(this.value)">
+
+                            <div class="image-preview-container">
+                                <img id="modalImgPreview" src="/images/schools/school_ans.jpg" class="preview-img-tag" alt="Card Image Preview">
+                                <div>
+                                    <div style="font-size:13px;font-weight:600;color:var(--primary);">Card Header Image Preview</div>
+                                    <div style="font-size:12px;color:var(--text-muted);">Recommended aspect ratio: 16:9 (e.g. 800x450px)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inpIcon">FontAwesome Icon Class</label>
+                            <input type="text" id="inpIcon" name="Icon" placeholder="e.g. fas fa-broadcast-tower">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inpColorHex">Theme / Badge Color</label>
+                            <div style="display:flex;gap:8px;">
+                                <input type="color" id="inpColorPicker" value="#003366" style="width:42px;height:40px;padding:2px;cursor:pointer;border-radius:6px;border:1px solid var(--border);" onchange="document.getElementById('inpColorHex').value = this.value">
+                                <input type="text" id="inpColorHex" name="ColorHex" value="#003366" placeholder="#003366" oninput="document.getElementById('inpColorPicker').value = this.value">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inpSlug">Url Slug / Query Key</label>
+                            <input type="text" id="inpSlug" name="Slug" placeholder="e.g. navigation, regulatory, airport, management">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inpDisplayOrder">Display Order</label>
+                            <input type="number" id="inpDisplayOrder" name="DisplayOrder" value="1">
+                        </div>
+
+                        <div class="form-group full" style="display:flex;align-items:center;gap:10px;margin-top:6px;">
+                            <input type="checkbox" id="inpIsActive" name="IsActive" value="true" checked style="width:18px;height:18px;cursor:pointer;">
+                            <label for="inpIsActive" style="margin-bottom:0;cursor:pointer;font-size:14px;">Visible on Homepage (Is Active)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-nav btn-nav-outline" style="color:var(--text-dark);" onclick="closeSchoolModal()">Cancel</button>
+                    <button type="submit" class="btn-nav btn-nav-accent"><i class="fas fa-save"></i> Save School Card</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @functions {
+        public string JavaScriptEncode(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+            return text.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\"", "\\\"").Replace("\r", "").Replace("\n", "\\n");
+        }
+    }
+
+    <script>
+        function openAddSchoolModal() {
+            document.getElementById('inpSchoolId').value = '0';
+            document.getElementById('inpName').value = '';
+            document.getElementById('inpDescription').value = '';
+            document.getElementById('inpImageUrl').value = '/images/schools/school_ans.jpg';
+            document.getElementById('inpImageFile').value = '';
+            document.getElementById('modalImgPreview').src = '/images/schools/school_ans.jpg';
+            document.getElementById('inpIcon').value = 'fas fa-school';
+            document.getElementById('inpColorHex').value = '#003366';
+            document.getElementById('inpColorPicker').value = '#003366';
+            document.getElementById('inpSlug').value = '';
+            document.getElementById('inpDisplayOrder').value = '1';
+            document.getElementById('inpIsActive').checked = true;
+            document.getElementById('modalTitle').textContent = 'Add New School Card';
+            document.getElementById('schoolModal').style.display = 'flex';
+        }
+
+        function editSchool(id, name, desc, imgUrl, icon, colorHex, slug, order, isActive) {
+            document.getElementById('inpSchoolId').value = id;
+            document.getElementById('inpName').value = name;
+            document.getElementById('inpDescription').value = desc;
+            document.getElementById('inpImageUrl').value = imgUrl || '/images/schools/school_ans.jpg';
+            document.getElementById('inpImageFile').value = '';
+            document.getElementById('modalImgPreview').src = imgUrl || '/images/schools/school_ans.jpg';
+            document.getElementById('inpIcon').value = icon || 'fas fa-school';
+            document.getElementById('inpColorHex').value = colorHex || '#003366';
+            document.getElementById('inpColorPicker').value = colorHex || '#003366';
+            document.getElementById('inpSlug').value = slug || '';
+            document.getElementById('inpDisplayOrder').value = order;
+            document.getElementById('inpIsActive').checked = isActive;
+            document.getElementById('modalTitle').textContent = 'Edit School Card (' + name + ')';
+            document.getElementById('schoolModal').style.display = 'flex';
+        }
+
+        function closeSchoolModal() {
+            document.getElementById('schoolModal').style.display = 'none';
+        }
+
+        function updateImagePreview(val) {
+            if (val && val.trim()) {
+                document.getElementById('modalImgPreview').src = val.trim();
+            }
+        }
+
+        function previewUploadFile(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById('modalImgPreview').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function saveSchoolForm(event) {
+            event.preventDefault();
+            const form = document.getElementById('schoolForm');
+            const formData = new FormData(form);
+
+            // Handle checkbox value for boolean
+            if (!document.getElementById('inpIsActive').checked) {
+                formData.set('IsActive', 'false');
+            } else {
+                formData.set('IsActive', 'true');
+            }
+
+            const alertEl = document.getElementById('statusAlert');
+            alertEl.style.display = 'none';
+
+            try {
+                const res = await fetch('/Admin/SaveSchool', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alertEl.className = 'status-alert success';
+                    alertEl.innerHTML = '<i class="fas fa-check-circle"></i> ' + result.message;
+                    alertEl.style.display = 'flex';
+                    closeSchoolModal();
+                    setTimeout(() => location.reload(), 600);
+                } else {
+                    alertEl.className = 'status-alert error';
+                    alertEl.innerHTML = '<i class="fas fa-triangle-exclamation"></i> ' + (result.message || 'Failed to save school.');
+                    alertEl.style.display = 'flex';
+                }
+            } catch (err) {
+                alert('Request failed: ' + err.message);
+            }
+        }
+
+        async function deleteSchool(id, name) {
+            if (!confirm('Are you sure you want to delete the school card "' + name + '"?')) return;
+            const alertEl = document.getElementById('statusAlert');
+            try {
+                const res = await fetch('/Admin/DeleteSchool', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: 'id=' + id
+                });
+                const result = await res.json();
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert(result.message || 'Failed to delete school.');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

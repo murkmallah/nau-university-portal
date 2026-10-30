@@ -1,0 +1,53 @@
+﻿@model NAU_Web.Models.Program
+@{
+    ViewData["Title"] = "Manage Program — " + Model.Name;
+}
+
+<h1>Manage Program: @Model.Name</h1>
+<a asp-action="ManageContent" asp-route-id="@Model.FacultyId">&larr; Back to @Model.Faculty.Name</a>
+
+<h3 class="mt-4">Careers</h3>
+<table class="table">
+    <tr><th>Career Title</th><th></th></tr>
+    @foreach (var c in Model.ProgramCareers)
+    {
+        <tr>
+            <td>@c.CareerTitle</td>
+            <td>
+                <form asp-action="DeleteCareer" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@c.ProgramCareerId" />
+                    <input type="hidden" name="programId" value="@Model.ProgramId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddCareer" method="post" class="d-flex gap-2 mb-4">
+    <input type="hidden" name="programId" value="@Model.ProgramId" />
+    <input name="careerTitle" placeholder="e.g. Air Traffic Controller" class="form-control" />
+    <button type="submit" class="btn btn-primary">Add Career</button>
+</form>
+
+<h3>Highlights</h3>
+<table class="table">
+    <tr><th>Highlight</th><th></th></tr>
+    @foreach (var h in Model.ProgramHighlights)
+    {
+        <tr>
+            <td>@h.HighlightText</td>
+            <td>
+                <form asp-action="DeleteHighlight" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@h.ProgramHighlightId" />
+                    <input type="hidden" name="programId" value="@Model.ProgramId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddHighlight" method="post" class="d-flex gap-2">
+    <input type="hidden" name="programId" value="@Model.ProgramId" />
+    <input name="highlightText" placeholder="e.g. Industry-standard simulators" class="form-control" />
+    <button type="submit" class="btn btn-primary">Add Highlight</button>
+</form>

@@ -1,0 +1,1139 @@
+@* ===== SITE-WIDE PUBLIC MODALS =====
+   Contains the HTML markup for Academic Calendar, Results, Examination Schedule,
+   Downloads, Eligibility Criteria, Required Documents, Professional Courses,
+   and Events & Activities modals accessible from the header dropdowns on all pages. *@
+
+<!-- ===== RESULTS MODAL ===== -->
+<div class="util-modal-backdrop" id="resultsModal" onclick="closeUtilModal('resultsModal')">
+  <div class="util-modal" onclick="event.stopPropagation()">
+    <div class="util-modal-header" style="background:linear-gradient(135deg,#0b2c4d,#1a5fa6);">
+      <div class="util-modal-icon"><i class="fas fa-poll"></i></div>
+      <div>
+        <div class="util-modal-title">Examination Results</div>
+        <div class="util-modal-sub">National Aviation University</div>
+      </div>
+      <button class="util-close-btn" onclick="closeUtilModal('resultsModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="util-modal-body">
+      <div class="util-notice">
+        <i class="fas fa-info-circle"></i>
+        Results are published through the Student Online Portal. Log in with your student credentials to view your semester results, grade reports, and transcripts.
+      </div>
+      <div class="util-options-grid">
+        <a href="/Account/Login" class="util-option-card">
+          <div class="util-option-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-user-circle"></i></div>
+          <div class="util-option-label">Student Portal</div>
+          <div class="util-option-desc">Login to view your results</div>
+          <span class="util-option-arrow"><i class="fas fa-arrow-right"></i></span>
+        </a>
+        <div class="util-option-card" onclick="closeUtilModal('resultsModal');openCalendar(event,'results')">
+          <div class="util-option-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-calendar-alt"></i></div>
+          <div class="util-option-label">Result Dates</div>
+          <div class="util-option-desc">View result announcement schedule</div>
+          <span class="util-option-arrow"><i class="fas fa-arrow-right"></i></span>
+        </div>
+      </div>
+      <div class="util-info-box">
+        <div class="util-info-row"><i class="fas fa-envelope" style="color:#1e8e3e;"></i><span>For result queries: <strong>AdID.Academics@paa.gov.pk</strong></span></div>
+        <div class="util-info-row"><i class="fas fa-phone" style="color:#1e8e3e;"></i><span>Call Academics Office: <strong>+92 22 9260310-19</strong></span></div>
+        <div class="util-info-row"><i class="fas fa-clock" style="color:#1e8e3e;"></i><span>Office Hours: <strong>Mon–Fri, 08:00 AM – 04:00 PM</strong></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ACADEMIC CALENDAR MODAL ===== -->
+<div id="calendarModal" class="cal-modal-backdrop" onclick="if(event.target===this)closeCalendar()">
+  <div class="cal-modal">
+    <!-- Sidebar -->
+    <div class="cal-sidebar">
+      <div class="cal-sidebar-brand">
+        <div class="cal-sidebar-icon"><i class="fas fa-calendar-days"></i></div>
+        <div class="cal-sidebar-title">Academic<br>Calendar</div>
+        <div class="cal-sidebar-year">2026</div>
+      </div>
+      <div class="cal-sidebar-filters">
+        <div class="cal-sf-label">Status</div>
+        <button class="cal-sf-btn active" onclick="setCalFilter('all',this)" data-filter="all">
+          <span class="cal-sf-dot all"></span> All Courses
+        </button>
+        <button class="cal-sf-btn" onclick="setCalFilter('upcoming',this)" data-filter="upcoming">
+          <span class="cal-sf-dot up"></span> Upcoming
+        </button>
+        <button class="cal-sf-btn" onclick="setCalFilter('completed',this)" data-filter="completed">
+          <span class="cal-sf-dot done"></span> Completed
+        </button>
+        <button class="cal-sf-btn" onclick="setCalFilter('tbd',this)" data-filter="tbd">
+          <span class="cal-sf-dot tbd"></span> TBD
+        </button>
+      </div>
+      <div class="cal-sidebar-schools" id="calSidebarSchools"></div>
+      <div class="cal-sidebar-footer">
+        <div style="font-size:10px;color:rgba(255,255,255,0.35);line-height:1.5;">NAU Hyderabad<br>ATP-2026 Schedule</div>
+      </div>
+    </div>
+    <!-- Main Content -->
+    <div class="cal-main">
+      <div class="cal-main-topbar">
+        <div class="cal-main-school-title" id="calMainSchoolTitle">All Schools</div>
+        <div class="cal-view-tabs">
+          <button class="cal-view-tab active" id="calTabCourses" onclick="switchCalView('courses',this)"><i class="fas fa-calendar-days"></i> Courses</button>
+          <button class="cal-view-tab" id="calTabResults" onclick="switchCalView('results',this)"><i class="fas fa-poll"></i> Result Dates</button>
+        </div>
+        <div class="cal-search-wrap">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search courses…" oninput="calSearch(this.value)" class="cal-search-input" id="calSearchInput">
+        </div>
+        <button class="cal-close-btn" onclick="closeCalendar()" aria-label="Close"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="cal-legend-strip" id="calLegendStrip">
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#1e8e3e"></span> Course start</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#1e8e3e44;border-radius:2px;width:14px;height:5px"></span> In progress</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#0b2c4d"></span> Today</span>
+        <span style="margin-left:auto;font-size:10px;color:#b0b8c4;">Click a date to see courses</span>
+      </div>
+      <div class="cal-timeline-list" id="calCourseList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXAMINATION SCHEDULE MODAL ===== -->
+<div class="util-modal-backdrop" id="examModal" onclick="closeUtilModal('examModal')">
+  <div class="util-modal util-modal--wide" onclick="event.stopPropagation()">
+    <div class="util-modal-header" style="background:linear-gradient(135deg,#1e3a5f,#2c5282);">
+      <div class="util-modal-icon"><i class="fas fa-file-alt"></i></div>
+      <div>
+        <div class="util-modal-title">Examination Schedule</div>
+        <div class="util-modal-sub">Academic Year 2026</div>
+      </div>
+      <button class="util-close-btn" onclick="closeUtilModal('examModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="util-modal-body">
+      <div class="util-notice">
+        <i class="fas fa-info-circle"></i>
+        Mid-term and Final examination schedules are released two weeks before the examination period. Download the detailed timetable from the portal or check below for key dates.
+      </div>
+      <div class="exam-schedule-tabs">
+        <button class="exam-tab active" onclick="switchExamTab(this,'mid')">Mid-Term Exams</button>
+        <button class="exam-tab" onclick="switchExamTab(this,'final')">Final Exams</button>
+        <button class="exam-tab" onclick="switchExamTab(this,'makeup')">Make-up Exams</button>
+      </div>
+      <div id="examTab-mid" class="exam-tab-content active">
+        <table class="exam-table">
+          <thead><tr><th>Program</th><th>Semester</th><th>Term</th><th>Exam Period</th><th>Venue</th></tr></thead>
+          <tbody>
+            <tr><td>BS Aviation Management</td><td>Spring 2026</td><td>Mid Term</td><td>March 10–18, 2026</td><td>Block A, Exam Hall</td></tr>
+            <tr><td>BE ANS Engineering</td><td>Spring 2026</td><td>Mid Term</td><td>March 10–18, 2026</td><td>Block B, Exam Hall</td></tr>
+            <tr><td>BE Airport Engineering</td><td>Spring 2026</td><td>Mid Term</td><td>March 11–19, 2026</td><td>Block B, Exam Hall</td></tr>
+            <tr><td>BS Aviation Cyber Security</td><td>Spring 2026</td><td>Mid Term</td><td>March 12–20, 2026</td><td>Block C, Lab 1</td></tr>
+            <tr><td>MBA Aviation</td><td>Spring 2026</td><td>Mid Term</td><td>March 10–17, 2026</td><td>Block D, Exam Hall</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="examTab-final" class="exam-tab-content">
+        <table class="exam-table">
+          <thead><tr><th>Program</th><th>Semester</th><th>Term</th><th>Exam Period</th><th>Venue</th></tr></thead>
+          <tbody>
+            <tr><td>BS Aviation Management</td><td>Spring 2026</td><td>Final Term</td><td>May 20–30, 2026</td><td>Block A, Exam Hall</td></tr>
+            <tr><td>BE ANS Engineering</td><td>Spring 2026</td><td>Final Term</td><td>May 20–30, 2026</td><td>Block B, Exam Hall</td></tr>
+            <tr><td>BE Airport Engineering</td><td>Spring 2026</td><td>Final Term</td><td>May 21–31, 2026</td><td>Block B, Exam Hall</td></tr>
+            <tr><td>BS Aviation Cyber Security</td><td>Spring 2026</td><td>Final Term</td><td>May 22–June 1, 2026</td><td>Block C, Lab 1</td></tr>
+            <tr><td>MBA Aviation</td><td>Spring 2026</td><td>Final Term</td><td>May 20–28, 2026</td><td>Block D, Exam Hall</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="examTab-makeup" class="exam-tab-content">
+        <table class="exam-table">
+          <thead><tr><th>Program</th><th>Semester</th><th>Term</th><th>Exam Period</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>All Programs</td><td>Spring 2026</td><td>Make-up Term</td><td>June 8–12, 2026</td><td>Approved medical/emergency cases only</td></tr>
+          </tbody>
+        </table>
+        <div class="util-notice" style="margin-top:16px;">
+          <i class="fas fa-exclamation-triangle"></i>
+          Make-up exams require prior approval from the Academics Office. Submit your application at least 5 working days before the scheduled date.
+        </div>
+      </div>
+      <div class="util-info-box" style="margin-top:16px;">
+        <div class="util-info-row"><i class="fas fa-download" style="color:#1e8e3e;"></i><span>Detailed timetable PDF available on the <a href="/Account/Login" style="color:#1a5fa6;font-weight:600;">Student Portal</a></span></div>
+        <div class="util-info-row"><i class="fas fa-envelope" style="color:#1e8e3e;"></i><span>Exam queries: <strong>AdID.Academics@paa.gov.pk</strong></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DOWNLOADS MODAL ===== -->
+<div class="util-modal-backdrop" id="downloadsModal" onclick="closeUtilModal('downloadsModal')">
+  <div class="util-modal util-modal--wide" onclick="event.stopPropagation()">
+    <div class="util-modal-header" style="background:linear-gradient(135deg,#0b2c4d,#1e8e3e);">
+      <div class="util-modal-icon"><i class="fas fa-download"></i></div>
+      <div>
+        <div class="util-modal-title">Downloads</div>
+        <div class="util-modal-sub">Forms, Guides &amp; Official Documents</div>
+      </div>
+      <button class="util-close-btn" onclick="closeUtilModal('downloadsModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="util-modal-body">
+      <div class="dl-search-wrap">
+        <i class="fas fa-search"></i>
+        <input type="text" id="dlSearch" placeholder="Search documents..." oninput="filterDownloads(this.value)">
+      </div>
+      <div id="dlList" class="dl-list">
+        <div class="dl-category">
+          <div class="dl-cat-title"><i class="fas fa-graduation-cap"></i> Admission Forms</div>
+          <div class="dl-item" data-tags="admission undergraduate application form">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Undergraduate Admission Form 2026</div><div class="dl-item-meta">PDF · 2 pages · Updated Jan 2026</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="dl-item" data-tags="admission short course application nomination form">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Short Course Nomination Form</div><div class="dl-item-meta">PDF · 1 page · Updated Jan 2026</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="dl-item" data-tags="hostel accommodation form">
+            <div class="dl-item-icon word"><i class="fas fa-file-word"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Hostel Accommodation Request Form</div><div class="dl-item-meta">DOCX · 1 page · Updated Feb 2026</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+        </div>
+        <div class="dl-category">
+          <div class="dl-cat-title"><i class="fas fa-book-open"></i> Academic Documents</div>
+          <div class="dl-item" data-tags="course catalog programs syllabus academic">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Course Catalog 2026</div><div class="dl-item-meta">PDF · 48 pages · Updated Jan 2026</div></div>
+            <a href="/CourseCatalog" class="dl-btn"><i class="fas fa-external-link-alt"></i> View</a>
+          </div>
+          <div class="dl-item" data-tags="examination schedule timetable mid final exam">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Examination Schedule Spring 2026</div><div class="dl-item-meta">PDF · 4 pages · Updated Mar 2026</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="dl-item" data-tags="academic calendar semester dates schedule">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Academic Calendar 2026</div><div class="dl-item-meta">PDF · 2 pages · Updated Jan 2026</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="dl-item" data-tags="fee structure tuition payment">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Fee Structure 2026</div><div class="dl-item-meta">PDF · 3 pages · Updated Jan 2026</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+        </div>
+        <div class="dl-category">
+          <div class="dl-cat-title"><i class="fas fa-clipboard-list"></i> Student Services Forms</div>
+          <div class="dl-item" data-tags="leave absence application student">
+            <div class="dl-item-icon word"><i class="fas fa-file-word"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Leave of Absence Application</div><div class="dl-item-meta">DOCX · 1 page</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="dl-item" data-tags="transcript request certificate degree verification">
+            <div class="dl-item-icon word"><i class="fas fa-file-word"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Transcript / Certificate Request Form</div><div class="dl-item-meta">DOCX · 1 page</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="dl-item" data-tags="makeup exam medical application absent">
+            <div class="dl-item-icon word"><i class="fas fa-file-word"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Make-up Exam Application Form</div><div class="dl-item-meta">DOCX · 1 page</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+        </div>
+        <div class="dl-category">
+          <div class="dl-cat-title"><i class="fas fa-gavel"></i> Policies &amp; Guidelines</div>
+          <div class="dl-item" data-tags="code of conduct student policy rules behavior">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Student Code of Conduct</div><div class="dl-item-meta">PDF · 12 pages · Updated 2026</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+          <div class="dl-item" data-tags="anti harassment policy rules safety">
+            <div class="dl-item-icon pdf"><i class="fas fa-file-pdf"></i></div>
+            <div class="dl-item-info"><div class="dl-item-name">Anti-Harassment Policy</div><div class="dl-item-meta">PDF · 6 pages</div></div>
+            <a href="#" class="dl-btn"><i class="fas fa-download"></i> Download</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ELIGIBILITY CRITERIA MODAL ===== -->
+<div class="util-modal-backdrop" id="eligibilityModal" onclick="closeUtilModal('eligibilityModal')">
+  <div class="util-modal util-modal--wide" onclick="event.stopPropagation()">
+    <div class="util-modal-header" style="background:linear-gradient(135deg,#0b2c4d,#1a5fa6);">
+      <div class="util-modal-icon"><i class="fas fa-list-check"></i></div>
+      <div>
+        <div class="util-modal-title">Eligibility Criteria</div>
+        <div class="util-modal-sub">Entry Requirements per Program — 2026</div>
+      </div>
+      <button class="util-close-btn" onclick="closeUtilModal('eligibilityModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="util-modal-body">
+      <div class="util-notice">
+        <i class="fas fa-info-circle"></i>
+        All candidates must meet the minimum academic qualifications listed below. Foreign nationals and CAA employees may be subject to additional requirements.
+      </div>
+      <div class="elig-prog-tabs">
+        <button class="elig-tab active" onclick="switchEligTab(this,'undergrad')"><i class="fas fa-graduation-cap"></i> Undergraduate</button>
+        <button class="elig-tab" onclick="switchEligTab(this,'mba')"><i class="fas fa-briefcase"></i> MBA</button>
+        <button class="elig-tab" onclick="switchEligTab(this,'short')"><i class="fas fa-bolt"></i> Short Courses</button>
+      </div>
+      <!-- Undergraduate Tab -->
+      <div id="eligTab-undergrad" class="elig-tab-content active">
+        <div class="elig-program-card">
+          <div class="elig-prog-header" style="border-left:4px solid #1a5fa6;">
+            <div class="elig-prog-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-cogs"></i></div>
+            <div>
+              <div class="elig-prog-name">BE ANS Engineering / BE Airport Engineering</div>
+              <div class="elig-prog-duration">4 Years · 8 Semesters</div>
+            </div>
+          </div>
+          <div class="elig-criteria-list">
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>FSc (Pre-Engineering) or A-Levels (Physics, Math, Chemistry/CS) with minimum <strong>50% marks</strong></span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>NTS/AU Entry Test with qualifying score</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Age limit: Not more than <strong>22 years</strong> at time of admission</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Pakistani National or approved foreign national</span></div>
+          </div>
+        </div>
+        <div class="elig-program-card">
+          <div class="elig-prog-header" style="border-left:4px solid #1e8e3e;">
+            <div class="elig-prog-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-plane-departure"></i></div>
+            <div>
+              <div class="elig-prog-name">BS Aviation Management / BS Aviation Operations</div>
+              <div class="elig-prog-duration">4 Years · 8 Semesters</div>
+            </div>
+          </div>
+          <div class="elig-criteria-list">
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>FA/FSc/ICS or equivalent with minimum <strong>45% marks</strong></span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>NTS/AU Entry Test with qualifying score</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Age limit: Not more than <strong>23 years</strong> at time of admission</span></div>
+          </div>
+        </div>
+        <div class="elig-program-card">
+          <div class="elig-prog-header" style="border-left:4px solid #8b5cf6;">
+            <div class="elig-prog-icon" style="background:#f3e8ff;color:#8b5cf6;"><i class="fas fa-laptop-code"></i></div>
+            <div>
+              <div class="elig-prog-name">BS Aviation Cyber Security</div>
+              <div class="elig-prog-duration">4 Years · 8 Semesters</div>
+            </div>
+          </div>
+          <div class="elig-criteria-list">
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>FSc (Pre-Engineering/ICS) or A-Levels with Math/CS with minimum <strong>50% marks</strong></span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>NTS/AU Entry Test with qualifying score</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Age limit: Not more than <strong>22 years</strong> at time of admission</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- MBA Tab -->
+      <div id="eligTab-mba" class="elig-tab-content">
+        <div class="elig-program-card">
+          <div class="elig-prog-header" style="border-left:4px solid #f5a623;">
+            <div class="elig-prog-icon" style="background:#fff7e6;color:#f5a623;"><i class="fas fa-chart-line"></i></div>
+            <div>
+              <div class="elig-prog-name">MBA Aviation Management</div>
+              <div class="elig-prog-duration">2 Years · 4 Semesters</div>
+            </div>
+          </div>
+          <div class="elig-criteria-list">
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Bachelor's degree (16 years of education) in any discipline with minimum <strong>2nd Division (45%)</strong></span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>GAT General / NTS MBA Test with minimum qualifying score</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Working professionals with aviation background preferred</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Minimum <strong>2 years</strong> post-graduation work experience (preferred)</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Short Courses Tab -->
+      <div id="eligTab-short" class="elig-tab-content">
+        <div class="util-notice" style="background:#fff7e6;border-left-color:#f5a623;">
+          <i class="fas fa-bolt" style="color:#f5a623;"></i>
+          Short courses are primarily designed for CAA/PAA employees, aviation industry professionals, and government nominees. Some courses are open to sponsored candidates from other organizations.
+        </div>
+        <div class="elig-program-card">
+          <div class="elig-prog-header" style="border-left:4px solid #c0392b;">
+            <div class="elig-prog-icon" style="background:#fde8e8;color:#c0392b;"><i class="fas fa-fire-extinguisher"></i></div>
+            <div>
+              <div class="elig-prog-name">Aerodrome Fire Fighting Courses</div>
+              <div class="elig-prog-duration">1–5 Weeks</div>
+            </div>
+          </div>
+          <div class="elig-criteria-list">
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Matriculation (SSC) minimum qualification</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Physically fit — medical clearance required</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Nominated by employing organization (CAA/PAA/Airport Authority)</span></div>
+          </div>
+        </div>
+        <div class="elig-program-card">
+          <div class="elig-prog-header" style="border-left:4px solid #1a5fa6;">
+            <div class="elig-prog-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-headset"></i></div>
+            <div>
+              <div class="elig-prog-name">ATC / ANS / Management Courses</div>
+              <div class="elig-prog-duration">1–8 Weeks</div>
+            </div>
+          </div>
+          <div class="elig-criteria-list">
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Intermediate (FSc/FA) or equivalent for officer-level courses</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Matriculation for staff-level courses</span></div>
+            <div class="elig-criteria-item"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span>Official nomination letter from parent organization mandatory</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="util-info-box" style="margin-top:20px;">
+        <div class="util-info-row"><i class="fas fa-phone" style="color:#1e8e3e;"></i><span>Admissions Office: <strong>+92 22 9260310-19</strong></span></div>
+        <div class="util-info-row"><i class="fas fa-envelope" style="color:#1e8e3e;"></i><span>Email: <strong>AdID.Academics@paa.gov.pk</strong></span></div>
+        <div class="util-info-row"><i class="fas fa-paper-plane" style="color:#1e8e3e;"></i><a href="/Account/Register" style="color:#1a5fa6;font-weight:600;">Apply Online Now →</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REQUIRED DOCUMENTS MODAL ===== -->
+<div class="util-modal-backdrop" id="reqDocsModal" onclick="closeUtilModal('reqDocsModal')">
+  <div class="util-modal util-modal--wide" onclick="event.stopPropagation()">
+    <div class="util-modal-header" style="background:linear-gradient(135deg,#1e3a5f,#0b5394);">
+      <div class="util-modal-icon"><i class="fas fa-file-upload"></i></div>
+      <div>
+        <div class="util-modal-title">Required Documents</div>
+        <div class="util-modal-sub">Checklist for General Admissions, Academic Faculties &amp; Professional Schools</div>
+      </div>
+      <button class="util-close-btn" onclick="closeUtilModal('reqDocsModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="util-modal-body">
+      <div class="util-notice">
+        <i class="fas fa-exclamation-triangle"></i>
+        Incomplete applications will not be processed. Ensure all documents are attested by a Gazetted Officer or relevant authority before submission. Bring originals along with 2 sets of attested photocopies.
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="rdoc-tabs">
+        <button class="rdoc-tab active" onclick="switchRdocTab(this,'general')"><i class="fas fa-id-card"></i> General Checklist</button>
+        <button class="rdoc-tab" onclick="switchRdocTab(this,'faculties')"><i class="fas fa-graduation-cap"></i> Academic Faculties</button>
+        <button class="rdoc-tab" onclick="switchRdocTab(this,'schools')"><i class="fas fa-school"></i> Professional Schools</button>
+        <button class="rdoc-tab" onclick="switchRdocTab(this,'special')"><i class="fas fa-certificate"></i> Quotas &amp; Special</button>
+      </div>
+
+      <!-- Tab 1: General Checklist -->
+      <div id="rdocTab-general" class="rdoc-tab-content active">
+        <div class="rdoc-columns">
+          <div class="rdoc-col">
+            <div class="rdoc-section-title"><i class="fas fa-id-card"></i> Identity &amp; Personal Documents</div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">CNIC / B-Form (Applicant)</div>
+              <div class="rdoc-item-note">Attested photocopy (bring original at interview)</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">CNIC of Father / Guardian</div>
+              <div class="rdoc-item-note">Attested photocopy of valid national identity card</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">4 Recent Passport-Size Photographs</div>
+              <div class="rdoc-item-note">White background, not older than 3 months</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">Domicile Certificate &amp; PRC</div>
+              <div class="rdoc-item-note">Form C / Form D for provincial quota &amp; merit verification</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">Character / Leaving Certificate</div>
+              <div class="rdoc-item-note">Issued by head of last attended institution</div>
+            </div>
+          </div>
+          <div class="rdoc-col">
+            <div class="rdoc-section-title"><i class="fas fa-graduation-cap"></i> Academic &amp; Financial Records</div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">Application Processing Fee Challan</div>
+              <div class="rdoc-item-note">Original paid challan receipt from designated bank</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">Matriculation Certificate &amp; DMC</div>
+              <div class="rdoc-item-note">Attested photocopy showing marks/grades &amp; Science group</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">Intermediate Certificate &amp; DMC</div>
+              <div class="rdoc-item-note">FSc / FA / ICS / A-Levels or IBCC Equivalence</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">Entry Test Result / Score Card</div>
+              <div class="rdoc-item-note">AU Entry Test / NTS / GAT score meeting cutoff</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Mandatory</span>
+              <div class="rdoc-item-name">Affidavit &amp; Undertaking Form</div>
+              <div class="rdoc-item-note">On stamp paper (specimen available in Downloads)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Academic Faculties -->
+      <div id="rdocTab-faculties" class="rdoc-tab-content">
+        <div class="util-notice" style="background:#e8f0fe;border-left-color:#1a5fa6;">
+          <i class="fas fa-graduation-cap" style="color:#1a5fa6;"></i>
+          Document requirements for all academic degree programs (BS, MS, MBA &amp; PhD) across the 4 faculties of NAU.
+        </div>
+
+        <!-- Overall Academic Faculties Master Checklist -->
+        <div class="rdoc-prog-card" style="border:2px solid #0b2c4d;box-shadow:0 4px 14px rgba(11,44,77,0.08);">
+          <div class="rdoc-prog-header" style="background:linear-gradient(135deg,#0b2c4d,#1e3a5f);color:#fff;border-left:5px solid #1e8e3e;padding:16px 20px;">
+            <div class="rdoc-prog-icon" style="background:rgba(255,255,255,0.18);color:#fff;width:42px;height:42px;font-size:20px;"><i class="fas fa-university"></i></div>
+            <div>
+              <div class="rdoc-prog-name" style="color:#fff;font-size:15px;letter-spacing:0.3px;">Overall Academic Faculties Required Documents</div>
+              <div class="rdoc-prog-sub" style="color:#cbd5e1;font-size:12px;">Universal Base Document Checklist applicable to ALL students applying for degree programs in any Faculty</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list" style="padding:16px 20px;">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>Matriculation / SSC Marksheet &amp; Sanad:</strong> Photocopies from BISE showing Science group subjects (bring originals at interview).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>Intermediate / HSSC / FSc / ICS Marksheet &amp; Certificate:</strong> Attested DMC (Pre-Engineering / Pre-Medical / ICS) or A-Levels with IBCC Equivalence Certificate.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>16-Year Bachelor's Degree &amp; Official Transcripts (for MS/MBA/PhD):</strong> Attested by Higher Education Commission (HEC) Pakistan.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>Applicant CNIC / Smart B-Form &amp; Father/Guardian CNIC:</strong> 2 sets of attested photocopies of valid National Identity Cards.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>Provincial Domicile Certificate &amp; PRC (Form C / Form D):</strong> Valid domicile certificate of candidate or father for merit &amp; provincial quota verification.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>Character &amp; College Leaving Certificate:</strong> Issued by the Principal or Head of institution last attended.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>6 Passport-Size Photographs:</strong> Recent photographs with white background (applicant's name written on back).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>Entry Test Admit Card &amp; Scorecard:</strong> Official scorecard from NAU Admission Test, NTS NAT/GAT, or HAT examination.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Mandatory</strong><strong>Paid Processing Fee Receipt &amp; Stamped Undertaking:</strong> Original paid bank challan receipt and signed affidavit on RS. 100 stamp paper.</span></div>
+          </div>
+        </div>
+
+        <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#0b2c4d;text-transform:uppercase;letter-spacing:0.5px;margin:20px 0 12px 2px;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-layer-group" style="color:#1e8e3e;"></i> Faculty-Specific Additional Requirements
+        </div>
+
+        <!-- Faculty of Engineering -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #1a5fa6;">
+            <div class="rdoc-prog-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-cogs"></i></div>
+            <div>
+              <div class="rdoc-prog-name">Faculty of Engineering (BE ANS / BE Airport Engineering)</div>
+              <div class="rdoc-prog-sub">4-Year Degree Programs &bull; PEC / Higher Education Accredited</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>FSc Pre-Engineering / A-Levels DMC:</strong> Minimum 50% marks with Mathematics, Physics &amp; Chemistry.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>IBCC Equivalence Certificate:</strong> Mandatory for Cambridge / A-Levels candidates.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>AU / NTS Engineering Entry Test:</strong> Valid scorecard meeting qualifying merit criteria.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge med">Medical</strong><strong>Medical Fitness Certificate:</strong> Standard general physical fitness &amp; color vision clearance.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>Matriculation Science DMC &amp; Sanad:</strong> Attested photocopies from BISE.</span></div>
+          </div>
+        </div>
+
+        <!-- Faculty of IT & Cyber Security -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #8b5cf6;">
+            <div class="rdoc-prog-icon" style="background:#f3e8ff;color:#8b5cf6;"><i class="fas fa-laptop-code"></i></div>
+            <div>
+              <div class="rdoc-prog-name">Faculty of IT &amp; Cyber Security (BS Aviation Cyber Security)</div>
+              <div class="rdoc-prog-sub">4-Year Degree Program &bull; Critical Aviation IT Infrastructure Focus</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>FSc Pre-Engineering / ICS / A-Levels DMC:</strong> Minimum 50% marks with Math/Computer Science.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>Matriculation Marksheet &amp; Certificate:</strong> Attested copy with Science subjects.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>AU / NTS Entry Test Result:</strong> Official scorecard.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>CNIC / B-Form &amp; Father's CNIC:</strong> Verified photocopies.</span></div>
+          </div>
+        </div>
+
+        <!-- Faculty of Aviation Operations -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #1e8e3e;">
+            <div class="rdoc-prog-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-plane-departure"></i></div>
+            <div>
+              <div class="rdoc-prog-name">Faculty of Aviation Operations (BS Aviation Management / Operations)</div>
+              <div class="rdoc-prog-sub">4-Year Degree Programs &bull; Flight Operations &amp; Air Traffic Management</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>Intermediate (FA / FSc / ICS / I.Com) DMC:</strong> Minimum 45% marks.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>AU Entry Test Scorecard:</strong> Passing score meeting merit threshold.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge med">Medical</strong><strong>Medical Fitness &amp; Color Perception Certificate:</strong> Essential for aviation operations streams.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>College Leaving &amp; Character Certificate:</strong> Attested from previous institution.</span></div>
+          </div>
+        </div>
+
+        <!-- Faculty of Management Sciences -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #f5a623;">
+            <div class="rdoc-prog-icon" style="background:#fff7e6;color:#f5a623;"><i class="fas fa-chart-line"></i></div>
+            <div>
+              <div class="rdoc-prog-name">Faculty of Management Sciences (MBA Aviation Management)</div>
+              <div class="rdoc-prog-sub">2-Year Postgraduate Program &bull; Regular &amp; Executive Tracks</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>16-Year Bachelor's Degree &amp; Transcripts:</strong> Attested by Higher Education Commission (HEC).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>GAT General / AU Postgraduate Test:</strong> Valid scorecard with minimum 50% percentile.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge opt">Executive</strong><strong>Work Experience Letters &amp; Resume:</strong> Minimum 2 years aviation/corporate experience (Executive track).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge nom">Employed</strong><strong>No Objection Certificate (NOC):</strong> Required from current employer if in active service.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Professional Schools -->
+      <div id="rdocTab-schools" class="rdoc-tab-content">
+        <div class="util-notice" style="background:#e6f4ea;border-left-color:#1e8e3e;">
+          <i class="fas fa-school" style="color:#1e8e3e;"></i>
+          Document requirements for professional civil aviation courses, PCAA ratings, and ICAO TRAINAIR PLUS programs categorized by applicant type.
+        </div>
+
+        <!-- Student Category Breakdown Banner -->
+        <div class="rdoc-columns" style="margin-bottom:18px;">
+          <!-- Category 1: Nominated / Deputed -->
+          <div class="rdoc-col" style="background:#f0f4f9;border:1.5px solid #1a5fa6;border-radius:10px;padding:14px;">
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#1a5fa6;margin-bottom:6px;display:flex;align-items:center;gap:7px;">
+              <i class="fas fa-user-shield"></i> 1. Nominated / Departmental Trainees
+            </div>
+            <div style="font-size:11.5px;color:#475569;line-height:1.45;">
+              For Officers &amp; Staff deputed by <strong>PCAA, PAF, Sponsoring Airlines</strong> or Govt agencies:
+            </div>
+            <ul style="margin:6px 0 0 14px;padding:0;font-size:11px;color:#334155;line-height:1.5;">
+              <li>Official Deputation / Nomination Letter</li>
+              <li>Departmental NOC &amp; Service ID Card copy</li>
+              <li>Class 1 / Class 3 Aviation Medical Clearance</li>
+              <li>Departmental Security Clearance &amp; Service Records</li>
+            </ul>
+          </div>
+
+          <!-- Category 2: Direct / Private Candidates -->
+          <div class="rdoc-col" style="background:#fbf5ff;border:1.5px solid #7e22ce;border-radius:10px;padding:14px;">
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#7e22ce;margin-bottom:6px;display:flex;align-items:center;gap:7px;">
+              <i class="fas fa-user-graduate"></i> 2. Direct / Self-Finance Private Students
+            </div>
+            <div style="font-size:11.5px;color:#475569;line-height:1.45;">
+              For individual candidates enrolling on self-finance / open merit basis:
+            </div>
+            <ul style="margin:6px 0 0 14px;padding:0;font-size:11px;color:#334155;line-height:1.5;">
+              <li>CNIC / B-Form &amp; 4 Passport Photographs</li>
+              <li>Attested Educational Marksheets &amp; Certificates</li>
+              <li>Police Character Verification Certificate</li>
+              <li>Registered Medical Practitioner Fitness Certificate</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Category 3: International Participants -->
+        <div style="background:#f0f9ff;border:1.5px solid #0284c7;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+          <i class="fas fa-globe-americas" style="font-size:22px;color:#0284c7;flex-shrink:0;"></i>
+          <div>
+            <strong style="font-size:12.5px;color:#0369a1;display:block;">3. International &amp; Foreign ICAO Participants:</strong>
+            <span style="font-size:11.5px;color:#334155;">Foreign Civil Aviation Officers require: Valid Passport (min 6 months validity), Ministry of Foreign Affairs NOC, Training Visa, ICAO ELP Rating Certificate (Level 4+), and Medical Insurance.</span>
+          </div>
+        </div>
+
+        <!-- School of Air Navigation Services (ANS) -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #0b2c4d;">
+            <div class="rdoc-prog-icon" style="background:#e8f0fe;color:#0b2c4d;"><i class="fas fa-broadcast-tower"></i></div>
+            <div>
+              <div class="rdoc-prog-name">School of Air Navigation Services (ANS)</div>
+              <div class="rdoc-prog-sub">Basic ATC, Radar / ATSEP, Flight Procedure Design, SAR &amp; ELP Courses</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge nom">Nominated</strong><strong>Official Nomination / Deputation Letter:</strong> Mandatory from PCAA, PAF, or sponsoring civil aviation agency (for deputed officers).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge priv">Direct Private</strong><strong>CNIC &amp; Educational Credentials:</strong> Attested Intermediate/BSc Marksheet + Registration Fee Challan (for self-finance trainees).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge med">Medical</strong><strong>Class 1 / Class 3 Aviation Medical Clearance:</strong> Mandatory for ATC &amp; Radar trainees from authorized CAA Medical Board.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge opt">Rating</strong><strong>ICAO English Language Proficiency (ELP) Rating:</strong> Level 4+ Required for advanced ATC ratings &amp; surveillance courses.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Required</strong><strong>Educational Certificates &amp; DMCs:</strong> Intermediate (Staff / Technicians) / Graduation (Officers).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Security</strong><strong>Departmental Security Clearance &amp; Police Verification:</strong> Attested copies for airside access.</span></div>
+          </div>
+        </div>
+
+        <!-- School of Airport Services -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #c0392b;">
+            <div class="rdoc-prog-icon" style="background:#fde8e8;color:#c0392b;"><i class="fas fa-fire-extinguisher"></i></div>
+            <div>
+              <div class="rdoc-prog-name">School of Airport Services</div>
+              <div class="rdoc-prog-sub">Aerodrome Rescue &amp; Firefighting (ARFF), Ground Handling &amp; Airport Operations</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge nom">Nominated</strong><strong>Official Nomination Letter:</strong> From sponsoring airport operator, airline, or PCAA authority (for deputed staff).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge priv">Direct Private</strong><strong>CNIC, Matric / FSc DMC &amp; Course Fee Receipt:</strong> Mandatory for private ground handling candidates.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge med">Physical</strong><strong>Physical Fitness &amp; Comprehensive Medical Clearance:</strong> Strict physical endurance clearance required for ARFF.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Security</strong><strong>Airport Security Pass &amp; Background Vetting Form:</strong> Essential for airside/apron training access.</span></div>
+          </div>
+        </div>
+
+        <!-- School of Regulatory Services -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #00838f;">
+            <div class="rdoc-prog-icon" style="background:#e0f7fa;color:#00838f;"><i class="fas fa-scale-balanced"></i></div>
+            <div>
+              <div class="rdoc-prog-name">School of Regulatory Services</div>
+              <div class="rdoc-prog-sub">Aviation Safety Management (SMS), Auditing Techniques &amp; ICAO Annexes 13/14/17</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge nom">Nominated</strong><strong>Official Departmental Nomination:</strong> From parent airline, corporate operator, or civil aviation regulatory authority.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge opt">License</strong><strong>Aviation Personnel License / Credentials:</strong> Copy of PCAA license, ATSEP, or Flight Crew certificate.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge intl">International</strong><strong>Valid Passport &amp; Official Visa Documents:</strong> Mandatory for International &amp; ICAO foreign participants.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Experience</strong><strong>Curriculum Vitae (CV) &amp; Safety Audit Experience Portfolio.</strong></span></div>
+          </div>
+        </div>
+
+        <!-- School of Aviation Management -->
+        <div class="rdoc-prog-card">
+          <div class="rdoc-prog-header" style="border-left:4px solid #e67e22;">
+            <div class="rdoc-prog-icon" style="background:#fef5e7;color:#e67e22;"><i class="fas fa-briefcase"></i></div>
+            <div>
+              <div class="rdoc-prog-name">School of Aviation Management</div>
+              <div class="rdoc-prog-sub">Executive Aviation Management, Airport Economics, Leadership &amp; CPD Courses</div>
+            </div>
+          </div>
+          <div class="rdoc-doc-list">
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge nom">Nominated</strong><strong>Sponsoring Organization Nomination Letter:</strong> From airline, airport authority, or corporate entity (if sponsored).</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge priv">Direct Private</strong><strong>Degree Copy &amp; CNIC:</strong> Graduation degree, CNIC &amp; Fee receipt for self-finance executive candidates.</span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">Resume</strong><strong>Professional Resume / CV &amp; Proof of Current Aviation Employment.</strong></span></div>
+            <div class="rdoc-doc-row"><i class="fas fa-check-circle" style="color:#1e8e3e;"></i><span><strong class="rdoc-tag-badge req">ID</strong><strong>CNIC / Official Employee Service Card / Passport Copy.</strong></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Special Quotas & Foreign Documents -->
+      <div id="rdocTab-special" class="rdoc-tab-content">
+        <div class="util-notice" style="background:#fff7e6;border-left-color:#f5a623;">
+          <i class="fas fa-certificate" style="color:#f5a623;"></i>
+          Additional documents required for special reserved seats, employee quotas, foreign applicants, and religious concessions.
+        </div>
+
+        <div class="rdoc-columns">
+          <div class="rdoc-col">
+            <div class="rdoc-section-title"><i class="fas fa-users-gear"></i> CAA / PAA Employee Quota</div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Quota</span>
+              <div class="rdoc-item-name">Parent Service Certificate &amp; PAA ID Card</div>
+              <div class="rdoc-item-note">Proof of active or retired CAA/PAA employment</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Quota</span>
+              <div class="rdoc-item-name">CAA HR Nomination &amp; Endorsement Form</div>
+              <div class="rdoc-item-note">Duly signed and stamped by CAA HR Directorate</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Quota</span>
+              <div class="rdoc-item-name">Relationship Proof (Birth Certificate / B-Form)</div>
+              <div class="rdoc-item-note">Showing candidate as legitimate son/daughter</div>
+            </div>
+
+            <div class="rdoc-section-title" style="margin-top:16px;"><i class="fas fa-book-quran"></i> Hafiz-e-Quran &amp; Extra Merit</div>
+            <div class="rdoc-item optional">
+              <span class="rdoc-badge opt">Merit Marks</span>
+              <div class="rdoc-item-name">Hafiz-e-Quran Sanad / Certificate</div>
+              <div class="rdoc-item-note">From recognized Wifaq-ul-Madaris / Board (for 20 extra merit marks)</div>
+            </div>
+            <div class="rdoc-item optional">
+              <span class="rdoc-badge opt">Assessment</span>
+              <div class="rdoc-item-name">University Oral Assessment Record</div>
+              <div class="rdoc-item-note">Conducted by NAU Religious Committee on interview day</div>
+            </div>
+          </div>
+
+          <div class="rdoc-col">
+            <div class="rdoc-section-title"><i class="fas fa-globe"></i> Foreign &amp; Overseas Students</div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Equivalence</span>
+              <div class="rdoc-item-name">IBCC Equivalence Certificate</div>
+              <div class="rdoc-item-note">Mandatory for O-Levels / A-Levels / Foreign High School Diplomas</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">Immigration</span>
+              <div class="rdoc-item-name">Valid Passport &amp; Student Visa Documents</div>
+              <div class="rdoc-item-note">For international and overseas applicants</div>
+            </div>
+            <div class="rdoc-item required">
+              <span class="rdoc-badge req">NOC</span>
+              <div class="rdoc-item-name">Ministry of Interior &amp; HEC Security Clearance</div>
+              <div class="rdoc-item-note">Mandatory clearance for foreign nationals</div>
+            </div>
+
+            <div class="rdoc-section-title" style="margin-top:16px;"><i class="fas fa-wheelchair"></i> Reserved Categories (Disability / Sports)</div>
+            <div class="rdoc-item optional">
+              <span class="rdoc-badge opt">Disability</span>
+              <div class="rdoc-item-name">Official Disability Certificate</div>
+              <div class="rdoc-item-note">Issued by National/Provincial Council for Disabled Persons</div>
+            </div>
+            <div class="rdoc-item optional">
+              <span class="rdoc-badge opt">Sports</span>
+              <div class="rdoc-item-name">National / Provincial Sports Certificates</div>
+              <div class="rdoc-item-note">Recognized sports board certificates for sports quota seats</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rdoc-tip">
+        <i class="fas fa-lightbulb"></i>
+        <div><strong>Pro Tip:</strong> Bring all original credentials along with 2 sets of attested photocopies and 4 passport-size photos on your document verification day. Online applicants must upload clear scanned copies (min. 300 DPI in PDF or JPG format).</div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+        <a href="/Account/Register" class="rdoc-action-btn primary"><i class="fas fa-paper-plane"></i> Start Application</a>
+        <a href="#" onclick="closeUtilModal('reqDocsModal');openDownloads(event)" class="rdoc-action-btn secondary"><i class="fas fa-download"></i> Download Forms</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PROFESSIONAL COURSES MODAL ===== -->
+<div class="util-modal-backdrop" id="profCoursesModal" onclick="closeUtilModal('profCoursesModal')">
+  <div class="util-modal util-modal--wide" onclick="event.stopPropagation()">
+    <div class="util-modal-header" style="background:linear-gradient(135deg,#0b3d6b,#1565c0);">
+      <div class="util-modal-icon"><i class="fas fa-user-graduate"></i></div>
+      <div>
+        <div class="util-modal-title">Professional Courses</div>
+        <div class="util-modal-sub">PCAA Type Ratings &amp; ICAO-Endorsed Programs</div>
+      </div>
+      <button class="util-close-btn" onclick="closeUtilModal('profCoursesModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="util-modal-body">
+      <div class="pc-tabs">
+        <button class="pc-tab active" id="pcTab-pcaa-btn" onclick="switchPcTab(this,'pcaa')"><i class="fas fa-user-graduate"></i> PCAA Type Ratings</button>
+        <button class="pc-tab" id="pcTab-icao-btn" onclick="switchPcTab(this,'icao')"><i class="fas fa-globe"></i> ICAO Courses</button>
+      </div>
+      <!-- PCAA Tab -->
+      <div id="pcTab-pcaa" class="pc-tab-content active">
+        <div class="util-notice" style="background:#e8f0fe;border-left-color:#1a5fa6;">
+          <i class="fas fa-certificate" style="color:#1a5fa6;"></i>
+          PCAA Type Rating courses are fully endorsed and regulated by the Pakistan Civil Aviation Authority. Certificates are recognised for CAA licensing and regulatory compliance purposes.
+        </div>
+        <div class="pc-course-grid">
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-plane"></i></div>
+            <div class="pc-course-name">ATR 42/72 Type Rating</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 6 Weeks</span><span><i class="fas fa-certificate"></i> PCAA Endorsed</span></div>
+            <div class="pc-course-desc">Ground school and simulator sessions for ATR turboprop operations. Includes systems, limitations, and emergency procedures.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-plane-circle-check"></i></div>
+            <div class="pc-course-name">Boeing 737 Classic Type Rating</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 8 Weeks</span><span><i class="fas fa-certificate"></i> PCAA Endorsed</span></div>
+            <div class="pc-course-desc">Comprehensive type rating covering B737-300/400/500 series. FFS sessions included at approved simulator facility.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#fff7e6;color:#f5a623;"><i class="fas fa-helicopter"></i></div>
+            <div class="pc-course-name">Airbus A320 Family Familiarisation</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 10 Weeks</span><span><i class="fas fa-certificate"></i> PCAA Endorsed</span></div>
+            <div class="pc-course-desc">Full A320/A319/A321 type rating course with fly-by-wire systems, FMGC operations, and CRM training.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#fde8e8;color:#c0392b;"><i class="fas fa-tower-broadcast"></i></div>
+            <div class="pc-course-name">ATC Procedures (ICAO Doc 4444)</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 4 Weeks</span><span><i class="fas fa-certificate"></i> PCAA Endorsed</span></div>
+            <div class="pc-course-desc">Standardised ATC procedures per PANS-ATM. Radar vectoring, separation minima, and emergency handling.</div>
+          </div>
+        </div>
+      </div>
+      <!-- ICAO Tab -->
+      <div id="pcTab-icao" class="pc-tab-content">
+        <div class="util-notice" style="background:#e6f4ea;border-left-color:#1e8e3e;">
+          <i class="fas fa-globe" style="color:#1e8e3e;"></i>
+          ICAO-recognised courses follow TRAINAIR PLUS standards and are accepted internationally. These certificates are valid for regulatory and professional recognition across ICAO member states.
+        </div>
+        <div class="pc-course-grid">
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-shield-halved"></i></div>
+            <div class="pc-course-name">Aviation Safety Management (SMS)</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 1–2 Weeks</span><span><i class="fas fa-globe"></i> ICAO Standard</span></div>
+            <div class="pc-course-desc">Understanding and implementing Safety Management Systems per ICAO Annex 19 and Doc 9859.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#f3e8ff;color:#8b5cf6;"><i class="fas fa-people-group"></i></div>
+            <div class="pc-course-name">Crew Resource Management (CRM)</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 1 Week</span><span><i class="fas fa-globe"></i> ICAO Standard</span></div>
+            <div class="pc-course-desc">Human factors, decision making, and crew coordination for flight and ATC operations teams.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-search"></i></div>
+            <div class="pc-course-name">Aviation Auditing Techniques</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 1 Week</span><span><i class="fas fa-globe"></i> ICAO / USOAP</span></div>
+            <div class="pc-course-desc">Regulatory audit methodology aligned with ICAO Universal Safety Oversight Audit Programme.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#fff7e6;color:#f5a623;"><i class="fas fa-magnifying-glass-chart"></i></div>
+            <div class="pc-course-name">Aircraft Accident Investigation (Annex 13)</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 1 Week</span><span><i class="fas fa-globe"></i> ICAO Standard</span></div>
+            <div class="pc-course-desc">Accident and incident investigation procedures per ICAO Annex 13, evidence collection and reporting.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#fde8e8;color:#c0392b;"><i class="fas fa-lock"></i></div>
+            <div class="pc-course-name">Aviation Security (Annex 17)</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 1 Week</span><span><i class="fas fa-globe"></i> ICAO Standard</span></div>
+            <div class="pc-course-desc">Aviation security standards, threat assessment, and countermeasures per ICAO Annex 17 and Doc 8973.</div>
+          </div>
+          <div class="pc-course-card">
+            <div class="pc-course-icon" style="background:#e8f8f5;color:#16a085;"><i class="fas fa-leaf"></i></div>
+            <div class="pc-course-name">Aviation &amp; Climate Change</div>
+            <div class="pc-course-meta"><span><i class="fas fa-clock"></i> 1 Week</span><span><i class="fas fa-globe"></i> ICAO Standard</span></div>
+            <div class="pc-course-desc">CORSIA framework, carbon offsetting, sustainable aviation fuels and environmental impact management.</div>
+          </div>
+        </div>
+      </div>
+      <div class="util-info-box" style="margin-top:20px;">
+        <div class="util-info-row"><i class="fas fa-envelope" style="color:#1e8e3e;"></i><span>Enquiries: <strong>AdID.Academics@paa.gov.pk</strong></span></div>
+        <div class="util-info-row"><i class="fas fa-phone" style="color:#1e8e3e;"></i><span>Training Office: <strong>+92 22 9260310-19</strong></span></div>
+        <div class="util-info-row"><i class="fas fa-calendar-alt" style="color:#1e8e3e;"></i><a href="#" onclick="closeUtilModal('profCoursesModal');openCalendar(event)" style="color:#1a5fa6;font-weight:600;">View full training calendar →</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EVENTS & ACTIVITIES MODAL ===== -->
+<div class="util-modal-backdrop" id="eventsModal" onclick="closeUtilModal('eventsModal')">
+  <div class="util-modal util-modal--wide" onclick="event.stopPropagation()">
+    <div class="util-modal-header" style="background:linear-gradient(135deg,#0b2c4d,#1e8e3e);">
+      <div class="util-modal-icon"><i class="fas fa-calendar-check"></i></div>
+      <div>
+        <div class="util-modal-title">Events &amp; Activities</div>
+        <div class="util-modal-sub">Seminars, Cultural Days &amp; Student Life — NAU 2026</div>
+      </div>
+      <button class="util-close-btn" onclick="closeUtilModal('eventsModal')" aria-label="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="util-modal-body">
+      <div class="ev-tabs">
+        <button class="ev-tab active" onclick="switchEvTab(this,'upcoming')"><i class="fas fa-clock"></i> Upcoming</button>
+        <button class="ev-tab" onclick="switchEvTab(this,'cpd')"><i class="fas fa-chalkboard-teacher"></i> CPD &amp; Seminars</button>
+        <button class="ev-tab" onclick="switchEvTab(this,'student')"><i class="fas fa-users"></i> Student Activities</button>
+        <button class="ev-tab" onclick="switchEvTab(this,'past')"><i class="fas fa-history"></i> Past Events</button>
+      </div>
+      <!-- UPCOMING -->
+      <div id="evTab-upcoming" class="ev-tab-content active">
+        <div class="ev-list">
+          <div class="ev-card">
+            <div class="ev-date-box" style="background:#1e8e3e;"><span class="ev-month">SEP</span><span class="ev-day">15</span></div>
+            <div class="ev-body">
+              <span class="ev-badge" style="background:#e6f4ea;color:#1e7e34;">Seminar</span>
+              <div class="ev-title">Aviation Safety &amp; Flight Operations Seminar 2026</div>
+              <div class="ev-meta-row">
+                <span><i class="fas fa-map-marker-alt"></i> NAU Auditorium, Main Campus</span>
+                <span><i class="far fa-clock"></i> 10:00 AM – 01:00 PM</span>
+              </div>
+              <div class="ev-desc">Annual aviation safety seminar featuring guest speakers from PCAA, ICAO, and international aviation authorities. Open to all students and faculty.</div>
+            </div>
+          </div>
+          <div class="ev-card">
+            <div class="ev-date-box" style="background:#1a5fa6;"><span class="ev-month">SEP</span><span class="ev-day">28</span></div>
+            <div class="ev-body">
+              <span class="ev-badge" style="background:#e8f0fe;color:#1a5fa6;">Workshop</span>
+              <div class="ev-title">Advanced Aircraft Maintenance &amp; Avionics Workshop</div>
+              <div class="ev-meta-row">
+                <span><i class="fas fa-map-marker-alt"></i> Hangar Training Facility</span>
+                <span><i class="far fa-clock"></i> 09:00 AM – 03:00 PM</span>
+              </div>
+              <div class="ev-desc">Hands-on workshop covering line maintenance procedures, tool handling, and safety compliance. Mandatory for BE AME students.</div>
+            </div>
+          </div>
+          <div class="ev-card">
+            <div class="ev-date-box" style="background:#c87800;"><span class="ev-month">OCT</span><span class="ev-day">12</span></div>
+            <div class="ev-body">
+              <span class="ev-badge" style="background:#fff7e6;color:#c87800;">Career Day</span>
+              <div class="ev-title">Aviation Career Day &amp; Industry Interaction 2026</div>
+              <div class="ev-meta-row">
+                <span><i class="fas fa-map-marker-alt"></i> NAU Campus Grounds</span>
+                <span><i class="far fa-clock"></i> 11:00 AM – 02:00 PM</span>
+              </div>
+              <div class="ev-desc">Meet recruiters from PIA, AirBlue, PCAA, and aviation MRO companies. Bring your CV. Final-year students are strongly encouraged to attend.</div>
+            </div>
+          </div>
+          <div class="ev-card">
+            <div class="ev-date-box" style="background:#0b2c4d;"><span class="ev-month">NOV</span><span class="ev-day">14</span></div>
+            <div class="ev-body">
+              <span class="ev-badge" style="background:#e8f0fe;color:#0b2c4d;">Cultural</span>
+              <div class="ev-title">Annual Aviation Excellence Gala &amp; Convocation Prep</div>
+              <div class="ev-meta-row">
+                <span><i class="fas fa-map-marker-alt"></i> Main Parade Ground, NAU</span>
+                <span><i class="far fa-clock"></i> 08:00 AM – 09:30 AM</span>
+              </div>
+              <div class="ev-desc">Annual university excellence ceremony celebrating top academic achievers and student leaders.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- CPD & SEMINARS -->
+      <div id="evTab-cpd" class="ev-tab-content">
+        <div class="util-notice" style="background:#f0f6ff;border-left-color:#1a5fa6;">
+          <i class="fas fa-info-circle" style="color:#1a5fa6;"></i>
+          CPD sessions are open to all staff and nominated industry professionals. Certificates of participation are issued upon completion of each session.
+        </div>
+        <div class="ev-list">
+          <div class="ev-card">
+            <div class="ev-date-box" style="background:#1a5fa6;"><span class="ev-month">APR</span><span class="ev-day">17</span></div>
+            <div class="ev-body">
+              <span class="ev-badge ev-badge--past">Completed</span>
+              <div class="ev-title">14th ESP — Experience Sharing Platform</div>
+              <div class="ev-meta-row">
+                <span><i class="fas fa-map-marker-alt"></i> AU Conference Hall</span>
+                <span><i class="far fa-calendar"></i> April 17, 2025</span>
+              </div>
+              <div class="ev-desc">Experience Sharing Platform bringing together aviation professionals across Pakistan for knowledge exchange and best practice discussions facilitated by PCAA and PAA experts.</div>
+            </div>
+          </div>
+          <div class="ev-card">
+            <div class="ev-date-box" style="background:#1a5fa6;"><span class="ev-month">FEB</span><span class="ev-day">20</span></div>
+            <div class="ev-body">
+              <span class="ev-badge ev-badge--past">Completed</span>
+              <div class="ev-title">12th CPD — Human Factors in Aviation Safety Engineering</div>
+              <div class="ev-meta-row">
+                <span><i class="fas fa-map-marker-alt"></i> AU Auditorium</span>
+                <span><i class="far fa-calendar"></i> February 20, 2025</span>
+              </div>
+              <div class="ev-desc">Focused session on human factors methodologies in aviation safety engineering, covering ICAO Annex 19 guidelines and real-world case studies.</div>
+            </div>
+          </div>
+          <div class="ev-card">
+            <div class="ev-date-box" style="background:#1a5fa6;"><span class="ev-month">NOV</span><span class="ev-day">14</span></div>
+            <div class="ev-body">
+              <span class="ev-badge ev-badge--past">Completed</span>
+              <div class="ev-title">11th CPD — Conflict Resolution &amp; Negotiation</div>
+              <div class="ev-meta-row">
+                <span><i class="fas fa-map-marker-alt"></i> AU Conference Hall</span>
+                <span><i class="far fa-calendar"></i> November 14, 2024</span>
+              </div>
+              <div class="ev-desc">Interactive CPD session on conflict resolution strategies and negotiation skills for aviation managers and supervisors.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- STUDENT ACTIVITIES -->
+      <div id="evTab-student" class="ev-tab-content">
+        <div class="ev-activity-grid">
+          <div class="ev-activity-card">
+            <div class="ev-activity-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-futbol"></i></div>
+            <div class="ev-activity-name">Sports Week</div>
+            <div class="ev-activity-desc">Annual inter-department sports competition including cricket, football, and table tennis. All enrolled students may participate and represent their faculty.</div>
+            <div class="ev-activity-meta"><i class="far fa-calendar"></i> Every November</div>
+          </div>
+          <div class="ev-activity-card">
+            <div class="ev-activity-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-plane-departure"></i></div>
+            <div class="ev-activity-name">Airport Visit &amp; Familiarisation Trip</div>
+            <div class="ev-activity-desc">Organised visits to Hyderabad Airport and other CAA-operated facilities for operational exposure. Final-year students get priority placement.</div>
+            <div class="ev-activity-meta"><i class="far fa-calendar"></i> Each Semester</div>
+          </div>
+          <div class="ev-activity-card">
+            <div class="ev-activity-icon" style="background:#fff7e6;color:#c87800;"><i class="fas fa-palette"></i></div>
+            <div class="ev-activity-name">Cultural Day</div>
+            <div class="ev-activity-desc">Celebration of Pakistan's cultural heritage through music, food, traditional dress, and student performances. Open to families and alumni.</div>
+            <div class="ev-activity-meta"><i class="far fa-calendar"></i> March, Annually</div>
+          </div>
+          <div class="ev-activity-card">
+            <div class="ev-activity-icon" style="background:#fde8e8;color:#c0392b;"><i class="fas fa-microscope"></i></div>
+            <div class="ev-activity-name">Science &amp; Tech Exhibition</div>
+            <div class="ev-activity-desc">Student project showcases, robotics demonstrations, and innovation presentations from all departments. Industry judges award prizes.</div>
+            <div class="ev-activity-meta"><i class="far fa-calendar"></i> May, Annually</div>
+          </div>
+          <div class="ev-activity-card">
+            <div class="ev-activity-icon" style="background:#f3e8ff;color:#8b5cf6;"><i class="fas fa-graduation-cap"></i></div>
+            <div class="ev-activity-name">Convocation Ceremony</div>
+            <div class="ev-activity-desc">Annual degree-awarding ceremony for graduating students. Families and alumni are invited. Guest speaker from PCAA or PAA leadership.</div>
+            <div class="ev-activity-meta"><i class="far fa-calendar"></i> September, Annually</div>
+          </div>
+          <div class="ev-activity-card">
+            <div class="ev-activity-icon" style="background:#e8f8f5;color:#16a085;"><i class="fas fa-handshake"></i></div>
+            <div class="ev-activity-name">Industry Guest Lectures</div>
+            <div class="ev-activity-desc">Regular sessions with aviation professionals, CAA inspectors, airline captains, and engineers sharing real-world insights directly with students.</div>
+            <div class="ev-activity-meta"><i class="far fa-calendar"></i> Monthly</div>
+          </div>
+        </div>
+      </div>
+      <!-- PAST EVENTS -->
+      <div id="evTab-past" class="ev-tab-content">
+        <div class="ev-list">
+          <div class="ev-card" style="opacity:.8;">
+            <div class="ev-date-box" style="background:#6c757d;"><span class="ev-month">MAR</span><span class="ev-day">23</span></div>
+            <div class="ev-body">
+              <span class="ev-badge ev-badge--past">Completed</span>
+              <div class="ev-title">Pakistan Day Ceremony — March 23</div>
+              <div class="ev-meta-row"><span><i class="fas fa-map-marker-alt"></i> Main Parade Ground</span><span><i class="far fa-calendar"></i> March 23, 2026</span></div>
+              <div class="ev-desc">Flag raising and national ceremony marking Pakistan Resolution Day. Attended by all students, faculty, and administrative staff.</div>
+            </div>
+          </div>
+          <div class="ev-card" style="opacity:.8;">
+            <div class="ev-date-box" style="background:#6c757d;"><span class="ev-month">FEB</span><span class="ev-day">05</span></div>
+            <div class="ev-body">
+              <span class="ev-badge ev-badge--past">Completed</span>
+              <div class="ev-title">Kashmir Solidarity Day</div>
+              <div class="ev-meta-row"><span><i class="fas fa-map-marker-alt"></i> AU Auditorium</span><span><i class="far fa-calendar"></i> February 5, 2026</span></div>
+              <div class="ev-desc">Solidarity event featuring speeches, videos, and awareness activities in support of Kashmir cause, observed university-wide.</div>
+            </div>
+          </div>
+          <div class="ev-card" style="opacity:.8;">
+            <div class="ev-date-box" style="background:#6c757d;"><span class="ev-month">DEC</span><span class="ev-day">16</span></div>
+            <div class="ev-body">
+              <span class="ev-badge ev-badge--past">Completed</span>
+              <div class="ev-title">APS Memorial Day</div>
+              <div class="ev-meta-row"><span><i class="fas fa-map-marker-alt"></i> AU Campus</span><span><i class="far fa-calendar"></i> December 16, 2025</span></div>
+              <div class="ev-desc">Annual memorial observance in honour of the APS martyrs. Candlelight vigil and prayers held across the campus.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="util-info-box" style="margin-top:20px;">
+        <div class="util-info-row"><i class="fas fa-envelope" style="color:#1e8e3e;"></i><span>Event enquiries: <strong>AdID.Academics@paa.gov.pk</strong></span></div>
+        <div class="util-info-row"><i class="fas fa-calendar-alt" style="color:#1e8e3e;"></i><a href="#" onclick="closeUtilModal('eventsModal');openCalendar(event)" style="color:#1a5fa6;font-weight:600;">View full Academic Calendar →</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NAU SPLASH SCREEN ANNOUNCEMENT MODAL ===== -->
+<div class="nau-splash-backdrop" id="nauSplashModal" onclick="if(event.target===this)closeNauSplash()">
+  <div class="nau-splash-dialog" onclick="event.stopPropagation()">
+    <button type="button" class="nau-splash-close" onclick="closeNauSplash()" aria-label="Close Announcement">
+      <i class="fas fa-times"></i>
+    </button>
+    
+    <div class="nau-splash-banner-wrap" id="nauSplashBannerWrap">
+      <img id="nauSplashImage" class="nau-splash-img" alt="Announcement Banner" style="display:none;" />
+      <div class="nau-splash-fallback-hero" id="nauSplashFallbackHero">
+        <div class="nau-splash-hero-icon" id="nauSplashHeroIcon"><i class="fas fa-bullhorn"></i></div>
+        <div class="nau-splash-pattern"></div>
+      </div>
+      <div class="nau-splash-badge-bar">
+        <span class="nau-splash-badge" id="nauSplashCategory"><i class="fas fa-bullhorn"></i> Announcement</span>
+        <span class="nau-splash-pill"><i class="fas fa-bolt"></i> Notice</span>
+      </div>
+    </div>
+
+    <div class="nau-splash-body">
+      <div class="nau-splash-meta">
+        <span class="nau-splash-date" id="nauSplashDate"><i class="far fa-calendar-alt"></i> Date</span>
+        <span class="nau-splash-org"><i class="fas fa-university"></i> National Aviation University</span>
+      </div>
+
+      <h2 class="nau-splash-title" id="nauSplashTitle">Announcement Headline</h2>
+
+      <div class="nau-splash-text" id="nauSplashBody">
+        Announcement details will appear here.
+      </div>
+
+      <div class="nau-splash-footer">
+        <label class="nau-splash-remember">
+          <input type="checkbox" id="nauSplashDontShowToday" onchange="toggleSplashRemember(this.checked)">
+          <span>Don't show again today</span>
+        </label>
+        <div class="nau-splash-actions">
+          <button type="button" class="nau-splash-btn secondary" onclick="closeNauSplash()">Dismiss</button>
+          <a href="/NewsPosts/Public" id="nauSplashReadMoreBtn" class="nau-splash-btn primary">
+            <span>Read Full Story</span> <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAU Real-Time AI Chatbot -->
+<partial name="_ChatbotWidget" />
+
+<!-- NAU CMS Icon Picker & Dropdown Component -->
+<link rel="stylesheet" href="~/css/cms-icon-picker.css" asp-append-version="true" />
+<script src="~/js/cms-icon-picker.js" asp-append-version="true"></script>
+
+

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="ublBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#005baa"/>
+      <stop offset="100%" stop-color="#003882"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="20" fill="url(#ublBlue)"/>
+  
+  <!-- UBL Interlocking Yellow & White Ribbon Mark -->
+  <g transform="translate(60, 48)">
+    <!-- White outer loop -->
+    <path d="M -22,-4 C -22,-14 -12,-20 -2,-20 C 8,-20 16,-14 20,-6 C 17,-3 14,0 10,-2 C 7,-7 3,-12 -2,-12 C -8,-12 -14,-7 -14,-2 C -14,4 -8,8 2,13 C 12,18 22,12 22,0 C 22,10 14,19 2,19 C -8,19 -16,14 -20,6 C -17,3 -14,0 -10,2 C -7,7 -3,11 2,11 C 7,11 14,7 14,1 C 14,-5 8,-9 -2,-14 C -12,-19 -22,-13 -22,-4 Z" fill="#ffffff"/>
+    <!-- Yellow dynamic ribbon accent -->
+    <path d="M 0,-18 C 10,-18 18,-10 18,-1 C 18,7 10,15 0,15 C -4,15 -8,13 -11,10 C -9,8 -7,6 -5,8 C -3,9 -1,10 0,10 C 6,10 12,5 12,0 C 12,-6 6,-13 0,-13 C -3,-13 -6,-11 -8,-9 C -10,-11 -12,-13 -13,-14 C -10,-17 -5,-18 0,-18 Z" fill="#ffd200"/>
+    <circle cx="-1" cy="-1" r="3.5" fill="#ffd200"/>
+  </g>
+
+  <!-- UBL Wordmark -->
+  <text x="60" y="103" text-anchor="middle" fill="#ffffff" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="20" letter-spacing="2.5">UBL</text>
+</svg>

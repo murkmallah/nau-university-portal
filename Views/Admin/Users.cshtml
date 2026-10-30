@@ -1,0 +1,1333 @@
+@model List<NAU_Web.Models.AdminUserItemViewModel>
+@inject NAU_Web.Services.ISiteBrandingService BrandingService
+@{
+    ViewData["Title"] = "User & Account Management";
+    Layout = null;
+    var branding = await BrandingService.GetSettingAsync();
+    var siteTitle = branding?.SiteTitle ?? "National Aviation University";
+    var darkLogoUrl = !string.IsNullOrWhiteSpace(branding?.DarkModeLogoUrl) ? branding.DarkModeLogoUrl : (!string.IsNullOrWhiteSpace(branding?.LogoUrl) ? branding.LogoUrl : "/images/logo.png");
+    var filterStyle = string.IsNullOrWhiteSpace(branding?.DarkModeLogoUrl) ? "filter: brightness(0) invert(1);" : "";
+
+    int totalUsers = Model.Count;
+    int totalAdmins = Model.Count(u => u.Roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)));
+    int totalActive = Model.Count(u => u.IsActive);
+    int totalVerified = Model.Count(u => u.EmailConfirmed);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User &amp; Account Management &ndash; @siteTitle</title>
+    <partial name="_Favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071f36;
+            --green: #1e8e3e;
+            --green-light: #e6f4ea;
+            --blue: #0284c7;
+            --blue-light: #e0f2fe;
+            --purple: #7c3aed;
+            --purple-light: #f3e8ff;
+            --amber: #d97706;
+            --amber-light: #fef3c7;
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --gray-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Admin Navbar */
+        .admin-nav {
+            background: linear-gradient(135deg, #0b2c4d 0%, #071f36 100%);
+            padding: 16px 36px;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .admin-nav-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .admin-brand img {
+            height: 44px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+        .admin-brand-text h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+        }
+        .admin-brand-text .admin-brand-tagline {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .admin-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-nav-outline {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .btn-nav-outline:hover {
+            background: rgba(255,255,255,0.22);
+            transform: translateY(-1px);
+        }
+
+        /* Main Container */
+        .admin-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px 60px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-header-title h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header-title p {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .stat-val {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: var(--text-dark);
+        }
+        .stat-lbl {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        /* Filter / Search Bar */
+        .controls-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px 20px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+            max-width: 450px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-family: 'Poppins', sans-serif;
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color .2s;
+        }
+        .search-input:focus {
+            border-color: var(--blue);
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            padding: 9px 14px;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            background: #fff;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Users Table Container */
+        .table-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            width: 100%;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+        .users-table th {
+            background: #f8fafc;
+            padding: 14px 18px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #475569;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .users-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .users-table tr:hover {
+            background: #f8fafc;
+        }
+        .users-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* User Profile in Table */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0b2c4d, #1a5fa6);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+        .user-avatar.admin-avatar {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        }
+        .user-meta-name {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 13.5px;
+            line-height: 1.2;
+        }
+        .user-meta-sub {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .badge-admin { background: var(--purple-light); color: var(--purple); }
+        .badge-student { background: var(--blue-light); color: var(--blue); }
+        .badge-user { background: #f1f5f9; color: #475569; }
+        .badge-active { background: var(--green-light); color: var(--green); }
+        .badge-inactive { background: var(--red-light); color: var(--red); }
+        .badge-verified { background: var(--green-light); color: var(--green); }
+        .badge-unverified { background: var(--amber-light); color: var(--amber); }
+
+        /* Action Buttons */
+        .btn-action {
+            border: none;
+            background: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all .2s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-action-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        .btn-action-delete:hover {
+            background: #dc2626;
+            color: #fff;
+        }
+        .btn-action-status {
+            background: #f1f5f9;
+            color: #334155;
+        }
+        .btn-action-status:hover {
+            background: #e2e8f0;
+        }
+        .btn-action-role {
+            background: #f3e8ff;
+            color: #7c3aed;
+        }
+        .btn-action-role:hover {
+            background: #7c3aed;
+            color: #fff;
+        }
+        .action-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(11, 44, 77, 0.7);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-dialog {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: modalPopIn .2s ease;
+        }
+        @@keyframes modalPopIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header-danger {
+            background: #dc2626;
+            color: #fff;
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header-danger h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-body {
+            padding: 24px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: #334155;
+        }
+        .modal-user-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            margin: 14px 0 6px;
+        }
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #eef2f6;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .btn-modal-cancel {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-modal-delete {
+            background: #dc2626;
+            color: #fff;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-modal-delete:hover { background: #b91c1c; }
+
+        /* Toast notifications */
+        .toast-msg {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0b2c4d;
+            color: #fff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            font-size: 13.5px;
+            font-weight: 500;
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp .3s ease;
+        }
+        @@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-muted);
+        }
+        .empty-state i {
+            font-size: 42px;
+            color: #cbd5e1;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header class="admin-nav">
+        <div class="admin-nav-inner">
+            <a href="/Admin" class="admin-brand" title="Back to Admin Dashboard">
+                <img src="@darkLogoUrl" alt="@siteTitle Logo" style="@filterStyle" onerror="this.src='/images/logo.png'">
+                <div class="admin-brand-text">
+                    <h1>@siteTitle</h1>
+                    <span class="admin-brand-tagline">Admin Control Panel</span>
+                </div>
+            </a>
+            <div class="admin-nav-actions">
+                <a href="/Admin/Analytics" class="btn-nav btn-nav-outline" style="background:rgba(2,132,199,0.2); border-color:rgba(56,189,248,0.5);"><i class="fas fa-chart-line"></i> Visitor Analytics</a>
+                <a href="/Admin" class="btn-nav btn-nav-outline"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                <a href="/" target="_blank" class="btn-nav btn-nav-outline"><i class="fas fa-globe"></i> View Site</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+        <!-- Module Tabs / Sub-Navbar -->
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px; background:#ffffff; padding:8px 12px; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 2px 8px rgba(15,23,42,0.03); flex-wrap:wrap;">
+            <a href="/Admin/Users" style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; background:#0b2c4d; color:#ffffff; box-shadow:0 4px 12px rgba(11,44,77,0.25);">
+                <i class="fas fa-users-gear"></i> Registered Users &amp; Accounts
+            </a>
+            <a href="/Admin/Analytics" style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; color:#64748b; transition:all .2s;">
+                <i class="fas fa-chart-line"></i> Real-Time Visitor Analytics
+            </a>
+            <a href="/Admin/Health" style="display:inline-flex; align-items:center; gap:8px; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; text-decoration:none; color:#64748b; transition:all .2s;">
+                <i class="fas fa-heart-pulse"></i> Uptime &amp; Health Monitor
+            </a>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-title">
+                <h2><i class="fas fa-users-gear" style="color:var(--blue);"></i> Registered Users &amp; Accounts</h2>
+                <p>Complete list of registered accounts with login activity, verification status, roles, and administrative controls.</p>
+            </div>
+            <div>
+                <a href="/Admin/Analytics" class="btn-nav" style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd; font-weight:700;">
+                    <i class="fas fa-globe"></i> View Live Visitor Traffic &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#e0f2fe; color:#0284c7;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <div class="stat-val" id="statTotalUsers">@totalUsers</div>
+                    <div class="stat-lbl">Total Registered Users</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#f3e8ff; color:#7c3aed;">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <div>
+                    <div class="stat-val">@totalAdmins</div>
+                    <div class="stat-lbl">Administrators</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#e6f4ea; color:#1e8e3e;">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div>
+                    <div class="stat-val">@totalActive</div>
+                    <div class="stat-lbl">Active Accounts</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#fef3c7; color:#d97706;">
+                    <i class="fas fa-envelope-circle-check"></i>
+                </div>
+                <div>
+                    <div class="stat-val">@totalVerified</div>
+                    <div class="stat-lbl">Verified Emails</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="controls-card">
+            <div class="search-box">
+                <i class="fas fa-magnifying-glass"></i>
+                <input type="text" id="userSearchInput" class="search-input" placeholder="Search by name, email, or username..." oninput="filterUsers()">
+            </div>
+            <div class="filter-group">
+                <select id="roleFilterSelect" class="filter-select" onchange="filterUsers()">
+                    <option value="">All Roles</option>
+                    <option value="Admin">Admins Only</option>
+                    <option value="Student">Students Only</option>
+                    <option value="User">Regular Users</option>
+                </select>
+                <select id="statusFilterSelect" class="filter-select" onchange="filterUsers()">
+                    <option value="">All Statuses</option>
+                    <option value="Active">Active Accounts</option>
+                    <option value="Inactive">Inactive Accounts</option>
+                    <option value="Verified">Verified Emails</option>
+                    <option value="Unverified">Unverified Emails</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Table of Users -->
+        <div class="table-card">
+            <div class="table-wrap">
+                <table class="users-table" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Email &amp; Verification</th>
+                            <th>Roles</th>
+                            <th>Registered</th>
+                            <th>Last Login</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty-state">
+                                        <i class="fas fa-user-slash"></i>
+                                        <p>No registered users found in database.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var user in Model)
+                            {
+                                var isAdminRole = user.Roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase));
+                                var initial = !string.IsNullOrWhiteSpace(user.FullName) ? user.FullName.Substring(0, 1) : (!string.IsNullOrWhiteSpace(user.Email) ? user.Email.Substring(0, 1) : "U");
+                                
+                                <tr class="user-row" 
+                                    id="row-user-@user.UserId"
+                                    data-fullname="@user.FullName.ToLowerInvariant()"
+                                    data-email="@user.Email.ToLowerInvariant()"
+                                    data-username="@user.UserName.ToLowerInvariant()"
+                                    data-roles="@string.Join(",", user.Roles).ToLowerInvariant()"
+                                    data-active="@(user.IsActive ? "active" : "inactive")"
+                                    data-verified="@(user.EmailConfirmed ? "verified" : "unverified")">
+                                    
+                                    <!-- User Info -->
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar @(isAdminRole ? "admin-avatar" : "")">
+                                                @initial
+                                            </div>
+                                            <div>
+                                                <div class="user-meta-name">
+                                                    @user.FullName
+                                                    @if (user.IsCurrentAdmin)
+                                                    {
+                                                        <span style="font-size:11px; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; margin-left:4px; font-weight:600;">You</span>
+                                                    }
+                                                </div>
+                                                <div class="user-meta-sub">
+                                                    <i class="fas fa-at" style="font-size:10px;"></i> @(string.IsNullOrWhiteSpace(user.UserName) ? "user" : user.UserName)
+                                                    @if (!string.IsNullOrWhiteSpace(user.PhoneNumber))
+                                                    {
+                                                        <span style="margin-left:6px;"><i class="fas fa-phone" style="font-size:10px;"></i> @user.PhoneNumber</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Email & Confirmed -->
+                                    <td>
+                                        <div style="font-weight:500;">@user.Email</div>
+                                        <div style="margin-top:3px;">
+                                            @if (user.EmailConfirmed)
+                                            {
+                                                <span class="badge badge-verified"><i class="fas fa-circle-check"></i> Verified</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-unverified"><i class="fas fa-clock"></i> Unverified</span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <!-- Roles & Permissions -->
+                                    <td>
+                                        <div style="display:flex; flex-direction:column; gap:6px;">
+                                            <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                                                @if (!user.Roles.Any())
+                                                {
+                                                    <span class="badge badge-user"><i class="fas fa-user"></i> User</span>
+                                                }
+                                                else
+                                                {
+                                                    @foreach (var r in user.Roles)
+                                                    {
+                                                        if (r.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            <span class="badge badge-admin"><i class="fas fa-shield-halved"></i> Super Admin</span>
+                                                        }
+                                                        else if (r.Equals("Staff", StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            <span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;"><i class="fas fa-user-gear"></i> Staff</span>
+                                                        }
+                                                        else if (r.Equals("Student", StringComparison.OrdinalIgnoreCase))
+                                                        {
+                                                            <span class="badge badge-student"><i class="fas fa-user-graduate"></i> Student</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge badge-user"><i class="fas fa-user"></i> @r</span>
+                                                        }
+                                                    }
+                                                }
+                                            </div>
+                                            @if (user.Permissions != null && user.Permissions.Any())
+                                            {
+                                                <div style="display:flex; flex-wrap:wrap; gap:4px;" id="perms-badges-@user.UserId">
+                                                    @if (user.Permissions.Contains("Admin.FullAccess"))
+                                                    {
+                                                        <span class="badge" style="background:#fdf2f8; color:#be185d; border:1px solid #fbcfe8; font-size:11px;"><i class="fas fa-infinity"></i> Full System Access</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-size:11px;">
+                                                            <i class="fas fa-key"></i> @user.Permissions.Count Permitted Section@(user.Permissions.Count > 1 ? "s" : "")
+                                                        </span>
+                                                        @foreach (var p in user.Permissions.Take(2))
+                                                        {
+                                                            var shortLabel = p.Replace("School.", "School: ").Replace("Faculty.", "Faculty: ").Replace("Content.", "");
+                                                            <span class="badge" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0; font-size:10.5px;">@shortLabel</span>
+                                                        }
+                                                        @if (user.Permissions.Count > 2)
+                                                        {
+                                                            <span class="badge" style="background:#f1f5f9; color:#64748b; font-size:10px;">+@(user.Permissions.Count - 2) more</span>
+                                                        }
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <!-- Created At -->
+                                    <td>
+                                        <div style="font-size:12.5px; font-weight:500;">@user.CreatedAt.ToString("dd MMM yyyy")</div>
+                                        <div style="font-size:11px; color:var(--text-muted);">@user.CreatedAt.ToString("hh:mm tt")</div>
+                                    </td>
+
+                                    <!-- Last Login -->
+                                    <td>
+                                        @if (user.LastLoginAt.HasValue)
+                                        {
+                                            <div style="font-size:12.5px; font-weight:500; color:var(--green);">
+                                                <i class="fas fa-right-to-bracket" style="font-size:10px;"></i> @user.LastLoginAt.Value.ToString("dd MMM yyyy")
+                                            </div>
+                                            <div style="font-size:11px; color:var(--text-muted);">@user.LastLoginAt.Value.ToString("hh:mm tt")</div>
+                                        }
+                                        else
+                                        {
+                                            <span style="color:var(--text-muted); font-size:12px; font-style:italic;">Never logged in</span>
+                                        }
+                                    </td>
+
+                                    <!-- Is Active -->
+                                    <td>
+                                        <button type="button" 
+                                                class="badge @(user.IsActive ? "badge-active" : "badge-inactive")" 
+                                                style="border:none; cursor:@(user.IsCurrentAdmin ? "default" : "pointer");"
+                                                onclick="toggleStatus(@user.UserId, @(user.IsCurrentAdmin ? "true" : "false"))"
+                                                title="@(user.IsCurrentAdmin ? "You cannot deactivate yourself" : "Click to toggle Active / Inactive")">
+                                            <i class="fas @(user.IsActive ? "fa-circle-check" : "fa-circle-xmark")"></i> 
+                                            @(user.IsActive ? "Active" : "Inactive")
+                                        </button>
+                                    </td>
+
+                                    <!-- Actions -->
+                                    <td style="text-align:right;">
+                                        <div class="action-group" style="justify-content:flex-end;">
+                                            <button type="button" 
+                                                    class="btn-action" 
+                                                    style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; font-weight:600;"
+                                                    onclick="openPermissionsModal(@user.UserId, '@(user.FullName)', '@(user.Email)')"
+                                                    title="Assign roles and granular permissions">
+                                                <i class="fas fa-key"></i> Permissions
+                                            </button>
+                                            @if (!user.IsCurrentAdmin)
+                                            {
+                                                <button type="button" 
+                                                        class="btn-action btn-action-delete" 
+                                                        onclick="openDeleteModal(@user.UserId, '@(user.FullName)', '@(user.Email)')"
+                                                        title="Delete user account">
+                                                    <i class="fas fa-trash-can"></i> Remove
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span style="font-size:11.5px; color:var(--text-muted); font-style:italic;">Current Account</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Granular Role & Permission Assignment Modal -->
+    <div class="modal-backdrop" id="userPermissionsModal">
+        <div class="modal-dialog" style="max-width: 780px; max-height: 90vh; display: flex; flex-direction: column;">
+            <div style="background: linear-gradient(135deg, #0b2c4d 0%, #1565c0 100%); color: #fff; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.15);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-family: 'Montserrat', sans-serif; font-size: 17px; font-weight: 700; margin: 0;" id="permModalUserName">Manage User Permissions</h3>
+                        <div style="font-size: 12.5px; color: rgba(255,255,255,0.8); margin-top: 2px;" id="permModalUserEmail">Configure granular access and module authority</div>
+                    </div>
+                </div>
+                <button type="button" onclick="closePermissionsModal()" style="background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; opacity: 0.85;">&times;</button>
+            </div>
+
+            <div class="modal-body" style="overflow-y: auto; flex: 1; padding: 20px 24px;">
+                
+                <!-- Role Preset Picker -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-wand-magic-sparkles" style="color:#0284c7;"></i> Quick Authority Presets:
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <button type="button" class="btn-preset" onclick="applyPreset('SuperAdmin')"><i class="fas fa-shield-halved"></i> Super Admin</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('FacilitiesManager')"><i class="fas fa-building-columns"></i> Facilities Manager</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('SimLabsCoordinator')"><i class="fas fa-vr-cardboard"></i> Sim Labs Coordinator</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('ContentManager')"><i class="fas fa-pen-to-square"></i> Content Manager</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('SchoolANS')"><i class="fas fa-plane-departure"></i> School of ANS</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('SchoolAirport')"><i class="fas fa-fire-extinguisher"></i> School of Airport Services</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('SchoolRegulatory')"><i class="fas fa-stamp"></i> School of Regulatory Services</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('SchoolManagement')"><i class="fas fa-briefcase"></i> School of Aviation Mgmt</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('FacultyEngineering')"><i class="fas fa-gears"></i> Faculty of Engineering</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('FacultyIT')"><i class="fas fa-laptop-code"></i> Faculty of IT &amp; Cyber</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('NewsEditor')"><i class="fas fa-newspaper"></i> News &amp; Media Editor</button>
+                        <button type="button" class="btn-preset" onclick="applyPreset('AdmissionsOfficer')"><i class="fas fa-file-signature"></i> Admissions Officer</button>
+                        <button type="button" class="btn-preset" style="background:#fee2e2; color:#dc2626; border-color:#fecaca;" onclick="applyPreset('Clear')"><i class="fas fa-xmark"></i> Clear All</button>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                    <div style="font-size:13.5px; font-weight:700; color:#0b2c4d;">Granular Module &amp; Section Permissions:</div>
+                    <div style="font-size:12px; color:#64748b;"><span id="permSelectedCount">0</span> selected</div>
+                </div>
+
+                <div id="permGroupsContainer">
+                    <!-- Groups injected by JavaScript -->
+                    <div style="text-align:center; padding:30px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading permissions...</div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer" style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" class="btn-modal-cancel" onclick="closePermissionsModal()">Cancel</button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn-modal-cancel" style="background:#f1f5f9; color:#475569;" onclick="toggleAllPerms(true)">Select All</button>
+                    <button type="button" class="btn-modal-cancel" style="background:#f1f5f9; color:#475569;" onclick="toggleAllPerms(false)">Deselect All</button>
+                    <button type="button" class="btn-modal-delete" id="btnSavePerms" style="background: #0b2c4d;" onclick="saveUserPermissions()">
+                        <i class="fas fa-floppy-disk"></i> Save Permissions
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Confirmation Modal -->
+    <div class="modal-backdrop" id="deleteUserModal">
+        <div class="modal-dialog">
+            <div class="modal-header-danger">
+                <h3><i class="fas fa-triangle-exclamation"></i> Confirm User Deletion</h3>
+                <button type="button" onclick="closeDeleteModal()" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to permanently remove this user account? All associated profile data and student applications for this user will also be removed from the system.</p>
+                
+                <div class="modal-user-box">
+                    <div style="font-weight:700; color:var(--primary); font-size:14px;" id="delUserName"></div>
+                    <div style="color:var(--text-muted); font-size:12.5px; margin-top:2px;" id="delUserEmail"></div>
+                </div>
+
+                <div style="margin-top:10px; font-size:12px; color:#dc2626; font-weight:500;">
+                    <i class="fas fa-circle-exclamation"></i> This action is irreversible.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="hidden" id="delUserId" value="0">
+                <button type="button" class="btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-modal-delete" id="btnConfirmDelete" onclick="executeDeleteUser()">
+                    <i class="fas fa-trash-can"></i> Delete Account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .btn-preset {
+            background: #ffffff;
+            color: #0b2c4d;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all .2s;
+            font-family: inherit;
+        }
+        .btn-preset:hover {
+            background: #0b2c4d;
+            color: #ffffff;
+            border-color: #0b2c4d;
+            transform: translateY(-1px);
+        }
+        .perm-group-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            overflow: hidden;
+        }
+        .perm-group-header {
+            background: #f8fafc;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 13.5px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #0b2c4d;
+        }
+        .perm-item-row {
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background .15s;
+            cursor: pointer;
+        }
+        .perm-item-row:last-child { border-bottom: none; }
+        .perm-item-row:hover { background: #f8fafc; }
+        .perm-chk {
+            width: 18px;
+            height: 18px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #0b2c4d;
+        }
+        .perm-item-info { flex: 1; }
+        .perm-item-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .perm-item-desc {
+            font-size: 11.5px;
+            color: #64748b;
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+    </style>
+
+    <script>
+        let currentEditingUserId = 0;
+        let cachedPermissionGroups = null;
+
+        function showToast(msg, isError = false) {
+            const existing = document.querySelector('.toast-msg');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-msg';
+            if (isError) toast.style.background = '#dc2626';
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-circle-xmark' : 'fa-circle-check'}"></i> <span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3500);
+        }
+
+        function filterUsers() {
+            const query = document.getElementById('userSearchInput').value.toLowerCase().trim();
+            const roleFilter = document.getElementById('roleFilterSelect').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('statusFilterSelect').value.toLowerCase().trim();
+
+            const rows = document.querySelectorAll('.user-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const name = row.getAttribute('data-fullname') || '';
+                const email = row.getAttribute('data-email') || '';
+                const username = row.getAttribute('data-username') || '';
+                const roles = row.getAttribute('data-roles') || '';
+                const active = row.getAttribute('data-active') || '';
+                const verified = row.getAttribute('data-verified') || '';
+
+                const matchesQuery = !query || name.includes(query) || email.includes(query) || username.includes(query);
+                
+                let matchesRole = true;
+                if (roleFilter === 'admin') matchesRole = roles.includes('admin');
+                else if (roleFilter === 'student') matchesRole = roles.includes('student');
+                else if (roleFilter === 'user') matchesRole = !roles.includes('admin') && !roles.includes('student');
+
+                let matchesStatus = true;
+                if (statusFilter === 'active') matchesStatus = active === 'active';
+                else if (statusFilter === 'inactive') matchesStatus = active === 'inactive';
+                else if (statusFilter === 'verified') matchesStatus = verified === 'verified';
+                else if (statusFilter === 'unverified') matchesStatus = verified === 'unverified';
+
+                if (matchesQuery && matchesRole && matchesStatus) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        async function openPermissionsModal(userId, fullName, email) {
+            currentEditingUserId = userId;
+            document.getElementById('permModalUserName').textContent = `Permissions for ${fullName || 'User'}`;
+            document.getElementById('permModalUserEmail').textContent = email || '';
+            document.getElementById('userPermissionsModal').classList.add('open');
+
+            const container = document.getElementById('permGroupsContainer');
+            container.innerHTML = '<div style="text-align:center; padding:30px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Loading permissions from server...</div>';
+
+            try {
+                const res = await fetch(`/Admin/GetUserPermissions?userId=${userId}`);
+                const data = await res.json();
+                if (!data.success) {
+                    showToast(data.message || 'Failed to load permissions.', true);
+                    closePermissionsModal();
+                    return;
+                }
+
+                cachedPermissionGroups = data.allGroups;
+                renderPermissionGroups(data.allGroups, data.permissions || []);
+            } catch (err) {
+                showToast('Failed to fetch user permissions.', true);
+                closePermissionsModal();
+            }
+        }
+
+        function closePermissionsModal() {
+            document.getElementById('userPermissionsModal').classList.remove('open');
+            currentEditingUserId = 0;
+        }
+
+        function renderPermissionGroups(groups, activePermissions) {
+            const container = document.getElementById('permGroupsContainer');
+            let html = '';
+
+            groups.forEach(group => {
+                html += `
+                <div class="perm-group-box">
+                    <div class="perm-group-header">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <i class="${group.icon}" style="color:${group.color};"></i>
+                            <span>${group.groupName}</span>
+                        </div>
+                        <span style="font-size:11.5px; font-weight:600; color:#64748b;">${group.permissions.length} items</span>
+                    </div>
+                    <div class="perm-group-body">
+                `;
+
+                group.permissions.forEach(p => {
+                    const isChecked = activePermissions.includes(p.key);
+                    html += `
+                    <label class="perm-item-row" for="perm_${p.key}">
+                        <input type="checkbox" class="perm-chk" id="perm_${p.key}" value="${p.key}" ${isChecked ? 'checked' : ''} onchange="updateSelectedCount()">
+                        <div class="perm-item-info">
+                            <div class="perm-item-title">
+                                <span>${p.title}</span>
+                                <span style="font-size:10.5px; font-family:monospace; background:#f1f5f9; color:#475569; padding:2px 6px; border-radius:4px;">${p.key}</span>
+                            </div>
+                            <div class="perm-item-desc">${p.description}</div>
+                        </div>
+                    </label>
+                    `;
+                });
+
+                html += `
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const chks = document.querySelectorAll('.perm-chk:checked');
+            document.getElementById('permSelectedCount').textContent = chks.length;
+        }
+
+        function toggleAllPerms(check) {
+            document.querySelectorAll('.perm-chk').forEach(c => { c.checked = check; });
+            updateSelectedCount();
+        }
+
+        function applyPreset(preset) {
+            toggleAllPerms(false);
+
+            const checkKeys = (keys) => {
+                keys.forEach(k => {
+                    const el = document.getElementById(`perm_${k}`);
+                    if (el) el.checked = true;
+                });
+            };
+
+            if (preset === 'SuperAdmin') {
+                toggleAllPerms(true);
+            } else if (preset === 'FacilitiesManager') {
+                checkKeys(['Content.Facilities', 'Facility.Library', 'Facility.Cafeteria', 'Facility.Hostel', 'Facility.Mess', 'Facility.Sports', 'Facility.Medical', 'Facility.Masjid', 'Facility.SmartCampus']);
+            } else if (preset === 'SimLabsCoordinator') {
+                checkKeys(['Content.SimulationLabs', 'Sim.Flight', 'Sim.ATC', 'Sim.Avionics', 'Sim.Navigation']);
+            } else if (preset === 'ContentManager') {
+                checkKeys(['Content.Homepage', 'Content.NewsAndMedia', 'Content.Gallery', 'Content.About', 'Content.Contact', 'Content.Links', 'Content.Financial', 'Content.CustomPages']);
+            } else if (preset === 'SchoolANS') {
+                checkKeys(['School.ANS', 'Content.CourseCatalog']);
+            } else if (preset === 'SchoolAirport') {
+                checkKeys(['School.Airport', 'Content.CourseCatalog']);
+            } else if (preset === 'SchoolRegulatory') {
+                checkKeys(['School.Regulatory', 'Content.CourseCatalog']);
+            } else if (preset === 'SchoolManagement') {
+                checkKeys(['School.Management', 'Content.CourseCatalog']);
+            } else if (preset === 'FacultyEngineering') {
+                checkKeys(['Faculty.Engineering', 'Faculty.All']);
+            } else if (preset === 'FacultyIT') {
+                checkKeys(['Faculty.IT', 'Faculty.All']);
+            } else if (preset === 'NewsEditor') {
+                checkKeys(['Content.NewsAndMedia', 'Content.Homepage', 'Content.Gallery']);
+            } else if (preset === 'AdmissionsOfficer') {
+                checkKeys(['Content.Applications', 'Content.Financial', 'Content.CourseCatalog']);
+            } else if (preset === 'Clear') {
+                toggleAllPerms(false);
+            }
+
+            updateSelectedCount();
+        }
+
+        async function saveUserPermissions() {
+            if (!currentEditingUserId) return;
+
+            const selected = [];
+            document.querySelectorAll('.perm-chk:checked').forEach(c => selected.push(c.value));
+
+            const btn = document.getElementById('btnSavePerms');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                const res = await fetch('/Admin/SaveUserPermissions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        UserId: currentEditingUserId,
+                        Permissions: selected
+                    })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message || 'Permissions updated successfully!');
+                    closePermissionsModal();
+                    setTimeout(() => location.reload(), 700);
+                } else {
+                    showToast(data.message || 'Failed to save permissions.', true);
+                }
+            } catch (err) {
+                showToast('Error communicating with server.', true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-floppy-disk"></i> Save Permissions';
+            }
+        }
+
+        function openDeleteModal(userId, fullName, email) {
+            document.getElementById('delUserId').value = userId;
+            document.getElementById('delUserName').textContent = fullName || 'User Account';
+            document.getElementById('delUserEmail').textContent = email || '';
+            document.getElementById('deleteUserModal').classList.add('open');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteUserModal').classList.remove('open');
+        }
+
+        async function executeDeleteUser() {
+            const userId = parseInt(document.getElementById('delUserId').value);
+            if (!userId) return;
+
+            const btn = document.getElementById('btnConfirmDelete');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+
+            try {
+                const res = await fetch('/Admin/DeleteUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ UserId: userId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    closeDeleteModal();
+                    showToast(data.message || 'User successfully deleted.');
+                    const row = document.getElementById(`row-user-${userId}`);
+                    if (row) {
+                        row.style.transition = 'all .3s';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                            const rowsLeft = document.querySelectorAll('.user-row').length;
+                            const countEl = document.getElementById('statTotalUsers');
+                            if (countEl) countEl.textContent = rowsLeft;
+                        }, 300);
+                    }
+                } else {
+                    showToast(data.message || 'Failed to delete user.', true);
+                }
+            } catch (err) {
+                showToast('An error occurred while deleting the user.', true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-trash-can"></i> Delete Account';
+            }
+        }
+
+        async function toggleStatus(userId, isCurrentAdmin) {
+            if (isCurrentAdmin) {
+                showToast('You cannot deactivate your own currently logged-in account.', true);
+                return;
+            }
+
+            try {
+                const res = await fetch('/Admin/ToggleUserStatus', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ UserId: userId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    setTimeout(() => location.reload(), 600);
+                } else {
+                    showToast(data.message || 'Failed to update user status.', true);
+                }
+            } catch (err) {
+                showToast('Network error while updating user status.', true);
+            }
+        }
+
+        async function toggleAdminRole(userId, email, isCurrentlyAdmin) {
+            const actionText = isCurrentlyAdmin ? 'remove Admin rights from' : 'grant Admin rights to';
+            if (!confirm(`Are you sure you want to ${actionText} ${email}?`)) return;
+
+            try {
+                const res = await fetch('/Admin/ToggleUserRole', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ UserId: userId, Role: 'Admin' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message);
+                    setTimeout(() => location.reload(), 600);
+                } else {
+                    showToast(data.message || 'Failed to update user role.', true);
+                }
+            } catch (err) {
+                showToast('Network error while updating user role.', true);
+            }
+        }
+    </script>
+</body>
+</html>

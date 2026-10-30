@@ -1,0 +1,458 @@
+@model NAU_Web.Models.AnnouncementSetting
+@{
+    ViewData["Title"] = "Announcement Bar Settings";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcement Bar Manager - NAU CMS</title>
+    <partial name="_Favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071f36;
+            --gold: #f59e0b;
+            --green: #1e8e3e;
+            --green-light: #e6f4ea;
+            --gray-bg: #f4f7fa;
+            --border: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Top Header */
+        .admin-nav-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            padding: 24px 36px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .header-left i.title-icon {
+            font-size: 28px;
+            color: var(--gold);
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .header-left h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+        .header-left p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            margin-top: 2px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all .2s;
+        }
+        .btn-outline {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background: var(--green);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(30,142,62,0.3);
+        }
+        .btn-primary:hover {
+            background: #167a33;
+            transform: translateY(-1px);
+        }
+
+        /* Container */
+        .admin-container {
+            max-width: 1100px;
+            margin: 36px auto 60px;
+            padding: 0 24px;
+        }
+
+        .info-banner {
+            background: #fff;
+            border-left: 4px solid var(--gold);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .info-banner-text {
+            font-size: 13.5px;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+        .info-banner-text strong {
+            color: var(--primary);
+        }
+
+        /* Live Preview Card */
+        .preview-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        }
+        .preview-card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Live Announcement Box mockup matching public site */
+        .live-mockup-wrap {
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 14px;
+            background: #f8fafc;
+        }
+        .mockup-announcement {
+            background: #071f36;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+        .mockup-announcement .scroll span {
+            color: var(--gold);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-right: 6px;
+        }
+        .mockup-announcement a {
+            color: #fff;
+            text-decoration: underline;
+        }
+        .mockup-account-btn {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .form-group .field-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(11,44,77,0.1);
+        }
+
+        /* Toggle switch */
+        .toggle-switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 28px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #d93025;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background-color: var(--green); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Toast */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary-dark);
+            color: #fff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999999;
+        }
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        #toast.toast-success i { color: #4ed47a; }
+        #toast.toast-error i { color: #f87171; }
+    </style>
+</head>
+<body>
+
+    <header class="admin-nav-header">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-bullhorn title-icon"></i>
+                <div>
+                    <h1>Announcement Bar Manager</h1>
+                    <p>Edit site-wide top announcement message, badge, link, and visibility</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/" target="_blank" class="btn btn-outline"><i class="fas fa-globe"></i> View Website</a>
+                <a href="/Admin" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Admin Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-container">
+        <div class="info-banner">
+            <div class="info-banner-text">
+                <i class="fas fa-sparkles" style="color:var(--gold);margin-right:6px;font-size:16px;"></i>
+                <strong>Single Source of Truth:</strong> Any changes saved here will immediately update across <strong>EVERY page on the entire website</strong> (Homepage, Facilities, Courses, News, Simulation Labs, About, Contact, etc.).
+            </div>
+            <a href="/" target="_blank" style="color:var(--green);font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;">Test Live &rarr;</a>
+        </div>
+
+        <div class="preview-card">
+            <div class="preview-card-title"><i class="fas fa-eye"></i> Live Preview</div>
+            <div class="live-mockup-wrap">
+                <div class="mockup-announcement" id="previewBar">
+                    <div class="scroll">
+                        <span id="previewTag">@(Model.TagText ?? "ANNOUNCEMENT:")</span>
+                        <span id="previewMsg">@(Model.MessageText ?? "Admissions Open Now")</span>
+                    </div>
+                    <div class="mockup-account-btn">Account</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <form id="announcementForm" onsubmit="saveAnnouncement(event)">
+                <div class="toggle-switch-row">
+                    <div>
+                        <strong style="font-size:14px;color:var(--primary);">Show Announcement Bar on Website</strong>
+                        <div class="field-hint">When turned off, the top announcement bar will be hidden on all pages.</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="isVisible" @(Model.IsVisible ? "checked" : "") onchange="updatePreview()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label for="tagText">Badge / Tag Prefix</label>
+                    <input type="text" id="tagText" class="form-control" value="@Model.TagText" placeholder="e.g. ANNOUNCEMENT: or LATEST UPDATE:" required oninput="updatePreview()">
+                    <div class="field-hint">Highlighted bold text at the beginning of the announcement bar.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="messageText">Announcement Message</label>
+                    <input type="text" id="messageText" class="form-control" value="@Model.MessageText" placeholder="e.g. Admissions Open for Fall 2026 - Apply Online Today!" required oninput="updatePreview()">
+                    <div class="field-hint">The main message text displayed to visitors.</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="linkUrl">Destination Link (Optional)</label>
+                    <input type="text" id="linkUrl" class="form-control" value="@Model.LinkUrl" placeholder="e.g. /CourseCatalog or /Account/Register" oninput="updatePreview()">
+                    <div class="field-hint">Optional URL to make the announcement message clickable (e.g. /CourseCatalog or https://...).</div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;margin-top:32px;">
+                    <button type="submit" class="btn btn-primary" style="padding:12px 28px;font-size:14px;">
+                        <i class="fas fa-save"></i> Save &amp; Publish Site-Wide
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Updated</span></div>
+
+    <script>
+        function updatePreview() {
+            var isVisible = document.getElementById("isVisible").checked;
+            var tag = document.getElementById("tagText").value.trim() || "ANNOUNCEMENT:";
+            var msg = document.getElementById("messageText").value.trim() || "Admissions Open Now";
+            var link = document.getElementById("linkUrl").value.trim();
+
+            var previewBar = document.getElementById("previewBar");
+            var previewTag = document.getElementById("previewTag");
+            var previewMsg = document.getElementById("previewMsg");
+
+            previewTag.textContent = tag;
+
+            if (link) {
+                previewMsg.innerHTML = '<a href="' + link + '" style="color:#fff;text-decoration:underline;">' + msg + '</a>';
+            } else {
+                previewMsg.textContent = msg;
+            }
+
+            previewBar.style.opacity = isVisible ? "1" : "0.35";
+        }
+
+        function showToast(msg, isError) {
+            var toast = document.getElementById("toast");
+            var toastMsg = document.getElementById("toastMsg");
+            toastMsg.textContent = msg;
+            toast.className = isError ? "show toast-error" : "show toast-success";
+            toast.querySelector("i").className = isError ? "fas fa-exclamation-circle" : "fas fa-check-circle";
+            setTimeout(function() { toast.className = ""; }, 3000);
+        }
+
+        function saveAnnouncement(e) {
+            e.preventDefault();
+
+            var isVisible = document.getElementById("isVisible").checked;
+            var tagText = document.getElementById("tagText").value.trim();
+            var messageText = document.getElementById("messageText").value.trim();
+            var linkUrl = document.getElementById("linkUrl").value.trim();
+
+            var payload = {
+                tagText: tagText,
+                messageText: messageText,
+                linkUrl: linkUrl,
+                isVisible: isVisible
+            };
+
+            fetch("/Admin/UpdateAnnouncement", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showToast(data.message || "Announcement updated site-wide!");
+                } else {
+                    showToast(data.message || "Failed to update.", true);
+                }
+            })
+            .catch(function() {
+                showToast("Connection error while saving announcement.", true);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,721 @@
+@inject NAU_Web.Services.ISiteBrandingService BrandingService
+@{
+    Layout = null;
+    var branding = await BrandingService.GetSettingAsync();
+    var siteTitle = branding?.SiteTitle ?? "National Aviation University";
+    var tagline = !string.IsNullOrWhiteSpace(branding?.Tagline) ? branding.Tagline : "LEARN · LEAD · FLY HIGH";
+    var darkLogoUrl = !string.IsNullOrWhiteSpace(branding?.DarkModeLogoUrl) ? branding.DarkModeLogoUrl : (!string.IsNullOrWhiteSpace(branding?.LogoUrl) ? branding.LogoUrl : "/images/logo.png");
+    var filterStyle = string.IsNullOrWhiteSpace(branding?.DarkModeLogoUrl) ? "filter: brightness(0) invert(1);" : "";
+
+    var userPermissions = ViewBag.UserPermissions as List<string> ?? new List<string>();
+    bool isSuperAdmin = ViewBag.IsSuperAdmin as bool? ?? false;
+    string currentUserName = ViewBag.CurrentUserName as string ?? User.Identity?.Name ?? "Admin";
+
+    bool Can(string key) => isSuperAdmin || userPermissions.Contains(NAU_Web.Models.AppPermissions.AdminFullAccess) || userPermissions.Contains(key);
+    bool HasSchoolAccess() => isSuperAdmin || userPermissions.Contains(NAU_Web.Models.AppPermissions.AdminFullAccess) || userPermissions.Contains(NAU_Web.Models.AppPermissions.SchoolAll) || userPermissions.Any(p => p.StartsWith("School."));
+    bool HasFacultyAccess() => isSuperAdmin || userPermissions.Contains(NAU_Web.Models.AppPermissions.AdminFullAccess) || userPermissions.Contains(NAU_Web.Models.AppPermissions.FacultyAll) || userPermissions.Any(p => p.StartsWith("Faculty."));
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard &ndash; @siteTitle</title>
+    <partial name="_Favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071f36;
+            --gray-bg: #f4f7fb;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Admin Navbar */
+        .admin-nav {
+            background: linear-gradient(135deg, #0b2c4d 0%, #071f36 100%);
+            padding: 16px 36px;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .admin-nav-inner {
+            max-width: 1320px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .admin-brand img {
+            height: 48px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+        .admin-brand-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+        }
+        .admin-brand-text h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.2px;
+            color: #ffffff;
+            margin: 0;
+        }
+        .admin-brand-text .admin-brand-tagline {
+            font-family: 'Open Sans', 'Poppins', sans-serif;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 500;
+            letter-spacing: 2px;
+            line-height: 1.1;
+            text-transform: uppercase;
+        }
+
+        .admin-nav-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .user-greeting {
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+            background: rgba(255,255,255,0.09);
+            padding: 8px 14px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-nav-outline {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .btn-nav-outline:hover {
+            background: rgba(255,255,255,0.22);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-1px);
+        }
+        .btn-nav-logout {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .btn-nav-logout:hover {
+            background: #ef4444;
+            color: #fff;
+            border-color: #ef4444;
+            transform: translateY(-1px);
+        }
+
+        /* Main Container */
+        .admin-main {
+            max-width: 1320px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 24px 60px;
+            flex: 1;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .dashboard-header-title h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .dashboard-header-title p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .dashboard-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 20px;
+            border: 1px solid #bae6fd;
+        }
+
+        /* Admin Cards Grid */
+        .admin-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 22px;
+        }
+        .admin-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all .25s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+        .admin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #cbd5e1;
+            transition: height .2s;
+        }
+        .admin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(11, 44, 77, 0.1);
+            border-color: #cbd5e1;
+        }
+        .admin-card:hover::before {
+            height: 6px;
+        }
+
+        /* Color accents for cards */
+        .theme-blue::before { background: linear-gradient(90deg, #1565c0, #0284c7); }
+        .theme-purple::before { background: linear-gradient(90deg, #7c3aed, #a855f7); }
+        .theme-amber::before { background: linear-gradient(90deg, #d97706, #f59e0b); }
+        .theme-emerald::before { background: linear-gradient(90deg, #059669, #10b981); }
+        .theme-rose::before { background: linear-gradient(90deg, #e11d48, #f43f5e); }
+        .theme-teal::before { background: linear-gradient(90deg, #0d9488, #14b8a6); }
+        .theme-indigo::before { background: linear-gradient(90deg, #4f46e5, #6366f1); }
+        .theme-cyan::before { background: linear-gradient(90deg, #0891b2, #06b6d4); }
+        .theme-fuchsia::before { background: linear-gradient(90deg, #c026d3, #d946ef); }
+        .theme-gold::before { background: linear-gradient(90deg, #b45309, #f59e0b); }
+        .theme-slate::before { background: linear-gradient(90deg, #475569, #64748b); }
+        .theme-red::before { background: linear-gradient(90deg, #dc2626, #ef4444); }
+        .theme-sky::before { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+        .card-icon-wrap {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+            background: #f1f5f9;
+            color: var(--primary);
+            transition: all .2s;
+        }
+        .admin-card:hover .card-icon-wrap {
+            background: #0b2c4d;
+            color: #ffffff;
+        }
+        .card-info h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        .card-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 14px;
+            border-top: 1px solid #f1f5f9;
+        }
+        .card-category-badge {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card-action-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #0284c7;
+            transition: transform .2s;
+        }
+        .admin-card:hover .card-action-pill {
+            transform: translateX(3px);
+            color: #0369a1;
+        }
+
+        /* Footer */
+        .admin-footer {
+            background: #071f36;
+            color: rgba(255,255,255,0.6);
+            padding: 20px 24px;
+            text-align: center;
+            font-size: 12.5px;
+            margin-top: auto;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        @@media (max-width: 768px) {
+            .admin-nav { padding: 14px 18px; }
+            .admin-cards { grid-template-columns: 1fr; }
+            .admin-main { padding: 24px 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header class="admin-nav">
+        <div class="admin-nav-inner">
+            <a href="/" class="admin-brand" title="Go to Homepage">
+                <img src="@darkLogoUrl" alt="@siteTitle Logo" style="@filterStyle" onerror="this.src='/images/logo.png'">
+                <div class="admin-brand-text">
+                    <h1>@siteTitle</h1>
+                    <span class="admin-brand-tagline">@tagline</span>
+                </div>
+            </a>
+            <div class="admin-nav-user">
+                <span class="user-greeting">
+                    <i class="fas @(isSuperAdmin ? "fa-shield-halved" : "fa-user-gear")" style="color:@(isSuperAdmin ? "#38bdf8" : "#a7f3d0");"></i> 
+                    @currentUserName @(isSuperAdmin ? "(Super Admin)" : "(Staff)")
+                </span>
+                @if (Can(NAU_Web.Models.AppPermissions.AdminAnalyticsAndHealth))
+                {
+                    <a href="/Admin/Analytics" class="btn-nav btn-nav-outline" style="background:rgba(2,132,199,0.2); border-color:rgba(56,189,248,0.5);"><i class="fas fa-chart-line"></i> Analytics</a>
+                    <a href="/Admin/Health" class="btn-nav btn-nav-outline" style="background:rgba(16,185,129,0.2); border-color:rgba(52,211,153,0.5);"><i class="fas fa-heart-pulse"></i> Health</a>
+                }
+                @if (Can(NAU_Web.Models.AppPermissions.AdminManageUsers))
+                {
+                    <a href="/Admin/Users" class="btn-nav btn-nav-outline" style="background:rgba(99,102,241,0.25); border-color:rgba(129,140,248,0.5);"><i class="fas fa-users-gear"></i> Users &amp; Roles</a>
+                }
+                <a href="/" target="_blank" class="btn-nav btn-nav-outline"><i class="fas fa-globe"></i> View Site</a>
+                <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline; margin:0;">
+                    <button type="submit" class="btn-nav btn-nav-logout"><i class="fas fa-arrow-right-from-bracket"></i> Logout</button>
+                </form>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <div class="dashboard-header">
+            <div class="dashboard-header-title">
+                <h2>Content &amp; Authority Dashboard</h2>
+                <p>Manage content, update programs, review applications, and edit your authorized website sections.</p>
+            </div>
+            <div class="dashboard-badge">
+                <i class="fas fa-circle-check" style="color:#0284c7;"></i> Live CMS Connected
+            </div>
+        </div>
+
+        <div class="admin-cards">
+
+            @if (Can(NAU_Web.Models.AppPermissions.AdminManageUsers))
+            {
+                <!-- 0. User & Role Management -->
+                <a class="admin-card theme-indigo" href="/Admin/Users">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-users-gear"></i></div>
+                        <div class="card-info">
+                            <h3>Users &amp; Roles Authority</h3>
+                            <p>Manage staff accounts, assign school or faculty roles, and configure granular editing permissions</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">RBAC &amp; Access</span>
+                        <span class="card-action-pill">Manage Users <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.AdminAnalyticsAndHealth))
+            {
+                <!-- 0.1 Visitor Analytics -->
+                <a class="admin-card theme-sky" href="/Admin/Analytics">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-chart-line"></i></div>
+                        <div class="card-info">
+                            <h3>Visitor Analytics</h3>
+                            <p>Real-time online visitors, country-wise traffic distribution, devices, and popular pages</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Live Traffic</span>
+                        <span class="card-action-pill">View Analytics <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- 0.2 System Health & Uptime Monitor -->
+                <a class="admin-card theme-emerald" href="/Admin/Health">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-heart-pulse"></i></div>
+                        <div class="card-info">
+                            <h3>Health &amp; Uptime Monitor</h3>
+                            <p>Real-time server uptime, database latency, and automated downtime alert email configuration</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Live Diagnostics</span>
+                        <span class="card-action-pill">Monitor Uptime <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+            
+            @if (Can(NAU_Web.Models.AppPermissions.ContentHomepage))
+            {
+                <!-- 1. Homepage -->
+                <a class="admin-card theme-sky" href="/?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-house"></i></div>
+                        <div class="card-info">
+                            <h3>Homepage</h3>
+                            <p>Edit homepage text, hero slides, interactive cards, and images directly</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Page Editor</span>
+                        <span class="card-action-pill">Edit Page <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.AdminManageSettings))
+            {
+                <!-- 2. Logo & Branding -->
+                <a class="admin-card theme-purple" href="/Admin/Branding">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-palette"></i></div>
+                        <div class="card-info">
+                            <h3>Logo &amp; Branding</h3>
+                            <p>Change university name, tagline, upload logo, and customize footer styling</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Settings</span>
+                        <span class="card-action-pill">Manage Branding <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- 3. Announcement Bar -->
+                <a class="admin-card theme-amber" href="/Admin/Announcement">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-bullhorn"></i></div>
+                        <div class="card-info">
+                            <h3>Announcement Bar</h3>
+                            <p>Edit site-wide top announcement message, badge tag, link, and visibility</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Global Bar</span>
+                        <span class="card-action-pill">Edit Announcement <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- 4. Navigation Menu -->
+                <a class="admin-card theme-emerald" href="/Admin/Navigation">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-compass"></i></div>
+                        <div class="card-info">
+                            <h3>Navigation Menu</h3>
+                            <p>Hide or show navbar menus, dropdown columns, and links with auto-adjusting layout</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Navbar Engine</span>
+                        <span class="card-action-pill">Manage Menus <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- 5. Footer Manager -->
+                <a class="admin-card theme-sky" href="/Admin/Footer">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-shoe-prints"></i></div>
+                        <div class="card-info">
+                            <h3>Footer &amp; Links Manager</h3>
+                            <p>Manage footer description, contact details, social media icons, column links, and copyright notice</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Footer Engine</span>
+                        <span class="card-action-pill">Manage Footer <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (HasSchoolAccess())
+            {
+                <!-- 5. Short Courses / Professional Schools -->
+                <a class="admin-card theme-rose" href="/Courses/Public?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-school"></i></div>
+                        <div class="card-info">
+                            <h3>Professional Schools &amp; Courses</h3>
+                            <p>Add, edit, update, or remove training courses and schedules for authorized schools</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Training &amp; Schools</span>
+                        <span class="card-action-pill">Manage Courses <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (HasFacultyAccess())
+            {
+                <!-- 6. Academic Faculties -->
+                <a class="admin-card theme-indigo" href="/Faculties/Public?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-graduation-cap"></i></div>
+                        <div class="card-info">
+                            <h3>Academic Faculties &amp; Degrees</h3>
+                            <p>Edit degree programs, faculty profiles, curriculum details, and entry criteria</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Academics</span>
+                        <span class="card-action-pill">Edit Faculties <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+
+                <!-- Specialized Schools Manager -->
+                <a class="admin-card theme-sky" href="/Admin/Schools">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-school"></i></div>
+                        <div class="card-info">
+                            <h3>Specialized Schools Manager</h3>
+                            <p>Manage homepage school cards, titles, descriptions, card images, icons, and display orders</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Homepage &amp; Schools</span>
+                        <span class="card-action-pill">Manage Schools <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentNewsAndMedia))
+            {
+                <!-- 7. News & Media -->
+                <a class="admin-card theme-teal" href="/NewsPosts/Public?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-newspaper"></i></div>
+                        <div class="card-info">
+                            <h3>News &amp; Media</h3>
+                            <p>Publish news posts, manage announcements, and upload photo/video gallery media</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Media Feed</span>
+                        <span class="card-action-pill">Edit News <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentFacilities))
+            {
+                <!-- 8. Facilities -->
+                <a class="admin-card theme-blue" href="/facilities.html?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-building-columns"></i></div>
+                        <div class="card-info">
+                            <h3>Campus Facilities</h3>
+                            <p>Edit public Facilities overview, library, hostel, sports, and cafeteria details</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Campus Life</span>
+                        <span class="card-action-pill">Edit Facilities <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentSimulationLabs))
+            {
+                <!-- 9. Simulation & Labs -->
+                <a class="admin-card theme-cyan" href="/SimulationLabs/Public?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-plane-departure"></i></div>
+                        <div class="card-info">
+                            <h3>Simulation &amp; Labs</h3>
+                            <p>Edit Flight Simulators, ATC Simulator, and Avionics Lab sections inline</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Training</span>
+                        <span class="card-action-pill">Edit Labs <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentLinks))
+            {
+                <!-- 10. Useful Links -->
+                <a class="admin-card theme-fuchsia" href="/links.html?edit=1">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-link"></i></div>
+                        <div class="card-info">
+                            <h3>Useful Links</h3>
+                            <p>Edit the public Useful Links page directly &mdash; add, edit, or remove links inline</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Resources</span>
+                        <span class="card-action-pill">Edit Links <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentFinancial))
+            {
+                <!-- 11. Financial Page -->
+                <a class="admin-card theme-gold" href="/Financial?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-coins"></i></div>
+                        <div class="card-info">
+                            <h3>Financial &amp; Fee Structure</h3>
+                            <p>Edit Fee Structure, Scholarships, and Payment Methods directly on the page</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Admissions</span>
+                        <span class="card-action-pill">Edit Financials <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentCourseCatalog))
+            {
+                <!-- 12. Course Catalog -->
+                <a class="admin-card theme-emerald" href="/CourseCatalog?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-book-bookmark"></i></div>
+                        <div class="card-info">
+                            <h3>Course Catalog</h3>
+                            <p>Edit ATP 2026 courses, schools, schedules, and duration directly on the page</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Programs</span>
+                        <span class="card-action-pill">Edit Catalog <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentAbout))
+            {
+                <!-- 13. About Us -->
+                <a class="admin-card theme-slate" href="/about.html?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-circle-info"></i></div>
+                        <div class="card-info">
+                            <h3>About Us</h3>
+                            <p>Edit "History of CAA", "History of CATI", and "Management" sections on About page</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Institution</span>
+                        <span class="card-action-pill">Edit About <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+            @if (Can(NAU_Web.Models.AppPermissions.ContentContact))
+            {
+                <!-- 14. Contact Us -->
+                <a class="admin-card theme-red" href="/Contact?edit=true">
+                    <div class="card-top">
+                        <div class="card-icon-wrap"><i class="fas fa-envelope-open-text"></i></div>
+                        <div class="card-info">
+                            <h3>Contact Us</h3>
+                            <p>Edit Contact details &mdash; heading, phone, address, office hours, and email</p>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <span class="card-category-badge">Inquiries</span>
+                        <span class="card-action-pill">Edit Contact <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </a>
+            }
+
+        </div>
+    </main>
+
+    <footer class="admin-footer">
+        &copy; @DateTime.UtcNow.Year @siteTitle &bull; Admin Management Dashboard
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+/* NAU Facilities Page Global Stylesheet */
+:root {
+  --primary: #0b2c4d;
+  --green: #1e8e3e;
+  --bg: #f5f7fb;
+  --white: #fff;
+  --shadow: 0 6px 20px rgba(0,0,0,0.08);
+  --navy: #0d2c54;
+  --gold: #f5a623;
+  --text: #333;
+  --text-light: #666;
+  --border: #e0e0e0;
+  --bg-light: #f7f9fc;
+  --font-head: "Montserrat", sans-serif;
+  --font-body: "Open Sans", sans-serif;
+}
+
+.logo {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+}
+
+.menu-item > .nav-link::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 14px !important;
+  right: 14px !important;
+  height: 3px !important;
+  background: var(--green) !important;
+  transform: scaleX(0) !important;
+  transition: transform 0.25s !important;
+  border-radius: 2px 2px 0 0 !important;
+}
+
+.menu-item:hover > .nav-link::after {
+  transform: scaleX(1) !important;
+}
+
+/* Do not show permanent active line on Campus Life unless specifically on the overview */
+.menu-item.active > .nav-link::after {
+  transform: scaleX(0) !important;
+}
+.menu-item:hover > .nav-link::after {
+  transform: scaleX(1) !important;
+}
+
+/* Base Facility Elements */
+.intro-strip { padding: 70px 20px; background: #fff; }
+.intro-inner { max-width: 1480px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; gap: 60px; }
+.services-section { padding: 64px 20px; }
+.section-inner { max-width: 1480px; margin: 0 auto; }
+.section-head { margin-bottom: 40px; }
+.section-title { font-family: var(--font-head); font-size: 30px; font-weight: 800; color: var(--navy); margin-top: 6px; }
+.underline-bar { width: 40px; height: 3px; border-radius: 2px; margin: 12px 0; }
+.hours-section { padding: 64px 20px; }
+.hours-inner { max-width: 1480px; margin: 0 auto; }
+.hours-table { width: 100%; border-collapse: collapse; }
+.hours-table td { padding: 14px 22px; font-size: 13.5px; border-bottom: 1px solid #f3f0ec; }
+.gallery-section { padding: 64px 20px; }
+.cta-strip { padding: 60px 20px; text-align: center; color: #fff; }
+
+/* Hero Statistics Centered */
+.hero-stats {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 44px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 20px auto 0 auto;
+}
+.hero-stat {
+  text-align: center !important;
+  min-width: 120px;
+}
+@media(max-width:768px){
+  .hero-stats {
+    gap: 20px;
+    justify-content: center !important;
+  }
+}

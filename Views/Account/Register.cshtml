@@ -1,0 +1,654 @@
+@model NAU_Web.Models.RegisterViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply Online – Aviation University</title>
+    <partial name="_Favicon" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="~/css/site.css">
+    <style>
+            :root {
+                --primary: #0b2c4d;
+                --green: #1e8e3e;
+                --green-light: #34a050;
+                --gold: #f5a623;
+                --bg: #f5f7fb;
+                --white: #fff;
+                --font-head: "Montserrat", sans-serif;
+                --font-body: "Poppins", sans-serif;
+              }
+
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+
+            body {
+                font-family: var(--font-body);
+                background: var(--bg);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+              }
+
+            .topbar {
+                background: var(--primary);
+                padding: 10px 40px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+              }
+
+            .topbar-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+            .topbar-logo img { height: 40px; width: auto; display: block; filter: brightness(0) invert(1); }
+            .topbar-logo span { font-family: var(--font-head); font-size: 18px; font-weight: 700; color: #fff; white-space: nowrap; }
+
+            .topbar-back {
+                color: rgba(255,255,255,0.75);
+                font-size: 13px;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: color .2s;
+              }
+            .topbar-back:hover { color: #fff; }
+
+            .hero-strip {
+                background: linear-gradient(135deg, #0b2c4d 0%, #0d3a6e 60%, #1a5fa6 100%);
+                padding: 40px 40px 36px;
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+              }
+            .hero-strip::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(ellipse at 80% 50%, rgba(30,142,62,0.15) 0%, transparent 60%);
+              }
+            .plane-bg {
+                position: absolute;
+                right: 60px;
+                top: 50%;
+                transform: translateY(-50%);
+                font-size: 120px;
+                color: rgba(255,255,255,0.05);
+                pointer-events: none;
+              }
+            .hero-strip .label {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 3px;
+                color: var(--gold);
+                text-transform: uppercase;
+                margin-bottom: 8px;
+                position: relative;
+              }
+            .hero-strip h1 { font-family: var(--font-head); font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; position: relative; }
+            .hero-strip p { color: rgba(255,255,255,0.65); font-size: 13px; position: relative; }
+
+            .steps-wrap { background: #fff; border-bottom: 1px solid #e8ecf0; padding: 20px 40px; }
+            .steps { max-width: 420px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 0; }
+            .step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; position: relative; cursor: pointer; }
+            .step-num {
+                width: 36px; height: 36px; border-radius: 50%;
+                background: #e8ecf0; color: #aaa;
+                display: flex; align-items: center; justify-content: center;
+                font-family: var(--font-head); font-size: 14px; font-weight: 700;
+                transition: all .3s; position: relative; z-index: 1;
+              }
+            .step.active .step-num { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(11,44,77,0.3); }
+            .step.done .step-num { background: var(--green); color: #fff; }
+            .step-label { font-size: 11px; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+            .step.active .step-label { color: var(--primary); }
+            .step.done .step-label { color: var(--green); }
+            .step-line { flex: 1; height: 2px; background: #e8ecf0; margin-bottom: 20px; transition: background .3s; max-width: 80px; }
+            .step-line.done { background: var(--green); }
+
+            .form-area { max-width: 760px; margin: 36px auto; padding: 0 20px 60px; width: 100%; }
+            .form-card { background: #fff; border-radius: 12px; box-shadow: 0 4px 24px rgba(11,44,77,0.08); overflow: hidden; }
+            .form-card-header { padding: 24px 32px 20px; border-bottom: 1px solid #f0f2f5; display: flex; align-items: center; gap: 12px; }
+            .form-card-header .icon {
+                width: 44px; height: 44px; border-radius: 10px;
+                background: rgba(11,44,77,0.07);
+                display: flex; align-items: center; justify-content: center;
+                color: var(--primary); font-size: 18px; flex-shrink: 0;
+              }
+            .form-card-header h3 { font-family: var(--font-head); font-size: 17px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+            .form-card-header p { font-size: 12px; color: #999; }
+            .form-card-body { padding: 28px 32px; }
+            .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+            .form-row.single { grid-template-columns: 1fr; }
+            .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+            .form-group { display: flex; flex-direction: column; }
+            .form-group label { font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 7px; letter-spacing: 0.2px; }
+            .form-group label span.req { color: #e53e3e; margin-left: 2px; }
+            .input-wrap { position: relative; }
+            .input-wrap i.prefix { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #bbb; font-size: 13px; pointer-events: none; }
+            .input-wrap input, .input-wrap select, .input-wrap textarea {
+                width: 100%; padding: 11px 13px 11px 38px;
+                border: 1.5px solid #e0e4ea; border-radius: 8px;
+                font-family: var(--font-body); font-size: 13.5px; color: #333;
+                background: #fafbfc; transition: border-color .2s, box-shadow .2s;
+                outline: none; appearance: none;
+              }
+            .input-wrap textarea { resize: none; height: 80px; padding-top: 11px; }
+            .input-wrap select { cursor: pointer; }
+            .input-wrap input:focus, .input-wrap select:focus, .input-wrap textarea:focus {
+                border-color: var(--green); box-shadow: 0 0 0 3px rgba(30,142,62,0.1); background: #fff;
+              }
+            .input-wrap.error input, .input-wrap.error select, .input-wrap.error textarea {
+                border-color: #e53e3e; background: #fff5f5;
+              }
+            .input-wrap.error input:focus, .input-wrap.error select:focus, .input-wrap.error textarea:focus {
+                box-shadow: 0 0 0 3px rgba(229,62,62,0.12);
+              }
+            .field-error {
+                display: none; color: #e53e3e; font-size: 11.5px; margin-top: 6px; line-height: 1.4;
+              }
+            .field-error.show { display: flex; align-items: center; gap: 5px; }
+            .toggle-pass { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); color: #bbb; cursor: pointer; font-size: 14px; transition: color .2s; }
+            .toggle-pass:hover { color: var(--primary); }
+            .password-strength { margin-top: 6px; display: flex; gap: 4px; align-items: center; }
+            .strength-bar { height: 3px; flex: 1; border-radius: 2px; background: #e8e8e8; transition: background .3s; }
+            .strength-label { font-size: 11px; color: #aaa; margin-left: 6px; }
+            .checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin-top: 10px; font-size: 13px; color: #555; }
+            .checkbox-group input[type=checkbox] { accent-color: var(--green); width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+            .checkbox-group a { color: var(--green); font-weight: 600; text-decoration: none; }
+            .checkbox-group a:hover { text-decoration: underline; }
+            .checkbox-group.error label { color: #e53e3e; }
+            .form-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 32px 28px; border-top: 1px solid #f0f2f5; background: #fafbfc; }
+            .btn-prev {
+                padding: 11px 24px; background: transparent; border: 1.5px solid #ddd; border-radius: 8px;
+                font-family: var(--font-head); font-size: 13px; font-weight: 600; color: #777; cursor: pointer;
+                display: flex; align-items: center; gap: 8px; transition: all .2s;
+              }
+            .btn-prev:hover { border-color: #999; color: #333; }
+            .btn-next {
+                padding: 11px 28px; background: var(--primary); border: none; border-radius: 8px;
+                font-family: var(--font-head); font-size: 13px; font-weight: 700; color: #fff; cursor: pointer;
+                display: flex; align-items: center; gap: 8px; transition: background .2s, box-shadow .2s, transform .1s; letter-spacing: 0.3px;
+              }
+            .btn-next:hover { background: #0d3a6e; box-shadow: 0 6px 20px rgba(11,44,77,0.25); }
+            .btn-next:active { transform: scale(0.99); }
+            .btn-submit-final {
+                padding: 12px 32px; background: var(--green); border: none; border-radius: 8px;
+                font-family: var(--font-head); font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+                display: flex; align-items: center; gap: 8px; transition: background .2s, box-shadow .2s;
+              }
+            .btn-submit-final:hover { background: var(--green-light); box-shadow: 0 6px 20px rgba(30,142,62,0.3); }
+            .already { text-align: center; font-size: 13px; color: #888; margin-top: 20px; }
+            .already a { color: var(--green); font-weight: 700; text-decoration: none; }
+            .already a:hover { text-decoration: underline; }
+            .step-page { display: none; }
+            .step-page.active { display: block; }
+            .page-footer { background: var(--primary); color: rgba(255,255,255,0.5); text-align: center; padding: 14px; font-size: 12px; margin-top: auto; }
+            .register-error {
+                background: #fdecea; border: 1px solid #f5c2c0; color: #b3261e;
+                padding: 12px 16px; border-radius: 8px; font-size: 13px; margin: 24px 32px 0; list-style: none;
+              }
+
+            @@media(max-width: 600px) {
+                .form-row { grid-template-columns: 1fr; }
+                .form-row.triple { grid-template-columns: 1fr 1fr; }
+                .form-card-body { padding: 20px 18px; }
+                .form-card-header { padding: 18px 18px 16px; }
+                .form-nav { padding: 16px 18px 20px; }
+                .form-area { padding: 0 12px 40px; }
+                .steps-wrap { padding: 16px 20px; }
+              }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <a href="~/" class="topbar-logo">
+            <img src="~/images/logo.png" alt="NAU Logo" onerror="this.style.display='none'">
+            <span>National Aviation University</span>
+        </a>
+        <a href="javascript:history.back()" class="topbar-back"><i class="fas fa-arrow-left"></i> Back to Previous Page</a>
+    </div>
+
+    <div class="hero-strip">
+        <div class="plane-bg"><i class="fas fa-plane"></i></div>
+        <div class="label">Admissions Open 2026</div>
+        <h1>Apply to National Aviation University</h1>
+        <p>Join Pakistan's premier aviation institution. Complete the form below to begin your journey.</p>
+    </div>
+
+    <div class="steps-wrap">
+        <div class="steps">
+            <div class="step active" id="s1"><div class="step-num">1</div><div class="step-label">Personal</div></div>
+            <div class="step-line" id="l1"></div>
+            <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">Account</div></div>
+        </div>
+    </div>
+
+    <div class="form-area">
+        <form asp-controller="Account" asp-action="Register" method="post" id="registerForm" novalidate>
+            <div class="form-card">
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <ul class="register-error">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                }
+
+                <!-- STEP 1: PERSONAL INFO -->
+                <div class="step-page active" id="page1">
+                    <div class="form-card-header">
+                        <div class="icon"><i class="fas fa-user"></i></div>
+                        <div><h3>Personal Information</h3><p>Tell us about yourself</p></div>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>First Name <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_FirstName">
+                                    <i class="fas fa-user prefix"></i>
+                                    <input type="text" id="FirstName" name="FirstName" placeholder="John" value="@Model.FirstName">
+                                </div>
+                                <div class="field-error" id="err_FirstName"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_LastName">
+                                    <i class="fas fa-user prefix"></i>
+                                    <input type="text" id="LastName" name="LastName" placeholder="Smith" value="@Model.LastName">
+                                </div>
+                                <div class="field-error" id="err_LastName"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Date of Birth <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_DateOfBirth">
+                                    <i class="fas fa-calendar prefix"></i>
+                                    <input type="date" id="DateOfBirth" name="DateOfBirth" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))">
+                                </div>
+                                <div class="field-error" id="err_DateOfBirth"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Gender <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_Gender">
+                                    <i class="fas fa-venus-mars prefix"></i>
+                                    <select id="Gender" name="Gender">
+                                        <option value="">Select Gender</option>
+                                        <option>Male</option>
+                                        <option>Female</option>
+                                        <option>Prefer not to say</option>
+                                    </select>
+                                </div>
+                                <div class="field-error" id="err_Gender"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>CNIC / B-Form Number <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_Cnic">
+                                    <i class="fas fa-id-card prefix"></i>
+                                    <input type="text" id="Cnic" name="Cnic" placeholder="12345-1234567-1" maxlength="15" value="@Model.Cnic">
+                                </div>
+                                <div class="field-error" id="err_Cnic"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Phone Number <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_Phone">
+                                    <i class="fas fa-phone prefix"></i>
+                                    <input type="tel" id="Phone" name="Phone" placeholder="+92 300 0000000" value="@Model.Phone">
+                                </div>
+                                <div class="field-error" id="err_Phone"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                        </div>
+                        <div class="form-row single">
+                            <div class="form-group">
+                                <label>Residential Address <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_Address">
+                                    <i class="fas fa-map-marker-alt prefix"></i>
+                                    <textarea id="Address" name="Address" placeholder="House No., Street, City, Province">@Model.Address</textarea>
+                                </div>
+                                <div class="field-error" id="err_Address"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>City</label>
+                                <div class="input-wrap" id="wrap_City">
+                                    <i class="fas fa-city prefix"></i>
+                                    <input type="text" id="City" name="City" placeholder="Hyderabad" value="@Model.City">
+                                </div>
+                                <div class="field-error" id="err_City"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Province</label>
+                                <div class="input-wrap" id="wrap_Province">
+                                    <i class="fas fa-map prefix"></i>
+                                    <select id="Province" name="Province">
+                                        <option value="">Select Province</option>
+                                        <option>Sindh</option>
+                                        <option>Punjab</option>
+                                        <option>KPK</option>
+                                        <option>Balochistan</option>
+                                        <option>Gilgit-Baltistan</option>
+                                        <option>AJK</option>
+                                    </select>
+                                </div>
+                                <div class="field-error" id="err_Province"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-nav">
+                        <div></div>
+                        <button type="button" class="btn-next" onclick="handleNext(1, 2)">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: ACCOUNT SETUP -->
+                <div class="step-page" id="page2">
+                    <div class="form-card-header">
+                        <div class="icon"><i class="fas fa-shield-alt"></i></div>
+                        <div><h3>Account Setup</h3><p>Create your portal credentials</p></div>
+                    </div>
+                    <div class="form-card-body">
+                        <div class="form-row single">
+                            <div class="form-group">
+                                <label>Email Address <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_Email">
+                                    <i class="fas fa-envelope prefix"></i>
+                                    <input type="email" id="Email" name="Email" placeholder="yourname@email.com" value="@Model.Email">
+                                </div>
+                                <div class="field-error" id="err_Email"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Password <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_Password">
+                                    <i class="fas fa-lock prefix"></i>
+                                    <input type="password" id="regPass" name="Password" placeholder="Create a strong password" oninput="checkStrength(this.value)">
+                                    <i class="fas fa-eye toggle-pass" onclick="togglePass('regPass', this)"></i>
+                                </div>
+                                <div class="password-strength">
+                                    <div class="strength-bar" id="bar1"></div>
+                                    <div class="strength-bar" id="bar2"></div>
+                                    <div class="strength-bar" id="bar3"></div>
+                                    <div class="strength-bar" id="bar4"></div>
+                                    <span class="strength-label" id="strengthLabel"></span>
+                                </div>
+                                <div class="field-error" id="err_Password"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password <span class="req">*</span></label>
+                                <div class="input-wrap" id="wrap_ConfirmPassword">
+                                    <i class="fas fa-lock prefix"></i>
+                                    <input type="password" id="regPassConf" name="ConfirmPassword" placeholder="Repeat your password">
+                                    <i class="fas fa-eye toggle-pass" onclick="togglePass('regPassConf', this)"></i>
+                                </div>
+                                <div class="field-error" id="err_ConfirmPassword"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                            </div>
+                        </div>
+                        <div class="checkbox-group" id="wrap_TermsAccepted">
+                            <input type="checkbox" id="termsCheck" name="TermsAccepted" value="true">
+                            <label for="termsCheck">I agree to the <a href="#">Terms &amp; Conditions</a> and <a href="#">Privacy Policy</a> of National Aviation University.</label>
+                        </div>
+                        <div class="checkbox-group" id="wrap_InfoConfirmed" style="margin-top:8px;">
+                            <input type="checkbox" id="infoCheck" name="InfoConfirmed" value="true">
+                            <label for="infoCheck">I confirm that all information provided is accurate and complete.</label>
+                        </div>
+                        <div class="field-error" id="err_Consent"><i class="fas fa-circle-exclamation"></i><span></span></div>
+                    </div>
+                    <div class="form-nav">
+                        <button type="button" class="btn-prev" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> Previous</button>
+                        <button type="submit" class="btn-submit-final" onclick="return validateBeforeSubmit(event)">
+                            <i class="fas fa-paper-plane"></i> Submit Application
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- end .form-card -->
+
+            <div class="already">Already have an account? <a asp-controller="Account" asp-action="Login">Sign In</a></div>
+
+        </form>
+    </div>
+
+    <div class="page-footer" style="white-space:nowrap;">© 2026 National Aviation University. All Rights Reserved.</div>
+
+    <script>
+            let currentStep = 1;
+
+            function goStep(n) {
+              document.getElementById('page' + currentStep).classList.remove('active');
+              document.getElementById('s' + currentStep).classList.remove('active');
+              if (n > currentStep) document.getElementById('s' + currentStep).classList.add('done');
+              if (n < currentStep) document.getElementById('s' + currentStep).classList.remove('done');
+              if (n > 1) document.getElementById('l' + (n-1)).classList.add('done');
+              if (n <= currentStep && currentStep > 1) document.getElementById('l' + (n)).classList.remove('done');
+
+              currentStep = n;
+              document.getElementById('page' + currentStep).classList.add('active');
+              document.getElementById('s' + currentStep).classList.add('active');
+
+              document.querySelector('.steps-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function handleNext(fromStep, toStep) {
+              if (validateStep(fromStep)) {
+                goStep(toStep);
+              } else {
+                focusFirstInvalid(fromStep);
+              }
+            }
+
+            function togglePass(id, icon) {
+              const input = document.getElementById(id);
+              if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+              } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+              }
+            }
+
+            function checkStrength(val) {
+              const bars = [document.getElementById('bar1'),document.getElementById('bar2'),document.getElementById('bar3'),document.getElementById('bar4')];
+              const label = document.getElementById('strengthLabel');
+              let score = 0;
+              if (val.length >= 8) score++;
+              if (/[A-Z]/.test(val)) score++;
+              if (/[0-9]/.test(val)) score++;
+              if (/[^a-zA-Z0-9]/.test(val)) score++;
+
+              const colors = ['#e53e3e','#f5a623','#3182ce','#1e8e3e'];
+              const labels = ['Weak','Fair','Good','Strong'];
+
+              bars.forEach((b, i) => {
+                b.style.background = i < score ? colors[score - 1] : '#e8e8e8';
+              });
+              label.textContent = val.length === 0 ? '' : labels[score - 1] || '';
+              label.style.color = score > 0 ? colors[score - 1] : '#aaa';
+              validateField('ConfirmPassword');
+            }
+
+            /* ---------------------------------------------------------
+               VALIDATION ENGINE
+               --------------------------------------------------------- */
+            const validators = {
+              FirstName:  { required: true, pattern: /^[A-Za-z\s'.-]{2,50}$/, message: "Enter a valid first name (letters only, min 2 characters)." },
+              LastName:   { required: true, pattern: /^[A-Za-z\s'.-]{2,50}$/, message: "Enter a valid last name (letters only, min 2 characters)." },
+              DateOfBirth:{ required: true, custom: validateDob },
+              Gender:     { required: true, message: "Please select your gender." },
+              Cnic:       { required: true, pattern: /^\d{5}-\d{7}-\d$/, message: "Format must be 12345-1234567-1." },
+              Phone:      { required: true, pattern: /^(\+92|0)[0-9]{10}$/, message: "Enter a valid phone number, e.g. +923000000000 or 03000000000." },
+              Address:    { required: true, minLength: 10, message: "Please enter your complete address (minimum 10 characters)." },
+              City:       { required: false, pattern: /^[A-Za-z\s'.-]{2,50}$/, message: "City name should contain letters only." },
+              Province:   { required: false },
+              Email:      { required: true, pattern: /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/, message: "Enter a valid email address." },
+              Password:   { required: true, custom: validatePassword },
+              ConfirmPassword: { required: true, custom: validateConfirmPassword }
+            };
+
+            const stepFields = {
+              1: ['FirstName','LastName','DateOfBirth','Gender','Cnic','Phone','Address','City','Province'],
+              2: ['Email','Password','ConfirmPassword']
+            };
+
+            function validateDob(value) {
+              if (!value) return "Date of birth is required.";
+              const dob = new Date(value);
+              const today = new Date();
+              if (isNaN(dob.getTime())) return "Enter a valid date.";
+              if (dob > today) return "Date of birth cannot be in the future.";
+              let age = today.getFullYear() - dob.getFullYear();
+              const m = today.getMonth() - dob.getMonth();
+              if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+              if (age < 15) return "You must be at least 15 years old to apply.";
+              if (age > 100) return "Please enter a valid date of birth.";
+              return true;
+            }
+
+            function validatePassword(value) {
+              if (!value) return "Password is required.";
+              if (value.length < 8) return "Password must be at least 8 characters long.";
+              if (!/[A-Za-z]/.test(value) || !/[0-9]/.test(value)) return "Password must contain at least one letter and one number.";
+              return true;
+            }
+
+            function validateConfirmPassword(value) {
+              const pass = document.getElementById('regPass').value;
+              if (!value) return "Please confirm your password.";
+              if (value !== pass) return "Passwords do not match.";
+              return true;
+            }
+
+            function showFieldError(name, message) {
+              const wrap = document.getElementById('wrap_' + name);
+              const err = document.getElementById('err_' + name);
+              if (wrap) wrap.classList.add('error');
+              if (err) { err.querySelector('span').textContent = message; err.classList.add('show'); }
+            }
+
+            function clearFieldError(name) {
+              const wrap = document.getElementById('wrap_' + name);
+              const err = document.getElementById('err_' + name);
+              if (wrap) wrap.classList.remove('error');
+              if (err) { err.querySelector('span').textContent = ''; err.classList.remove('show'); }
+            }
+
+            function validateField(name) {
+              const rule = validators[name];
+              if (!rule) return true;
+              const el = document.getElementById(name);
+              if (!el) return true;
+              const value = el.value.trim();
+
+              if (rule.custom) {
+                const result = rule.custom(value, el);
+                if (result !== true) { showFieldError(name, result); return false; }
+                clearFieldError(name);
+                return true;
+              }
+
+              if (rule.required && value === '') {
+                showFieldError(name, rule.message || 'This field is required.');
+                return false;
+              }
+              if (!rule.required && value === '') { clearFieldError(name); return true; }
+              if (rule.pattern && !rule.pattern.test(value)) {
+                showFieldError(name, rule.message || 'Invalid value.');
+                return false;
+              }
+              if (rule.minLength && value.length < rule.minLength) {
+                showFieldError(name, rule.message || ('Minimum ' + rule.minLength + ' characters required.'));
+                return false;
+              }
+              clearFieldError(name);
+              return true;
+            }
+
+            function validateConsent() {
+              const terms = document.getElementById('termsCheck').checked;
+              const info = document.getElementById('infoCheck').checked;
+              const err = document.getElementById('err_Consent');
+              if (!terms || !info) {
+                document.getElementById('wrap_TermsAccepted').classList.add('error');
+                document.getElementById('wrap_InfoConfirmed').classList.add('error');
+                err.querySelector('span').textContent = 'You must accept the terms and confirm your information before submitting.';
+                err.classList.add('show');
+                return false;
+              }
+              document.getElementById('wrap_TermsAccepted').classList.remove('error');
+              document.getElementById('wrap_InfoConfirmed').classList.remove('error');
+              err.classList.remove('show');
+              return true;
+            }
+
+            function validateStep(n) {
+              let valid = true;
+              stepFields[n].forEach(function (name) {
+                if (!validateField(name)) valid = false;
+              });
+              if (n === 2) {
+                if (!validateConsent()) valid = false;
+              }
+              return valid;
+            }
+
+            function focusFirstInvalid(n) {
+              for (const name of stepFields[n]) {
+                const wrap = document.getElementById('wrap_' + name);
+                if (wrap && wrap.classList.contains('error')) {
+                  const el = document.getElementById(name);
+                  if (el) el.focus();
+                  break;
+                }
+              }
+            }
+
+            function validateBeforeSubmit(e) {
+              const step1Valid = validateStep(1);
+              const step2Valid = validateStep(2);
+              if (!step1Valid) {
+                e.preventDefault();
+                goStep(1);
+                focusFirstInvalid(1);
+                return false;
+              }
+              if (!step2Valid) {
+                e.preventDefault();
+                focusFirstInvalid(2);
+                return false;
+              }
+              return true;
+            }
+
+            // Attach real-time validation listeners
+            (function attachRealtimeValidation() {
+              Object.keys(validators).forEach(function (name) {
+                const el = document.getElementById(name);
+                if (!el) return;
+                const eagerEvent = (el.tagName === 'SELECT') ? 'change' : 'input';
+                el.addEventListener(eagerEvent, function () { validateField(name); });
+                el.addEventListener('blur', function () { validateField(name); });
+              });
+
+              document.getElementById('termsCheck').addEventListener('change', validateConsent);
+              document.getElementById('infoCheck').addEventListener('change', validateConsent);
+            })();
+    </script>
+</body>
+</html>

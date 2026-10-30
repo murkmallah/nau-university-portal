@@ -1,0 +1,2071 @@
+@model IEnumerable<NAU_Web.Models.NewsPost>
+@{
+    Layout = null;
+    bool isSuperAdmin = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+    bool isAdmin = User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Staff"));
+    bool canEdit = ViewBag.IsAdmin == true;
+    bool editMode = ViewBag.EditMode == true;   // true only when reached via Admin Panel "News & Media" link (?edit=1)
+
+    var posts = Model.ToList();
+    var today = DateOnly.FromDateTime(DateTime.Now);
+
+    var activePosts = posts.Where(p => p.IsActive && (p.ExpiresAt == null || p.ExpiresAt >= today)).ToList();
+    var expiredPosts = posts.Where(p => !p.IsActive || (p.ExpiresAt.HasValue && p.ExpiresAt.Value < today)).ToList();
+
+    // Pick the featured "main" story from activePosts (prefer IsFeatured, else most recent active post).
+    var featuredMain = activePosts.FirstOrDefault(p => p.IsFeatured) ?? activePosts.FirstOrDefault();
+    var sideStack = activePosts.Where(p => p.NewsPostId != featuredMain?.NewsPostId)
+                          .Where(p => p.IsFeatured)
+                          .Take(3)
+                          .ToList();
+    if (sideStack.Count < 3)
+    {
+        var extra = activePosts.Where(p => p.NewsPostId != featuredMain?.NewsPostId && !sideStack.Select(s => s.NewsPostId).Contains(p.NewsPostId))
+                          .Take(3 - sideStack.Count);
+        sideStack.AddRange(extra);
+    }
+    var excludedIds = new HashSet<int>(sideStack.Select(s => s.NewsPostId));
+    if (featuredMain != null) excludedIds.Add(featuredMain.NewsPostId);
+    var gridPosts = activePosts.Where(p => !excludedIds.Contains(p.NewsPostId)).ToList();
+
+    var categories = posts.Select(p => string.IsNullOrWhiteSpace(p.Category) ? "News" : p.Category!.Trim())
+                           .Distinct(StringComparer.OrdinalIgnoreCase)
+                           .OrderBy(c => c)
+                           .ToList();
+
+    (string Color, string Icon) CatStyle(string? category)
+    {
+        var c = category ?? string.Empty;
+        if (c.Contains("cpd", StringComparison.OrdinalIgnoreCase) || c.Contains("seminar", StringComparison.OrdinalIgnoreCase))
+            return ("#1a5fa6", "fas fa-chalkboard-teacher");
+        if (c.Contains("admission", StringComparison.OrdinalIgnoreCase))
+            return ("#c87800", "fas fa-graduation-cap");
+        if (c.Contains("academic", StringComparison.OrdinalIgnoreCase))
+            return ("#7c3aed", "fas fa-award");
+        if (c.Contains("event", StringComparison.OrdinalIgnoreCase) || c.Contains("training", StringComparison.OrdinalIgnoreCase))
+            return ("#1e8e3e", "fas fa-calendar-check");
+        return ("#0b2c4d", "fas fa-newspaper");
+    }
+
+    string CatSlug(string? category) => (string.IsNullOrWhiteSpace(category) ? "news" : category!.Trim().ToLowerInvariant().Replace(" ", "-"));
+
+    // ---- Photo Gallery (separate table, own admin controls) ----
+    var galleryPhotos = ((IEnumerable<NAU_Web.Models.GalleryPhoto>?)ViewBag.GalleryPhotos ?? Enumerable.Empty<NAU_Web.Models.GalleryPhoto>()).ToList();
+    var galleryAlbums = galleryPhotos.Select(g => string.IsNullOrWhiteSpace(g.Album) ? "Campus Life" : g.Album!.Trim())
+                                      .Distinct(StringComparer.OrdinalIgnoreCase)
+                                      .OrderBy(a => a)
+                                      .ToList();
+    string AlbumSlug(string? album) => (string.IsNullOrWhiteSpace(album) ? "campus-life" : album!.Trim().ToLowerInvariant().Replace(" ", "-").Replace("&", "and"));
+
+    (string C1, string C2) PhotoGradient(int seed)
+    {
+        var pairs = new (string, string)[]
+        {
+            ("#0b2c4d", "#1a5fa6"), ("#1e3a5f", "#2c6fad"), ("#1e5c2e", "#2ea04e"),
+            ("#c87800", "#e8a020"), ("#4a1b6b", "#7c3aed"), ("#0b3d6b", "#1565c0"),
+            ("#c0392b", "#e74c3c"), ("#16a085", "#1abc9c")
+        };
+        return pairs[Math.Abs(seed) % pairs.Length];
+    }
+
+    // ---- Video Gallery (separate table, own admin controls) -- 3rd section
+    // of this same page, right after Photo Gallery. Not a standalone page. ----
+    var galleryVideos = ((IEnumerable<NAU_Web.Models.GalleryVideo>?)ViewBag.GalleryVideos ?? Enumerable.Empty<NAU_Web.Models.GalleryVideo>()).ToList();
+
+    string VideoCatColor(string? category)
+    {
+        var c = category ?? string.Empty;
+        if (c.Contains("training", StringComparison.OrdinalIgnoreCase)) return "#1e8e3e";
+        if (c.Contains("cpd", StringComparison.OrdinalIgnoreCase)) return "#1e8e3e";
+        if (c.Contains("ceremony", StringComparison.OrdinalIgnoreCase) || c.Contains("convocation", StringComparison.OrdinalIgnoreCase)) return "#7c3aed";
+        if (c.Contains("campus life", StringComparison.OrdinalIgnoreCase) || c.Contains("sport", StringComparison.OrdinalIgnoreCase)) return "#c87800";
+        if (c.Contains("tour", StringComparison.OrdinalIgnoreCase)) return "#1a5fa6";
+        return "#0b2c4d";
+    }
+
+    string FormatViews(int v)
+    {
+        if (v >= 1000)
+        {
+            var k = v / 1000.0;
+            return k.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "k views";
+        }
+        return v + (v == 1 ? " view" : " views");
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>News &amp; Media - National Aviation University</title>
+<partial name="_Favicon" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/news-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+</head>
+<body>
+
+<div id="npToast"></div>
+
+@if (editMode)
+{
+    <div class="np-editbar">
+        <i class="fas fa-lock"></i> You are viewing this page in <strong>Admin Edit Mode</strong>.
+        <a href="/NewsPosts/Public">Exit to normal view</a>
+        <a href="/Admin"><i class="fas fa-user-shield"></i> Admin Panel</a>
+    </div>
+}
+
+<partial name="_SiteHeader" />
+
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="page-hero-eyebrow">Campus Life &mdash; News &amp; Media</div>
+    <h1>News &amp; Media</h1>
+    <p>Stay up to date with the latest announcements, events, and news from National Aviation University.</p>
+  </div>
+</div>
+
+<nav class="sec-nav" id="secNav">
+  <a href="#latest-news" class="sec-nav-link active" data-section="latest-news"><i class="fas fa-newspaper"></i> Latest News</a>
+  <a href="#photo-gallery" class="sec-nav-link" data-section="photo-gallery"><i class="fas fa-images"></i> Photo Gallery</a>
+  <a href="#video-gallery" class="sec-nav-link" data-section="video-gallery"><i class="fas fa-video"></i> Video Gallery</a>
+</nav>
+
+<main class="nm-main">
+  <section class="nm-section" id="latest-news">
+    <div class="nm-section-label"><i class="fas fa-newspaper"></i> News</div>
+    <h2>Latest News &amp; Announcements</h2>
+    <div class="nm-divider"></div>
+
+    <div class="news-filter-bar">
+      <button class="news-filter-btn active" onclick="filterNews('all',this)">All</button>
+      @foreach (var cat in categories)
+      {
+          <button class="news-filter-btn" onclick="filterNews('@CatSlug(cat)',this)">@cat</button>
+      }
+      @if (ViewBag.IsAdminUser == true || editMode)
+      {
+          <button class="news-filter-btn expired-tab-btn" onclick="filterNews('expired',this)" style="background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;font-weight:700;"><i class="fas fa-clock"></i> Expired &amp; Drafts</button>
+      }
+      <div class="news-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="newsSearchInput" placeholder="Search news..." oninput="searchNews(this.value)">
+      </div>
+      @if (editMode)
+      {
+          <button type="button" class="np-add-btn" onclick="openAddNewsDraftModal()"><i class="fas fa-plus"></i> Add News</button>
+      }
+    </div>
+
+    @if (!posts.Any())
+    {
+        <p style="color:var(--text-light);font-size:14px;padding:20px 0;">No news posts yet.@(editMode ? " Click \"Add News\" to publish the first one." : "")</p>
+    }
+    else
+    {
+        <div class="news-featured" id="newsFeatured">
+            @if (featuredMain != null)
+            {
+                var style = CatStyle(featuredMain.Category);
+                var icon = string.IsNullOrWhiteSpace(featuredMain.Icon) ? style.Icon : featuredMain.Icon;
+                var bgStyle = string.IsNullOrWhiteSpace(featuredMain.ImageUrl)
+                    ? $"background:linear-gradient(135deg,{style.Color},#1a5fa6);"
+                    : $"background-image:url('{featuredMain.ImageUrl}');";
+                <div class="news-featured-main" data-cat="@CatSlug(featuredMain.Category)" data-id="@featuredMain.NewsPostId" onclick="openNewsDetailModal(@featuredMain.NewsPostId)">
+                    <div class="nf-thumb" style="@bgStyle">
+                        @if (string.IsNullOrWhiteSpace(featuredMain.ImageUrl))
+                        {
+                            <i class="@icon" style="color:rgba(255,255,255,0.85);"></i>
+                        }
+                        <div class="nf-thumb-overlay"></div>
+                        <span class="nf-category" style="background:@(style.Color)e6;color:#fff;"><i class="@icon"></i> @featuredMain.Category</span>
+                        @if (editMode)
+                        {
+                            var isExpiredF = featuredMain.ExpiresAt.HasValue && featuredMain.ExpiresAt.Value < DateOnly.FromDateTime(DateTime.Now);
+                            <div class="np-card-admin-bar">
+                                <div class="np-admin-status-pills">
+                                    @if (!featuredMain.IsActive)
+                                    {
+                                        <span class="np-status-pill inactive" style="background:#64748b;color:#fff;"><i class="fas fa-eye-slash"></i> Inactive</span>
+                                    }
+                                    else if (isExpiredF)
+                                    {
+                                        <span class="np-status-pill expired" style="background:#dc2626;color:#fff;"><i class="fas fa-triangle-exclamation"></i> Expired</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="np-status-pill active" style="background:#16a34a;color:#fff;"><i class="fas fa-circle-check"></i> Active</span>
+                                    }
+                                    @if (featuredMain.IsSplashScreen)
+                                    {
+                                        <span class="np-status-pill splash"><i class="fas fa-bullhorn"></i> Splash</span>
+                                    }
+                                    @if (featuredMain.IsFeatured)
+                                    {
+                                        <span class="np-status-pill featured"><i class="fas fa-star"></i> Featured</span>
+                                    }
+                                </div>
+                                <div class="np-card-actions">
+                                    <button type="button" class="np-toggle-btn @(featuredMain.IsActive ? "active" : "inactive")" title="@(featuredMain.IsActive ? "Set to Inactive (Hide from Public)" : "Set to Active (Publish Live)")" onclick="event.stopPropagation(); toggleNewsActive(this, @featuredMain.NewsPostId)" style="background:@(featuredMain.IsActive ? "#16a34a" : "#64748b");color:#fff;border:none;padding:5px 9px;border-radius:6px;font-size:12px;cursor:pointer;"><i class="fas @(featuredMain.IsActive ? "fa-eye" : "fa-eye-slash")"></i></button>
+                                    <button type="button" class="np-edit-btn" title="Edit" onclick="event.stopPropagation(); openEditNewsModal(@featuredMain.NewsPostId)"><i class="fas fa-pen"></i></button>
+                                    <button type="button" class="np-delete-btn" title="Delete" onclick="event.stopPropagation(); deleteNewsPost(this, @featuredMain.NewsPostId)"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="nf-body">
+                        <div class="nf-meta"><i class="far fa-calendar"></i> @featuredMain.PublishDate.ToString("MMMM d, yyyy")</div>
+                        <div class="nf-title">@featuredMain.Title</div>
+                        <div class="nf-desc">@featuredMain.Body</div>
+                    </div>
+                </div>
+            }
+            <div class="news-side-stack">
+                @foreach (var p in sideStack)
+                {
+                    var s = CatStyle(p.Category);
+                    var i = string.IsNullOrWhiteSpace(p.Icon) ? s.Icon : p.Icon;
+                    var sideThumbStyle = string.IsNullOrWhiteSpace(p.ImageUrl)
+                        ? $"background:{s.Color}1a;"
+                        : $"background-image:url('{p.ImageUrl}');background-size:cover;background-position:center;";
+                    <div class="news-side-card" data-cat="@CatSlug(p.Category)" data-id="@p.NewsPostId" onclick="openNewsDetailModal(@p.NewsPostId)">
+                        <div class="ns-thumb" style="@sideThumbStyle">
+                            @if (string.IsNullOrWhiteSpace(p.ImageUrl))
+                            {
+                                <i class="@i" style="color:@s.Color;"></i>
+                            }
+                        </div>
+                        <div class="ns-body" style="flex:1;">
+                            <div class="ns-category" style="color:@s.Color;">
+                                <span>@p.Category</span>
+                                @if (editMode)
+                                {
+                                    var isExpiredP = p.ExpiresAt.HasValue && p.ExpiresAt.Value < DateOnly.FromDateTime(DateTime.Now);
+                                    if (!p.IsActive)
+                                    {
+                                        <span class="np-status-pill-mini inactive"><i class="fas fa-eye-slash"></i> Inactive</span>
+                                    }
+                                    else if (isExpiredP)
+                                    {
+                                        <span class="np-status-pill-mini expired" style="background:#dc2626;color:#fff;"><i class="fas fa-triangle-exclamation"></i> Expired</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="np-status-pill-mini active" style="background:#16a34a;color:#fff;"><i class="fas fa-circle-check"></i> Active</span>
+                                    }
+                                    @if (p.IsSplashScreen)
+                                    {
+                                        <span class="np-status-pill-mini splash"><i class="fas fa-bullhorn"></i> Splash</span>
+                                    }
+                                }
+                            </div>
+                            <div class="ns-title">@p.Title</div>
+                            <div class="ns-meta">
+                                <i class="far fa-calendar" style="margin-right:4px;color:var(--green);"></i> @p.PublishDate.ToString("MMMM d, yyyy")
+                                @if (p.ExpiresAt.HasValue)
+                                {
+                                    <span style="margin-left:8px;font-size:11px;color:@(p.ExpiresAt.Value < DateOnly.FromDateTime(DateTime.Now) ? "#dc2626" : "#0284c7");">
+                                        <i class="fas fa-clock"></i> Expires: @p.ExpiresAt.Value.ToString("yyyy-MM-dd")
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        @if (editMode)
+                        {
+                            <div class="np-card-actions" style="position:static;display:flex;align-items:flex-start;gap:4px;">
+                                <button type="button" class="np-toggle-btn @(p.IsActive ? "active" : "inactive")" title="@(p.IsActive ? "Set to Inactive (Hide from Public)" : "Set to Active (Publish Live)")" onclick="event.stopPropagation(); toggleNewsActive(this, @p.NewsPostId)" style="background:@(p.IsActive ? "#16a34a" : "#64748b");color:#fff;border:none;padding:5px 9px;border-radius:6px;font-size:12px;cursor:pointer;"><i class="fas @(p.IsActive ? "fa-eye" : "fa-eye-slash")"></i></button>
+                                <button type="button" class="np-edit-btn" title="Edit" onclick="event.stopPropagation(); openEditNewsModal(@p.NewsPostId)"><i class="fas fa-pen"></i></button>
+                                <button type="button" class="np-delete-btn" title="Delete" onclick="event.stopPropagation(); deleteNewsPost(this, @p.NewsPostId)"><i class="fas fa-trash"></i></button>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="news-grid" id="newsGrid">
+            @{ int shown = 0; }
+            @foreach (var p in gridPosts)
+            {
+                var s = CatStyle(p.Category);
+                var i = string.IsNullOrWhiteSpace(p.Icon) ? s.Icon : p.Icon;
+                var bgStyle = string.IsNullOrWhiteSpace(p.ImageUrl)
+                    ? $"background:linear-gradient(135deg,{s.Color},#0b2c4d);"
+                    : $"background-image:url('{p.ImageUrl}');";
+                shown++;
+                <div class="news-card @(shown > 6 ? "hidden more-batch" : "")" data-cat="@CatSlug(p.Category)" data-id="@p.NewsPostId" data-active="@(p.IsActive ? "true" : "false")" data-expired="@(p.ExpiresAt.HasValue && p.ExpiresAt.Value < DateOnly.FromDateTime(DateTime.Now) ? "true" : "false")" onclick="openNewsDetailModal(@p.NewsPostId)">
+                    <div class="nc-thumb" style="@bgStyle">
+                        @if (string.IsNullOrWhiteSpace(p.ImageUrl))
+                        {
+                            <i class="@i" style="color:rgba(255,255,255,0.5);font-size:40px;"></i>
+                        }
+                        <span class="nc-category" style="background:@(s.Color)d9;color:#fff;"><i class="@i"></i> @p.Category</span>
+                        @if (editMode)
+                        {
+                            var isExpiredG = p.ExpiresAt.HasValue && p.ExpiresAt.Value < DateOnly.FromDateTime(DateTime.Now);
+                            <div class="np-card-admin-bar">
+                                <div class="np-admin-status-pills">
+                                    @if (!p.IsActive)
+                                    {
+                                        <span class="np-status-pill inactive" style="background:#64748b;color:#fff;"><i class="fas fa-eye-slash"></i> Inactive</span>
+                                    }
+                                    else if (isExpiredG)
+                                    {
+                                        <span class="np-status-pill expired" style="background:#dc2626;color:#fff;"><i class="fas fa-triangle-exclamation"></i> Expired</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="np-status-pill active" style="background:#16a34a;color:#fff;"><i class="fas fa-circle-check"></i> Active</span>
+                                    }
+                                    @if (p.IsSplashScreen)
+                                    {
+                                        <span class="np-status-pill splash"><i class="fas fa-bullhorn"></i> Splash</span>
+                                    }
+                                    @if (p.IsFeatured)
+                                    {
+                                        <span class="np-status-pill featured"><i class="fas fa-star"></i> Featured</span>
+                                    }
+                                </div>
+                                <div class="np-card-actions">
+                                    <button type="button" class="np-toggle-btn @(p.IsActive ? "active" : "inactive")" title="@(p.IsActive ? "Set to Inactive (Hide from Public)" : "Set to Active (Publish Live)")" onclick="event.stopPropagation(); toggleNewsActive(this, @p.NewsPostId)" style="background:@(p.IsActive ? "#16a34a" : "#64748b");color:#fff;border:none;padding:5px 9px;border-radius:6px;font-size:12px;cursor:pointer;"><i class="fas @(p.IsActive ? "fa-eye" : "fa-eye-slash")"></i></button>
+                                    <button type="button" class="np-edit-btn" title="Edit" onclick="event.stopPropagation(); openEditNewsModal(@p.NewsPostId)"><i class="fas fa-pen"></i></button>
+                                    <button type="button" class="np-delete-btn" title="Delete" onclick="event.stopPropagation(); deleteNewsPost(this, @p.NewsPostId)"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="nc-body">
+                        <div class="nc-meta"><i class="far fa-calendar"></i> @p.PublishDate.ToString("MMMM d, yyyy")</div>
+                        <div class="nc-title">@p.Title</div>
+                        <div class="nc-desc">@p.Body</div>
+                    </div>
+                </div>
+            }
+            @if (ViewBag.IsAdminUser == true || editMode)
+            {
+                @foreach (var p in expiredPosts)
+                {
+                    var s = CatStyle(p.Category);
+                    var i = string.IsNullOrWhiteSpace(p.Icon) ? s.Icon : p.Icon;
+                    var bgStyle = string.IsNullOrWhiteSpace(p.ImageUrl)
+                        ? $"background:linear-gradient(135deg,{s.Color},#0b2c4d);"
+                        : $"background-image:url('{p.ImageUrl}');";
+                    var isExpiredItem = p.ExpiresAt.HasValue && p.ExpiresAt.Value < today;
+                    <div class="news-card hidden expired-card" data-cat="@CatSlug(p.Category)" data-id="@p.NewsPostId" data-active="@(p.IsActive ? "true" : "false")" data-expired="@(isExpiredItem ? "true" : "false")" onclick="openNewsDetailModal(@p.NewsPostId)">
+                        <div class="nc-thumb" style="@bgStyle">
+                            @if (string.IsNullOrWhiteSpace(p.ImageUrl))
+                            {
+                                <i class="@i" style="color:rgba(255,255,255,0.5);font-size:40px;"></i>
+                            }
+                            <span class="nc-category" style="background:@(s.Color)d9;color:#fff;"><i class="@i"></i> @p.Category</span>
+                            <div class="np-card-admin-bar">
+                                <div class="np-admin-status-pills">
+                                    @if (!p.IsActive)
+                                    {
+                                        <span class="np-status-pill inactive" style="background:#64748b;color:#fff;"><i class="fas fa-eye-slash"></i> Inactive</span>
+                                    }
+                                    @if (isExpiredItem)
+                                    {
+                                        <span class="np-status-pill expired" style="background:#dc2626;color:#fff;"><i class="fas fa-triangle-exclamation"></i> Expired</span>
+                                    }
+                                </div>
+                                <div class="np-card-actions">
+                                    <button type="button" class="np-toggle-btn @(p.IsActive ? "active" : "inactive")" title="@(p.IsActive ? "Set to Inactive (Hide from Public)" : "Set to Active (Publish Live)")" onclick="event.stopPropagation(); toggleNewsActive(this, @p.NewsPostId)" style="background:@(p.IsActive ? "#16a34a" : "#64748b");color:#fff;border:none;padding:5px 9px;border-radius:6px;font-size:12px;cursor:pointer;"><i class="fas @(p.IsActive ? "fa-eye" : "fa-eye-slash")"></i></button>
+                                    <button type="button" class="np-edit-btn" title="Edit" onclick="event.stopPropagation(); openEditNewsModal(@p.NewsPostId)"><i class="fas fa-pen"></i></button>
+                                    <button type="button" class="np-delete-btn" title="Delete" onclick="event.stopPropagation(); deleteNewsPost(this, @p.NewsPostId)"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nc-body">
+                            <div class="nc-meta">
+                                <i class="far fa-calendar"></i> @p.PublishDate.ToString("MMMM d, yyyy")
+                                @if (p.ExpiresAt.HasValue)
+                                {
+                                    <span style="margin-left:8px;font-size:11px;color:#dc2626;"><i class="fas fa-clock"></i> Expired: @p.ExpiresAt.Value.ToString("yyyy-MM-dd")</span>
+                                }
+                            </div>
+                            <div class="nc-title">@p.Title</div>
+                            <div class="nc-desc">@p.Body</div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        @if (gridPosts.Count > 6)
+        {
+            <div class="load-more-wrap">
+                <button class="load-more-btn" id="loadMoreBtn" onclick="loadMoreNews()"><i class="fas fa-plus"></i> Load More News</button>
+            </div>
+        }
+    }
+  </section>
+
+  <!-- ════════ PHOTO GALLERY (DB-backed, admin-only edit controls) ════════ -->
+  <section class="nm-section" id="photo-gallery">
+    <div class="nm-section-label"><i class="fas fa-images"></i> Photos</div>
+    <h2>Photo Gallery</h2>
+    <div class="nm-divider"></div>
+
+    <div class="gallery-filter">
+      <button class="gallery-filter-btn active" onclick="filterGallery('all',this)">All Albums</button>
+      @foreach (var album in galleryAlbums)
+      {
+          <button class="gallery-filter-btn" onclick="filterGallery('@AlbumSlug(album)',this)">@album</button>
+      }
+      @if (editMode)
+      {
+          <button type="button" class="gallery-add-btn" onclick="openPhotoModal()"><i class="fas fa-plus"></i> Add Photo</button>
+      }
+    </div>
+
+    @if (!galleryPhotos.Any())
+    {
+        <p class="gallery-empty">No photos yet.@(editMode ? " Click \"Add Photo\" to publish the first one." : "")</p>
+    }
+    else
+    {
+        <div class="photo-grid" id="photoGrid">
+            @{ int photoIdx = 0; }
+            @foreach (var g in galleryPhotos)
+            {
+                var grad = PhotoGradient(g.PhotoId);
+                var bgStyle = string.IsNullOrWhiteSpace(g.ImageUrl)
+                    ? $"background:linear-gradient(135deg,{grad.C1},{grad.C2});"
+                    : $"background-image:url('{g.ImageUrl}');";
+                <div class="photo-item" data-album="@AlbumSlug(g.Album)" data-index="@photoIdx" style="@bgStyle" onclick="openLightbox(@photoIdx)">
+                    @if (string.IsNullOrWhiteSpace(g.ImageUrl))
+                    {
+                        <i class="@(string.IsNullOrWhiteSpace(g.Icon) ? "fas fa-image" : g.Icon) photo-thumb-icon"></i>
+                    }
+                    <div class="photo-overlay">
+                        <div class="photo-caption">@g.Caption</div>
+                        <div class="photo-album">@g.Album</div>
+                    </div>
+                    <div class="photo-zoom"><i class="fas fa-expand"></i></div>
+                    @if (editMode)
+                    {
+                        <div class="np-card-actions">
+                            <button type="button" class="np-edit-btn" title="Edit" onclick="event.stopPropagation(); openPhotoModal(@g.PhotoId)"><i class="fas fa-pen"></i></button>
+                            <button type="button" class="np-delete-btn" title="Delete" onclick="event.stopPropagation(); deletePhoto(this, @g.PhotoId)"><i class="fas fa-trash"></i></button>
+                        </div>
+                    }
+                </div>
+                photoIdx++;
+            }
+        </div>
+    }
+  </section>
+
+  <!-- Lightbox (view-only, no login required) -->
+  <div class="lightbox" id="lightbox" onclick="if(event.target===this)closeLightbox()">
+    <div class="lightbox-inner">
+      <div class="lightbox-img" id="lightboxImg">
+        <button class="lightbox-nav prev" onclick="lightboxNav(-1)" type="button"><i class="fas fa-chevron-left"></i></button>
+        <button class="lightbox-nav next" onclick="lightboxNav(1)" type="button"><i class="fas fa-chevron-right"></i></button>
+        <button class="lightbox-close" onclick="closeLightbox()" type="button"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="lightbox-info">
+        <div class="lightbox-caption" id="lightboxCaption"></div>
+        <div class="lightbox-album" id="lightboxAlbum"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════ VIDEO GALLERY (DB-backed, admin-only edit controls) ════════ -->
+  <section class="nm-section" id="video-gallery">
+    <div class="nm-section-label"><i class="fas fa-video"></i> Videos</div>
+    <h2>Video Gallery</h2>
+    <div class="nm-divider"></div>
+
+    @if (editMode)
+    {
+        <div class="video-toolbar">
+            <button type="button" class="np-add-btn" onclick="openVideoModal()"><i class="fas fa-plus"></i> Add Video</button>
+        </div>
+    }
+
+    @if (!galleryVideos.Any())
+    {
+        <p class="video-empty">No videos yet.@(editMode ? " Click \"Add Video\" to publish the first one." : "")</p>
+    }
+    else
+    {
+        <div class="video-grid" id="videoGrid">
+            @foreach (var v in galleryVideos)
+            {
+                var vColor = VideoCatColor(v.Category);
+                var vIcon = string.IsNullOrWhiteSpace(v.Icon) ? "fas fa-film" : v.Icon;
+                var vBgStyle = string.IsNullOrWhiteSpace(v.ThumbnailUrl)
+                    ? $"background:linear-gradient(135deg,{vColor},#0b2c4d);"
+                    : $"background-image:url('{v.ThumbnailUrl}');";
+                <div class="video-card" data-id="@v.VideoId" data-title="@v.Title" data-video-url="@v.VideoUrl" onclick="if(!event.target.closest('.np-card-actions')) openVideo(this.dataset.title, this.dataset.videoUrl)">
+                    <div class="vc-thumb" style="@vBgStyle">
+                        <i class="@vIcon" style="font-size:42px;color:rgba(255,255,255,0.35);"></i>
+                        <div class="vc-play"><i class="fas fa-play" style="margin-left:3px;"></i></div>
+                        @if (!string.IsNullOrWhiteSpace(v.Duration))
+                        {
+                            <div class="vc-duration">@v.Duration</div>
+                        }
+                        @if (editMode)
+                        {
+                            <div class="np-card-actions">
+                                <button type="button" class="np-edit-btn" title="Edit" onclick="event.stopPropagation(); openVideoModal(@v.VideoId)"><i class="fas fa-pen"></i></button>
+                                <button type="button" class="np-delete-btn" title="Delete" onclick="event.stopPropagation(); deleteVideo(this, @v.VideoId)"><i class="fas fa-trash"></i></button>
+                            </div>
+                        }
+                    </div>
+                    <div class="vc-body">
+                        <div class="vc-category" style="color:@vColor;">@v.Category</div>
+                        <div class="vc-title">@v.Title</div>
+                        <div class="vc-meta"><i class="far fa-calendar"></i> @v.PublishDate.ToString("MMM yyyy") &nbsp;&middot;&nbsp; <i class="fas fa-eye"></i> @FormatViews(v.Views)</div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+  </section>
+
+  <!-- Video playback modal (works for everyone, not just admins) -->
+  <div class="video-player-modal-backdrop" id="videoPlayerModal" onclick="if(event.target===this)closeVideo()">
+    <div class="video-player-modal" onclick="event.stopPropagation()">
+      <div class="video-player-modal-header">
+        <i class="fas fa-play-circle" style="color:var(--green);font-size:18px;"></i>
+        <div class="vm-title" id="vmTitle">Video Title</div>
+        <button class="vm-close" onclick="closeVideo()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="video-player-area" id="videoPlayerArea">
+        <div class="video-placeholder">
+          <div class="video-placeholder-icon"><i class="fas fa-film"></i></div>
+          <p>No video source set for this entry yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ===== NEWS DETAILS & DRAFT MODAL (Interactive for public & editable for admin) ===== -->
+<div class="nd-modal-backdrop" id="newsDetailModal" onclick="if(event.target===this)closeNewsDetailModal()">
+  <div class="nd-modal" onclick="event.stopPropagation()">
+    
+    <!-- VIEW MODE -->
+    <div id="ndViewMode">
+      <div class="nd-hero" id="ndHero">
+        <button class="nd-close" onclick="closeNewsDetailModal()" type="button" aria-label="Close"><i class="fas fa-times"></i></button>
+        <div class="nd-hero-top">
+          <span class="nd-category-badge" id="ndCategoryBadge"><i class="fas fa-newspaper" id="ndCategoryIcon"></i> <span id="ndCategoryText">Category</span></span>
+          @if (editMode)
+          {
+            <div class="nd-admin-toolbar">
+              <button type="button" class="nd-admin-chip" onclick="switchToEditNews()" title="Edit this announcement"><i class="fas fa-pen"></i> Edit</button>
+              <button type="button" class="nd-admin-chip danger" onclick="deleteCurrentNews()" title="Delete this announcement"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          }
+        </div>
+        <h2 class="nd-hero-title" id="ndModalTitle">News Headline</h2>
+        <div class="nd-hero-meta">
+          <span><i class="far fa-calendar-alt"></i> <span id="ndModalDate">Publish Date</span></span>
+          <span class="nd-featured-tag" id="ndFeaturedTag" style="display:none;"><i class="fas fa-star"></i> Featured</span>
+          <span class="nd-status-tag-active" id="ndActiveTag" style="display:none;"><i class="fas fa-check-circle"></i> Active</span>
+          <span class="nd-status-tag-inactive" id="ndInactiveTag" style="display:none;"><i class="fas fa-eye-slash"></i> Inactive Draft</span>
+        </div>
+      </div>
+      
+      <div class="nd-body">
+        <div class="nd-image-wrap" id="ndImageWrap" style="display:none;">
+          <img id="ndImage" src="" alt="Announcement banner">
+        </div>
+        <div class="nd-content-text" id="ndContentBody"></div>
+        <div class="nd-actions-bar">
+          @if (editMode)
+          {
+            <button type="button" class="nd-btn edit" onclick="switchToEditNews()"><i class="fas fa-pen"></i> Edit Announcement</button>
+            <button type="button" class="nd-btn danger" onclick="deleteCurrentNews()"><i class="fas fa-trash"></i> Delete</button>
+          }
+          <button type="button" class="nd-btn secondary" onclick="closeNewsDetailModal()"><i class="fas fa-times"></i> Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT / DRAFT FORM MODE (Admin only in edit mode) -->
+    @if (editMode)
+    {
+      <div id="ndEditMode" style="display:none;">
+        <div class="nd-hero" style="background:linear-gradient(135deg,#0b2c4d 0%,#1e8e3e 100%);">
+          <button class="nd-close" onclick="closeNewsDetailModal()" type="button" aria-label="Close"><i class="fas fa-times"></i></button>
+          <div class="nd-hero-top">
+            <span class="nd-category-badge"><i class="fas fa-edit"></i> Admin Editor</span>
+          </div>
+          <h2 class="nd-hero-title" id="ndEditHeaderTitle">Edit News Announcement</h2>
+          <div class="nd-hero-meta">
+            <span id="ndEditSubtitle">Fill in the announcement details below</span>
+          </div>
+        </div>
+
+        <div class="nd-form-section">
+          <div class="nd-field">
+            <label>News Headline / Title <span class="req">*</span></label>
+            <input type="text" id="ndFormTitle" placeholder="e.g. Fall 2026 Admissions Open — Limited Seats">
+          </div>
+
+          <div class="nd-field-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+            <div class="nd-field">
+              <label>Category</label>
+              <input type="text" id="ndFormCategory" list="ndCategoryDatalist" placeholder="e.g. Admissions, Academic, CPD, Event">
+              <datalist id="ndCategoryDatalist">
+                <option value="Academic"></option>
+                <option value="Admissions"></option>
+                <option value="CPD"></option>
+                <option value="Event"></option>
+                <option value="Training"></option>
+                <option value="Campus Life"></option>
+                <option value="General News"></option>
+              </datalist>
+            </div>
+            <div class="nd-field">
+              <label>Publish Date</label>
+              <input type="date" id="ndFormDate">
+            </div>
+            <div class="nd-field">
+              <label>Expiry Date (ExpiresAt)</label>
+              <input type="date" id="ndFormExpiryDate">
+            </div>
+          </div>
+
+          <!-- Banner Image Uploader & Preview -->
+          <div class="nd-field">
+            <label>Card &amp; Header Banner Image (Optional)</label>
+            <div class="nd-banner-upload-box">
+              <div class="nd-banner-preview-wrap" id="ndBannerPreviewWrap">
+                <div class="nd-banner-preview-empty" id="ndBannerPreviewEmpty">
+                  <i class="fas fa-image"></i>
+                  <span>No banner image selected (Gradient &amp; Icon will be used)</span>
+                </div>
+                <img id="ndBannerPreviewImg" class="nd-banner-preview-img" alt="Banner Preview">
+              </div>
+              <div class="nd-banner-upload-controls">
+                <input type="file" id="ndBannerFile" accept="image/png,image/jpeg,image/gif,image/webp" style="display:none;" onchange="handleNewsImageFileChange(this)">
+                <button type="button" class="nd-upload-btn" onclick="document.getElementById('ndBannerFile').click()">
+                  <i class="fas fa-upload"></i> Upload Image / Banner
+                </button>
+                <button type="button" class="nd-remove-img-btn" id="ndRemoveImgBtn" style="display:none;" onclick="removeNewsBannerImage()">
+                  <i class="fas fa-trash"></i> Remove Image
+                </button>
+                <span class="nd-banner-url-toggle" onclick="toggleNewsUrlField()">Or enter image URL &darr;</span>
+              </div>
+              <div id="ndUrlFieldWrap" style="display:none;margin-top:10px;">
+                <input type="text" id="ndFormImageUrl" placeholder="https://... or /uploads/..." oninput="syncNewsImageUrlPreview(this.value)">
+                <div class="nd-hint">Direct link to image file or uploaded path.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Searchable Icon Picker -->
+          <div class="nd-field">
+            <label>Card Icon &amp; Category Symbol</label>
+            <div class="nd-icon-picker-box">
+              <div class="nd-icon-selected-bar">
+                <div class="nd-icon-selected-display">
+                  <div class="nd-icon-badge-preview" id="ndSelectedIconBadge"><i class="fas fa-newspaper" id="ndSelectedIconPreview"></i></div>
+                  <div>
+                    <div style="font-size:12px;color:#1e293b;font-weight:700;" id="ndSelectedIconName">Newspaper</div>
+                    <div style="font-size:10.5px;color:#64748b;font-family:monospace;" id="ndSelectedIconClass">fas fa-newspaper</div>
+                  </div>
+                </div>
+                <input type="hidden" id="ndFormIcon" value="fas fa-newspaper">
+              </div>
+
+              <div class="nd-icon-search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" class="nd-icon-search-input" id="ndIconSearchInput" placeholder="🔍 Search 100+ icons (e.g. flag, plane, award, book, shield, bell)..." oninput="filterIconPicker(this.value)">
+              </div>
+
+              <!-- Quick Category Tabs -->
+              <div class="nd-icon-cat-tabs" id="ndIconCatTabs">
+                <button type="button" class="nd-cat-tab-btn active" data-cat="all" onclick="filterIconCategory('all', this)">🌟 All</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="flags" onclick="filterIconCategory('flags', this)">🚩 Flags</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="aviation" onclick="filterIconCategory('aviation', this)">✈️ Aviation</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="academics" onclick="filterIconCategory('academics', this)">🎓 Academics</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="news" onclick="filterIconCategory('news', this)">📢 News</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="radar" onclick="filterIconCategory('radar', this)">📡 Radar/ATC</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="tech" onclick="filterIconCategory('tech', this)">💻 Tech</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="engineering" onclick="filterIconCategory('engineering', this)">⚙️ Engg</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="management" onclick="filterIconCategory('management', this)">📊 Business</button>
+                <button type="button" class="nd-cat-tab-btn" data-cat="weather" onclick="filterIconCategory('weather', this)">⛅ Weather</button>
+              </div>
+
+              <div class="nd-icon-grid" id="ndIconGrid">
+                <!-- 🚩 Flags & Emblems -->
+                <div class="nd-icon-chip" data-category="flags" data-icon="fas fa-flag" data-name="Flag / National" data-search="flag national country state pkr banner symbol pakistan" onclick="selectNewsIcon('fas fa-flag', 'Flag / National', this)">
+                  <i class="fas fa-flag"></i><span>Flag</span>
+                </div>
+                <div class="nd-icon-chip" data-category="flags" data-icon="far fa-flag" data-name="Flag (Outline)" data-search="flag outline mark notice sign" onclick="selectNewsIcon('far fa-flag', 'Flag (Outline)', this)">
+                  <i class="far fa-flag"></i><span>Flag Alt</span>
+                </div>
+                <div class="nd-icon-chip" data-category="flags" data-icon="fas fa-flag-checkered" data-name="Checkered Flag" data-search="flag checkered race competition finish winner achievement victory" onclick="selectNewsIcon('fas fa-flag-checkered', 'Checkered Flag', this)">
+                  <i class="fas fa-flag-checkered"></i><span>Checkered</span>
+                </div>
+                <div class="nd-icon-chip" data-category="flags" data-icon="fas fa-flag-usa" data-name="Flag Star" data-search="flag star foreign global foreign international" onclick="selectNewsIcon('fas fa-flag-usa', 'Flag Star', this)">
+                  <i class="fas fa-flag-usa"></i><span>Flag Star</span>
+                </div>
+                <div class="nd-icon-chip" data-category="flags" data-icon="fas fa-mountain-sun" data-name="Peak / Milestone" data-search="flag peak mountain milestone success summit" onclick="selectNewsIcon('fas fa-mountain-sun', 'Peak / Milestone', this)">
+                  <i class="fas fa-mountain-sun"></i><span>Peak</span>
+                </div>
+                <div class="nd-icon-chip" data-category="flags" data-icon="fas fa-monument" data-name="Monument / Pillar" data-search="flag landmark monument memorial pillar historic" onclick="selectNewsIcon('fas fa-monument', 'Monument / Pillar', this)">
+                  <i class="fas fa-monument"></i><span>Monument</span>
+                </div>
+
+                <!-- ✈️ Aviation & Flight -->
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-plane" data-name="Airplane" data-search="plane airplane flight aircraft travel aviation airline" onclick="selectNewsIcon('fas fa-plane', 'Airplane', this)">
+                  <i class="fas fa-plane"></i><span>Airplane</span>
+                </div>
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-plane-departure" data-name="Takeoff" data-search="plane takeoff departure flight travel launch" onclick="selectNewsIcon('fas fa-plane-departure', 'Takeoff', this)">
+                  <i class="fas fa-plane-departure"></i><span>Takeoff</span>
+                </div>
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-plane-arrival" data-name="Landing" data-search="plane landing arrival flight airport" onclick="selectNewsIcon('fas fa-plane-arrival', 'Landing', this)">
+                  <i class="fas fa-plane-arrival"></i><span>Landing</span>
+                </div>
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-plane-up" data-name="Plane Ascend" data-search="plane ascend takeoff climb flight" onclick="selectNewsIcon('fas fa-plane-up', 'Plane Ascend', this)">
+                  <i class="fas fa-plane-up"></i><span>Ascend</span>
+                </div>
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-helicopter" data-name="Helicopter" data-search="helicopter chopper rotor aircraft flight" onclick="selectNewsIcon('fas fa-helicopter', 'Helicopter', this)">
+                  <i class="fas fa-helicopter"></i><span>Helicopter</span>
+                </div>
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-jet-fighter" data-name="Fighter Jet" data-search="jet fighter military defense speed aircraft" onclick="selectNewsIcon('fas fa-jet-fighter', 'Fighter Jet', this)">
+                  <i class="fas fa-jet-fighter"></i><span>Jet</span>
+                </div>
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-compass" data-name="Compass" data-search="compass navigation direction orientation route" onclick="selectNewsIcon('fas fa-compass', 'Compass', this)">
+                  <i class="fas fa-compass"></i><span>Compass</span>
+                </div>
+                <div class="nd-icon-chip" data-category="aviation" data-icon="fas fa-route" data-name="Flight Route" data-search="route waypoint corridor flight navigation" onclick="selectNewsIcon('fas fa-route', 'Flight Route', this)">
+                  <i class="fas fa-route"></i><span>Route</span>
+                </div>
+
+                <!-- 🎓 Academics & Education -->
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-graduation-cap" data-name="Graduation Cap" data-search="graduation cap degree convocation academic student education university" onclick="selectNewsIcon('fas fa-graduation-cap', 'Graduation Cap', this)">
+                  <i class="fas fa-graduation-cap"></i><span>Grad Cap</span>
+                </div>
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-book" data-name="Book" data-search="book library study reading academic course curriculum" onclick="selectNewsIcon('fas fa-book', 'Book', this)">
+                  <i class="fas fa-book"></i><span>Book</span>
+                </div>
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-book-open" data-name="Open Book" data-search="book open learning study catalog knowledge" onclick="selectNewsIcon('fas fa-book-open', 'Open Book', this)">
+                  <i class="fas fa-book-open"></i><span>Open Book</span>
+                </div>
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-award" data-name="Award Ribbon" data-search="award medal ribbon distinction merit honor winner achievement prize" onclick="selectNewsIcon('fas fa-award', 'Award Ribbon', this)">
+                  <i class="fas fa-award"></i><span>Award</span>
+                </div>
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-medal" data-name="Gold Medal" data-search="medal gold silver sports achievement merit prize" onclick="selectNewsIcon('fas fa-medal', 'Gold Medal', this)">
+                  <i class="fas fa-medal"></i><span>Medal</span>
+                </div>
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-trophy" data-name="Trophy" data-search="trophy champion winner cup victory prize competition" onclick="selectNewsIcon('fas fa-trophy', 'Trophy', this)">
+                  <i class="fas fa-trophy"></i><span>Trophy</span>
+                </div>
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-chalkboard-user" data-name="Class Lecture" data-search="chalkboard lecture teacher trainer class faculty cpd seminar" onclick="selectNewsIcon('fas fa-chalkboard-user', 'Class Lecture', this)">
+                  <i class="fas fa-chalkboard-user"></i><span>Lecture</span>
+                </div>
+                <div class="nd-icon-chip" data-category="academics" data-icon="fas fa-user-graduate" data-name="Graduate" data-search="graduate alumni student scholar student" onclick="selectNewsIcon('fas fa-user-graduate', 'Graduate', this)">
+                  <i class="fas fa-user-graduate"></i><span>Graduate</span>
+                </div>
+
+                <!-- 📢 News, Alerts & Events -->
+                <div class="nd-icon-chip" data-category="news" data-icon="fas fa-newspaper" data-name="Newspaper" data-search="newspaper news announcement press article story report" onclick="selectNewsIcon('fas fa-newspaper', 'Newspaper', this)">
+                  <i class="fas fa-newspaper"></i><span>Newspaper</span>
+                </div>
+                <div class="nd-icon-chip" data-category="news" data-icon="fas fa-bullhorn" data-name="Megaphone / Alert" data-search="bullhorn megaphone alert notice broadcast announce update shout" onclick="selectNewsIcon('fas fa-bullhorn', 'Megaphone / Alert', this)">
+                  <i class="fas fa-bullhorn"></i><span>Megaphone</span>
+                </div>
+                <div class="nd-icon-chip" data-category="news" data-icon="fas fa-bell" data-name="Notification Bell" data-search="bell notification reminder alert alarm ring" onclick="selectNewsIcon('fas fa-bell', 'Notification Bell', this)">
+                  <i class="fas fa-bell"></i><span>Bell</span>
+                </div>
+                <div class="nd-icon-chip" data-category="news" data-icon="fas fa-fire" data-name="Trending / Hot" data-search="fire hot trend urgent breaking popular exciting" onclick="selectNewsIcon('fas fa-fire', 'Trending / Hot', this)">
+                  <i class="fas fa-fire"></i><span>Trending</span>
+                </div>
+                <div class="nd-icon-chip" data-category="news" data-icon="fas fa-calendar-alt" data-name="Calendar Date" data-search="calendar date schedule timetable meeting schedule" onclick="selectNewsIcon('fas fa-calendar-alt', 'Calendar Date', this)">
+                  <i class="fas fa-calendar-alt"></i><span>Calendar</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nd-field">
+            <label>News Content / Details <span class="req">*</span></label>
+            <textarea id="ndFormBody" rows="6" placeholder="Enter complete announcement details, guidelines, instructions, or full description..."></textarea>
+          </div>
+
+          <!-- Active, Splash Screen, & Featured Options -->
+          <div class="nd-options-grid">
+            <div class="nd-check-card">
+              <label class="nd-toggle-switch">
+                <input type="checkbox" id="ndFormIsActive" checked>
+                <span class="nd-toggle-slider"></span>
+              </label>
+              <div class="nd-check-info">
+                <label for="ndFormIsActive" class="nd-check-label">Active Status (Published)</label>
+                <span class="nd-check-sub">When active, this announcement is visible to all visitors. If unchecked, it remains a hidden draft.</span>
+              </div>
+            </div>
+
+            <div class="nd-check-card">
+              <label class="nd-toggle-switch">
+                <input type="checkbox" id="ndFormSplashScreen">
+                <span class="nd-toggle-slider"></span>
+              </label>
+              <div class="nd-check-info">
+                <label for="ndFormSplashScreen" class="nd-check-label">Show on Splash Screen (Popup Alert)</label>
+                <span class="nd-check-sub">Displays as an announcement popup modal when visitors enter the website.</span>
+              </div>
+            </div>
+
+            <div class="nd-check-card">
+              <label class="nd-toggle-switch">
+                <input type="checkbox" id="ndFormFeatured">
+                <span class="nd-toggle-slider"></span>
+              </label>
+              <div class="nd-check-info">
+                <label for="ndFormFeatured" class="nd-check-label">Promote to Featured Story</label>
+                <span class="nd-check-sub">Displays prominently highlighted at the top of the News &amp; Media page.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="nd-error" id="ndFormError"></div>
+
+          <div class="nd-actions-bar">
+            <button type="button" class="nd-btn primary" id="ndSaveBtn" onclick="saveNewsModalData(this)"><i class="fas fa-save"></i> Save &amp; Publish</button>
+            <button type="button" class="nd-btn secondary" onclick="cancelNewsEdit()"><i class="fas fa-times"></i> Cancel</button>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+
+@if (editMode)
+{
+    <div class="np-modal-backdrop" id="photoModal">
+        <div class="np-modal">
+            <div class="np-modal-header">
+                <h3 id="photoModalTitle">Add Photo</h3>
+                <button type="button" class="np-modal-close" onclick="closePhotoModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="np-modal-body">
+                <div class="np-field"><label>Caption</label><input type="text" id="pgCaption" placeholder="e.g. Annual Convocation 2025 - Degree Award Ceremony"></div>
+                <div class="np-field-row">
+                    <div class="np-field">
+                        <label>Album</label>
+                        <input type="text" id="pgAlbum" list="pgAlbumOptions" placeholder="e.g. Campus Life">
+                        <datalist id="pgAlbumOptions">
+                            @foreach (var album in galleryAlbums)
+                            {
+                                <option value="@album"></option>
+                            }
+                        </datalist>
+                    </div>
+                    <div class="np-field"><label>Icon (fallback, optional)</label><input type="text" id="pgIcon" placeholder="e.g. fas fa-image"></div>
+                </div>
+                <div class="np-field">
+                    <label>Photo</label>
+                    <input type="file" id="pgFile" accept="image/png,image/jpeg,image/gif,image/webp" onchange="handlePhotoFileChange(this)">
+                    <div class="np-photo-preview" id="pgPreview"><i class="fas fa-image"></i></div>
+                    <input type="hidden" id="pgImageUrl">
+                </div>
+                <div class="np-error" id="pgError"></div>
+                <div class="np-modal-actions">
+                    <button type="button" class="np-btn-primary" id="pgSaveBtn" onclick="savePhoto(this)"><i class="fas fa-save"></i> Save</button>
+                    <button type="button" class="np-btn-secondary" onclick="closePhotoModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="np-modal-backdrop" id="videoModal">
+        <div class="np-modal">
+            <div class="np-modal-header">
+                <h3 id="videoModalTitle">Add Video</h3>
+                <button type="button" class="np-modal-close" onclick="closeVideoModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="np-modal-body">
+                <div class="np-field"><label>Title</label><input type="text" id="vgTitle" placeholder="e.g. NAU Campus Tour & Overview 2026"></div>
+                <div class="np-field">
+                    <label>Video Link</label>
+                    <input type="text" id="vgVideoUrl" placeholder="YouTube link or direct .mp4 link">
+                    <div class="np-hint">Paste a YouTube URL (youtube.com/watch?v=... or youtu.be/...) or a direct video file link.</div>
+                </div>
+                <div class="np-field-row">
+                    <div class="np-field"><label>Category</label><input type="text" id="vgCategory" placeholder="e.g. Campus Tour, Training, CPD, Ceremony"></div>
+                    <div class="np-field"><label>Publish Date</label><input type="date" id="vgPublishDate"></div>
+                </div>
+                <div class="np-field-row">
+                    <div class="np-field"><label>Duration (optional)</label><input type="text" id="vgDuration" placeholder="e.g. 4:38"></div>
+                    <div class="np-field"><label>Views (optional)</label><input type="number" id="vgViews" min="0" placeholder="0"></div>
+                </div>
+                <div class="np-field-row">
+                    <div class="np-field"><label>Icon (Font Awesome class, optional)</label><input type="text" id="vgIcon" placeholder="e.g. fas fa-university"></div>
+                    <div class="np-field"><label>Thumbnail Image URL (optional)</label><input type="text" id="vgThumbnailUrl" placeholder="https://..."></div>
+                </div>
+                <div class="np-error" id="vgError"></div>
+                <div class="np-modal-actions">
+                    <button type="button" class="np-btn-primary" id="vgSaveBtn" onclick="saveVideo(this)"><i class="fas fa-save"></i> Save</button>
+                    <button type="button" class="np-btn-secondary" onclick="closeVideoModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Html.AntiForgeryToken()
+}
+
+<partial name="_SiteFooter" />
+
+<script>
+/* ===== Mega-menu nav search icon/box ===== */
+function toggleSearch() {
+  const box = document.getElementById("searchBox");
+  box.classList.toggle("open");
+  if (box.classList.contains("open")) box.focus();
+}
+function closeSearch() {
+  setTimeout(() => { document.getElementById("searchBox").classList.remove("open"); }, 150);
+}
+
+/* ===== Filter + Search (client-side, no page reload) ===== */
+function filterNews(cat, btn){
+  document.querySelectorAll('.news-filter-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  var feat = document.getElementById('newsFeatured');
+
+  if (cat === 'expired') {
+    if (feat) feat.style.display = 'none';
+    document.querySelectorAll('#newsGrid .news-card').forEach(function(c){
+      var isExpired = c.getAttribute('data-expired') === 'true';
+      var isActive = c.getAttribute('data-active') === 'true';
+      var match = (isExpired || !isActive);
+      c.classList.toggle('hidden', !match);
+      if (match) c.classList.remove('more-batch');
+    });
+  } else {
+    document.querySelectorAll('#newsGrid .news-card').forEach(function(c){
+      var isExpired = c.getAttribute('data-expired') === 'true';
+      var isActive = c.getAttribute('data-active') === 'true';
+      var matchesCat = (cat === 'all' || c.getAttribute('data-cat') === cat);
+      var match = matchesCat && (!isExpired && isActive);
+      c.classList.toggle('hidden', !match);
+      if (match) c.classList.remove('more-batch');
+    });
+    if (feat){
+      feat.style.display = (cat === 'all') ? '' : 'none';
+    }
+  }
+}
+
+function searchNews(q){
+  q = q.trim().toLowerCase();
+  document.querySelectorAll('#newsGrid .news-card').forEach(function(c){
+    var isExpired = c.getAttribute('data-expired') === 'true';
+    var isActive = c.getAttribute('data-active') === 'true';
+    var title = c.querySelector('.nc-title') ? c.querySelector('.nc-title').textContent.toLowerCase() : '';
+    var isMatch = (!isExpired && isActive) && (q === '' || title.includes(q));
+    c.classList.toggle('hidden', !isMatch);
+  });
+  var feat = document.getElementById('newsFeatured');
+  if (feat){ feat.style.display = (q === '') ? '' : 'none'; }
+}
+
+function loadMoreNews(){
+  var hidden = document.querySelectorAll('#newsGrid .news-card.more-batch');
+  var count = 0;
+  hidden.forEach(function(c){
+    if (count < 6){ c.classList.remove('hidden'); c.classList.remove('more-batch'); count++; }
+  });
+  if (document.querySelectorAll('#newsGrid .news-card.more-batch').length === 0){
+    var btn = document.getElementById('loadMoreBtn');
+    if (btn){ btn.innerHTML = '<i class="fas fa-check"></i> All news loaded'; btn.disabled = true; }
+  }
+}
+
+/* ===== Photo Gallery: filter + lightbox (public, no login required) ===== */
+var galleryPhotoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+    galleryPhotos.Select((g, i) => new
+    {
+        index = i,
+        caption = g.Caption,
+        album = g.Album,
+        imageUrl = g.ImageUrl ?? "",
+        icon = string.IsNullOrWhiteSpace(g.Icon) ? "fas fa-image" : g.Icon,
+        gradient = new { c1 = PhotoGradient(g.PhotoId).C1, c2 = PhotoGradient(g.PhotoId).C2 }
+    })
+).Replace("</", "<\\/"));
+
+function filterGallery(album, btn){
+  document.querySelectorAll('.gallery-filter-btn').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  document.querySelectorAll('#photoGrid .photo-item').forEach(function(tile){
+    var match = (album === 'all' || tile.getAttribute('data-album') === album);
+    tile.classList.toggle('hidden', !match);
+  });
+}
+
+var currentLightboxIndex = 0;
+function renderLightbox(idx){
+  var data = galleryPhotoData[idx];
+  if (!data) return;
+  var imgEl = document.getElementById('lightboxImg');
+  if (data.imageUrl){
+    imgEl.style.backgroundImage = "url('" + data.imageUrl + "')";
+    imgEl.innerHTML =
+      '<button class="lightbox-nav prev" onclick="lightboxNav(-1)" type="button"><i class="fas fa-chevron-left"></i></button>' +
+      '<button class="lightbox-nav next" onclick="lightboxNav(1)" type="button"><i class="fas fa-chevron-right"></i></button>' +
+      '<button class="lightbox-close" onclick="closeLightbox()" type="button"><i class="fas fa-times"></i></button>';
+  } else {
+    imgEl.style.backgroundImage = 'linear-gradient(135deg,' + data.gradient.c1 + ',' + data.gradient.c2 + ')';
+    imgEl.innerHTML =
+      '<i class="' + data.icon + ' photo-thumb-icon"></i>' +
+      '<button class="lightbox-nav prev" onclick="lightboxNav(-1)" type="button"><i class="fas fa-chevron-left"></i></button>' +
+      '<button class="lightbox-nav next" onclick="lightboxNav(1)" type="button"><i class="fas fa-chevron-right"></i></button>' +
+      '<button class="lightbox-close" onclick="closeLightbox()" type="button"><i class="fas fa-times"></i></button>';
+  }
+  document.getElementById('lightboxCaption').textContent = data.caption;
+  document.getElementById('lightboxAlbum').textContent = data.album;
+}
+
+function openLightbox(idx){
+  if (!galleryPhotoData.length) return;
+  currentLightboxIndex = idx;
+  renderLightbox(currentLightboxIndex);
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lightboxNav(dir){
+  if (!galleryPhotoData.length) return;
+  currentLightboxIndex = (currentLightboxIndex + dir + galleryPhotoData.length) % galleryPhotoData.length;
+  renderLightbox(currentLightboxIndex);
+}
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeLightbox();
+  if (document.getElementById('lightbox').classList.contains('open')){
+    if (e.key === 'ArrowLeft') lightboxNav(-1);
+    if (e.key === 'ArrowRight') lightboxNav(1);
+  }
+});
+
+/* ===== Video Gallery: playback modal (public, no login required) ===== */
+function buildPlayerHtml(url){
+  if (!url) {
+    return '<div class="video-placeholder"><div class="video-placeholder-icon"><i class="fas fa-film"></i></div><p>No video source set for this entry yet.</p></div>';
+  }
+  var ytId = null;
+  var watchMatch = url.match(/[?&]v=([^&]+)/);
+  var shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+  var embedMatch = url.match(/youtube\.com\/embed\/([^?&]+)/);
+  if (watchMatch) ytId = watchMatch[1];
+  else if (shortMatch) ytId = shortMatch[1];
+  else if (embedMatch) ytId = embedMatch[1];
+
+  if (ytId) {
+    return '<iframe src="https://www.youtube.com/embed/' + ytId + '?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  }
+  if (/\.(mp4|webm|ogg)($|\?)/i.test(url)) {
+    return '<video controls autoplay src="' + url + '"></video>';
+  }
+  // Fallback: try to embed whatever link was given (e.g. Vimeo, an already-embeddable URL)
+  return '<iframe src="' + url + '" allowfullscreen></iframe>';
+}
+
+function openVideo(title, url){
+  document.getElementById('vmTitle').textContent = title || 'Video';
+  document.getElementById('videoPlayerArea').innerHTML = buildPlayerHtml(url);
+  document.getElementById('videoPlayerModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeVideo(){
+  document.getElementById('videoPlayerModal').classList.remove('open');
+  document.getElementById('videoPlayerArea').innerHTML = '';
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeVideo(); });
+
+/* ===== Section nav (Latest News / Photo Gallery / Video Gallery): keep the active tab in sync while scrolling ===== */
+(function setupSecNav(){
+  var links = document.querySelectorAll('.sec-nav-link');
+  if (!links.length) return;
+  var sections = Array.prototype.map.call(links, function(l){ return document.getElementById(l.dataset.section); }).filter(Boolean);
+
+  links.forEach(function(link){
+    link.addEventListener('click', function(){
+      links.forEach(function(l){ l.classList.remove('active'); });
+      link.classList.add('active');
+    });
+  });
+
+  window.addEventListener('scroll', function(){
+    var pos = window.scrollY + 120;
+    var current = sections[0];
+    sections.forEach(function(sec){ if (sec.offsetTop <= pos) current = sec; });
+    if (!current) return;
+    links.forEach(function(l){ l.classList.toggle('active', l.dataset.section === current.id); });
+  }, { passive: true });
+})();
+
+var npToastTimer;
+function showNpToast(message, isError){
+  var toast = document.getElementById('npToast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.className = isError ? 'show error' : 'show';
+  clearTimeout(npToastTimer);
+  npToastTimer = setTimeout(function(){ toast.className = ''; }, 3200);
+}
+
+/* ===== News Data Dictionary (client-side for instant modal opening) ===== */
+var newsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+    posts.ToDictionary(p => p.NewsPostId.ToString(), p => new
+    {
+        id = p.NewsPostId,
+        title = p.Title,
+        body = p.Body ?? "",
+        category = string.IsNullOrWhiteSpace(p.Category) ? "News" : p.Category,
+        icon = p.Icon ?? "",
+        imageUrl = p.ImageUrl ?? "",
+        publishDate = p.PublishDate.ToString("yyyy-MM-dd"),
+        publishDateFormatted = p.PublishDate.ToString("MMMM d, yyyy"),
+        expiresAt = p.ExpiresAt.HasValue ? p.ExpiresAt.Value.ToString("yyyy-MM-dd") : "",
+        expiresAtFormatted = p.ExpiresAt.HasValue ? p.ExpiresAt.Value.ToString("MMMM d, yyyy") : "",
+        isExpired = p.ExpiresAt.HasValue && p.ExpiresAt.Value < DateOnly.FromDateTime(DateTime.Now),
+        isFeatured = p.IsFeatured,
+        isActive = p.IsActive,
+        isSplashScreen = p.IsSplashScreen,
+        color = CatStyle(p.Category).Color,
+        catIcon = string.IsNullOrWhiteSpace(p.Icon) ? CatStyle(p.Category).Icon : p.Icon
+    })
+).Replace("</", "<\\/"));
+
+var isUserAdmin = @Html.Raw(editMode ? "true" : "false");
+var activeNewsId = null;
+
+function getAntiForgeryToken(){
+  var el = document.querySelector('input[name="__RequestVerificationToken"]');
+  return el ? el.value : '';
+}
+
+function openNewsDetailModal(id){
+  var item = newsData[id];
+  if (!item) return;
+  activeNewsId = id;
+
+  var viewMode = document.getElementById('ndViewMode');
+  var editModeEl = document.getElementById('ndEditMode');
+  if (viewMode) viewMode.style.display = 'block';
+  if (editModeEl) editModeEl.style.display = 'none';
+
+  document.getElementById('ndModalTitle').textContent = item.title;
+  document.getElementById('ndCategoryText').textContent = item.category || 'News';
+  document.getElementById('ndCategoryIcon').className = item.catIcon || 'fas fa-newspaper';
+  document.getElementById('ndModalDate').textContent = item.publishDateFormatted;
+
+  var featTag = document.getElementById('ndFeaturedTag');
+  if (featTag) featTag.style.display = item.isFeatured ? 'inline-flex' : 'none';
+
+  var splashTag = document.getElementById('ndSplashTag');
+  if (splashTag) splashTag.style.display = 'none';
+
+  var activeTag = document.getElementById('ndActiveTag');
+  var inactiveTag = document.getElementById('ndInactiveTag');
+  if (isUserAdmin) {
+    if (activeTag) activeTag.style.display = (item.isActive !== false) ? 'inline-flex' : 'none';
+    if (inactiveTag) inactiveTag.style.display = (item.isActive === false) ? 'inline-flex' : 'none';
+  } else {
+    if (activeTag) activeTag.style.display = 'none';
+    if (inactiveTag) inactiveTag.style.display = 'none';
+  }
+
+  var hero = document.getElementById('ndHero');
+  if (hero) {
+    var c1 = item.color || '#0b2c4d';
+    hero.style.background = 'linear-gradient(135deg,' + c1 + ', #1a5fa6)';
+  }
+
+  var imgWrap = document.getElementById('ndImageWrap');
+  var imgEl = document.getElementById('ndImage');
+  if (item.imageUrl && item.imageUrl.trim()){
+    imgEl.src = item.imageUrl;
+    imgWrap.style.display = 'flex';
+  } else {
+    imgWrap.style.display = 'none';
+  }
+
+  document.getElementById('ndContentBody').textContent = item.body || item.title;
+
+  document.getElementById('newsDetailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeNewsDetailModal(){
+  var m = document.getElementById('newsDetailModal');
+  if (m) m.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+  var params = new URLSearchParams(window.location.search);
+  var newsId = params.get('id');
+  if (newsId && typeof newsData !== 'undefined' && newsData[newsId]){
+    openNewsDetailModal(newsId);
+  }
+});
+
+/* ===== Searchable Icon Picker & Banner Image Upload Helpers ===== */
+var currentNewsIconCategory = 'all';
+
+function filterIconCategory(cat, btn){
+  currentNewsIconCategory = cat || 'all';
+  var buttons = document.querySelectorAll('#ndIconCatTabs .nd-cat-tab-btn');
+  buttons.forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  var q = document.getElementById('ndIconSearchInput') ? document.getElementById('ndIconSearchInput').value : '';
+  filterIconPicker(q);
+}
+
+function filterIconPicker(query){
+  var q = (query || '').toLowerCase().trim();
+  var cat = currentNewsIconCategory || 'all';
+  var chips = document.querySelectorAll('#ndIconGrid .nd-icon-chip');
+  chips.forEach(function(chip){
+    var itemCat = chip.dataset.category || '';
+    var search = (chip.dataset.search || '') + ' ' + (chip.dataset.name || '') + ' ' + (chip.dataset.icon || '');
+    var matchesCat = (cat === 'all' || itemCat === cat);
+    var matchesSearch = (!q || search.toLowerCase().indexOf(q) !== -1);
+
+    if (matchesCat && matchesSearch){
+      chip.style.display = 'flex';
+    } else {
+      chip.style.display = 'none';
+    }
+  });
+}
+
+function selectNewsIcon(iconClass, iconName, element){
+  document.getElementById('ndFormIcon').value = iconClass || 'fas fa-newspaper';
+  document.getElementById('ndSelectedIconPreview').className = iconClass || 'fas fa-newspaper';
+  document.getElementById('ndSelectedIconName').textContent = iconName || iconClass || 'Icon';
+  document.getElementById('ndSelectedIconClass').textContent = iconClass || 'fas fa-newspaper';
+
+  var chips = document.querySelectorAll('#ndIconGrid .nd-icon-chip');
+  chips.forEach(function(c){ c.classList.remove('active'); });
+  if (element) element.classList.add('active');
+}
+
+function setNewsIconState(iconClass){
+  var ic = iconClass || 'fas fa-newspaper';
+  document.getElementById('ndFormIcon').value = ic;
+  document.getElementById('ndSelectedIconPreview').className = ic;
+  document.getElementById('ndSelectedIconClass').textContent = ic;
+
+  var matchChip = document.querySelector('#ndIconGrid .nd-icon-chip[data-icon="' + ic + '"]');
+  var chips = document.querySelectorAll('#ndIconGrid .nd-icon-chip');
+  chips.forEach(function(c){ c.classList.remove('active'); });
+  if (matchChip){
+    matchChip.classList.add('active');
+    document.getElementById('ndSelectedIconName').textContent = matchChip.dataset.name || 'Icon';
+  } else {
+    document.getElementById('ndSelectedIconName').textContent = 'Custom Icon';
+  }
+}
+
+function syncNewsImageUrlPreview(url){
+  var img = document.getElementById('ndBannerPreviewImg');
+  var empty = document.getElementById('ndBannerPreviewEmpty');
+  var removeBtn = document.getElementById('ndRemoveImgBtn');
+  var u = (url || '').trim();
+
+  if (u){
+    img.src = u;
+    img.style.display = 'block';
+    empty.style.display = 'none';
+    if (removeBtn) removeBtn.style.display = 'inline-flex';
+  } else {
+    img.src = '';
+    img.style.display = 'none';
+    empty.style.display = 'flex';
+    if (removeBtn) removeBtn.style.display = 'none';
+  }
+}
+
+function removeNewsBannerImage(){
+  document.getElementById('ndFormImageUrl').value = '';
+  document.getElementById('ndBannerFile').value = '';
+  syncNewsImageUrlPreview('');
+}
+
+function toggleNewsUrlField(){
+  var w = document.getElementById('ndUrlFieldWrap');
+  if (w) w.style.display = (w.style.display === 'none' ? 'block' : 'none');
+}
+
+async function handleNewsImageFileChange(fileInput){
+  var file = fileInput.files && fileInput.files[0];
+  if (!file) return;
+
+  var err = document.getElementById('ndFormError');
+  if (err) err.style.display = 'none';
+
+  if (file.size > 5 * 1024 * 1024){
+    if (err){
+      err.textContent = 'Banner image must be smaller than 5 MB.';
+      err.style.display = 'block';
+    }
+    fileInput.value = '';
+    return;
+  }
+
+  var formData = new FormData();
+  formData.append('file', file);
+
+  var uploadBtn = document.querySelector('.nd-upload-btn');
+  var origHtml = uploadBtn ? uploadBtn.innerHTML : '';
+  if (uploadBtn){
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+  }
+
+  try {
+    var res = await fetch('@Url.Action("UploadNewsImage", "NewsPosts")', {
+      method: 'POST',
+      headers: { 'RequestVerificationToken': getAntiForgeryToken() },
+      body: formData
+    });
+    var data = await res.json();
+    if (!res.ok || !data.success){
+      if (err){
+        err.textContent = data.message || 'Image upload failed. Please try again.';
+        err.style.display = 'block';
+      }
+      return;
+    }
+
+    document.getElementById('ndFormImageUrl').value = data.url;
+    syncNewsImageUrlPreview(data.url);
+    showNpToast('\u2705 Banner image uploaded successfully.');
+  } catch(ex){
+    if (err){
+      err.textContent = 'Network error while uploading image.';
+      err.style.display = 'block';
+    }
+  } finally {
+    if (uploadBtn){
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = origHtml;
+    }
+  }
+}
+
+function openAddNewsDraftModal(){
+  activeNewsId = null;
+  var viewMode = document.getElementById('ndViewMode');
+  var editModeEl = document.getElementById('ndEditMode');
+  if (viewMode) viewMode.style.display = 'none';
+  if (!editModeEl) return;
+  editModeEl.style.display = 'block';
+
+  document.getElementById('ndEditHeaderTitle').innerHTML = 'Create News Announcement <span class="nd-draft-badge">Draft</span>';
+  document.getElementById('ndEditSubtitle').textContent = 'Fill in the announcement details below to save and publish';
+
+  document.getElementById('ndFormTitle').value = '';
+  document.getElementById('ndFormCategory').value = 'Academic';
+  document.getElementById('ndFormDate').value = new Date().toISOString().slice(0, 10);
+  var expDefault = new Date();
+  expDefault.setFullYear(expDefault.getFullYear() + 1);
+  var expEl = document.getElementById('ndFormExpiryDate');
+  if (expEl) expEl.value = expDefault.toISOString().slice(0, 10);
+  document.getElementById('ndFormBody').value = '';
+  document.getElementById('ndFormIsActive').checked = true;
+  document.getElementById('ndFormSplashScreen').checked = false;
+  document.getElementById('ndFormFeatured').checked = false;
+
+  currentNewsIconCategory = 'all';
+  var catTabs1 = document.querySelectorAll('#ndIconCatTabs .nd-cat-tab-btn');
+  catTabs1.forEach(function(b){ b.classList.remove('active'); });
+  var allTabBtn1 = document.querySelector('#ndIconCatTabs .nd-cat-tab-btn[data-cat="all"]');
+  if (allTabBtn1) allTabBtn1.classList.add('active');
+
+  setNewsIconState('fas fa-newspaper');
+  document.getElementById('ndIconSearchInput').value = '';
+  filterIconPicker('');
+
+  document.getElementById('ndFormImageUrl').value = '';
+  document.getElementById('ndBannerFile').value = '';
+  syncNewsImageUrlPreview('');
+
+  var err = document.getElementById('ndFormError');
+  if (err){ err.style.display = 'none'; err.textContent = ''; }
+
+  document.getElementById('newsDetailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('ndFormTitle').focus();
+}
+
+function openEditNewsModal(id){
+  openNewsDetailModal(id);
+  switchToEditNews();
+}
+
+function switchToEditNews(){
+  var item = activeNewsId ? newsData[activeNewsId] : null;
+  if (!item) return;
+
+  var viewMode = document.getElementById('ndViewMode');
+  var editModeEl = document.getElementById('ndEditMode');
+  if (viewMode) viewMode.style.display = 'none';
+  if (!editModeEl) return;
+  editModeEl.style.display = 'block';
+
+  document.getElementById('ndEditHeaderTitle').textContent = 'Edit News Announcement';
+  document.getElementById('ndEditSubtitle').textContent = 'Modify announcement details and click Save';
+
+  document.getElementById('ndFormTitle').value = item.title || '';
+  document.getElementById('ndFormCategory').value = item.category || '';
+  document.getElementById('ndFormDate').value = item.publishDate || '';
+  var expEl = document.getElementById('ndFormExpiryDate');
+  if (expEl) expEl.value = item.expiresAt || '';
+  document.getElementById('ndFormBody').value = item.body || '';
+  document.getElementById('ndFormIsActive').checked = (item.isActive !== false);
+  document.getElementById('ndFormSplashScreen').checked = !!item.isSplashScreen;
+  document.getElementById('ndFormFeatured').checked = !!item.isFeatured;
+
+  currentNewsIconCategory = 'all';
+  var catTabs2 = document.querySelectorAll('#ndIconCatTabs .nd-cat-tab-btn');
+  catTabs2.forEach(function(b){ b.classList.remove('active'); });
+  var allTabBtn2 = document.querySelector('#ndIconCatTabs .nd-cat-tab-btn[data-cat="all"]');
+  if (allTabBtn2) allTabBtn2.classList.add('active');
+
+  setNewsIconState(item.icon || item.catIcon || 'fas fa-newspaper');
+  document.getElementById('ndIconSearchInput').value = '';
+  filterIconPicker('');
+
+  document.getElementById('ndFormImageUrl').value = item.imageUrl || '';
+  document.getElementById('ndBannerFile').value = '';
+  syncNewsImageUrlPreview(item.imageUrl || '');
+
+  var err = document.getElementById('ndFormError');
+  if (err){ err.style.display = 'none'; err.textContent = ''; }
+  document.getElementById('ndFormTitle').focus();
+}
+
+function cancelNewsEdit(){
+  if (activeNewsId && newsData[activeNewsId]){
+    openNewsDetailModal(activeNewsId);
+  } else {
+    closeNewsDetailModal();
+  }
+}
+
+async function saveNewsModalData(btn){
+  var title = document.getElementById('ndFormTitle').value.trim();
+  var body = document.getElementById('ndFormBody').value.trim();
+  var category = document.getElementById('ndFormCategory').value.trim();
+  var date = document.getElementById('ndFormDate').value;
+  var expiryDate = document.getElementById('ndFormExpiryDate') ? document.getElementById('ndFormExpiryDate').value : '';
+  var icon = document.getElementById('ndFormIcon').value.trim();
+  var imageUrl = document.getElementById('ndFormImageUrl').value.trim();
+  var isActive = document.getElementById('ndFormIsActive').checked;
+  var isSplashScreen = document.getElementById('ndFormSplashScreen').checked;
+  var isFeatured = document.getElementById('ndFormFeatured').checked;
+
+  var err = document.getElementById('ndFormError');
+  err.style.display = 'none';
+
+  if (!title){
+    err.textContent = 'Please provide a news headline / title.';
+    err.style.display = 'block';
+    return;
+  }
+
+  var payload = {
+    Title: title,
+    Body: body,
+    Category: category,
+    Icon: icon,
+    ImageUrl: imageUrl,
+    PublishDate: date,
+    ExpiresAt: expiryDate,
+    IsFeatured: isFeatured,
+    IsActive: isActive,
+    IsSplashScreen: isSplashScreen
+  };
+
+  var url = activeNewsId ? '@Url.Action("QuickUpdate", "NewsPosts")' : '@Url.Action("QuickAdd", "NewsPosts")';
+  if (activeNewsId) payload.NewsPostId = activeNewsId;
+
+  btn.disabled = true;
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+  try {
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+      body: JSON.stringify(payload)
+    });
+    var data = await res.json();
+    if (!res.ok || !data.success){
+      err.textContent = data.message || 'Could not save news post.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = orig;
+      return;
+    }
+
+    showNpToast('✅ "' + data.title + '" saved successfully.');
+    setTimeout(function(){ window.location.reload(); }, 600);
+  } catch(e){
+    err.textContent = 'Network error while saving. Please try again.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+async function toggleNewsActive(btn, newsPostId){
+  if (btn) btn.disabled = true;
+  try {
+    var res = await fetch('@Url.Action("ToggleActive", "NewsPosts")', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+      body: JSON.stringify({ NewsPostId: newsPostId })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.success){
+      showNpToast(data.message || 'Could not toggle active status.', true);
+      if (btn) btn.disabled = false;
+      return;
+    }
+    showNpToast(data.isActive ? '✅ Post is now ACTIVE & visible to public' : '👁️‍🗨️ Post is now INACTIVE (Draft)', false);
+    setTimeout(function(){ window.location.reload(); }, 600);
+  } catch(e){
+    showNpToast('Network error, please try again.', true);
+    if (btn) btn.disabled = false;
+  }
+}
+
+
+async function deleteCurrentNews(){
+  if (!activeNewsId) return;
+  if (!confirm('Are you sure you want to delete this news post permanently?')) return;
+
+  try {
+    var res = await fetch('@Url.Action("QuickDelete", "NewsPosts")', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+      body: JSON.stringify({ NewsPostId: activeNewsId })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.success){
+      showNpToast(data.message || 'Could not delete news post.', true);
+      return;
+    }
+
+    showNpToast('\uD83D\uDDD1\uFE0F News post removed from the database.');
+    setTimeout(function(){ window.location.reload(); }, 600);
+  } catch(e){
+    showNpToast('Network error, please try again.', true);
+  }
+}
+
+async function deleteNewsPost(btn, newsPostId){
+  if (!confirm('Delete this news post permanently from the database?')) return;
+
+  if (btn) btn.disabled = true;
+
+  try {
+    var res = await fetch('@Url.Action("QuickDelete", "NewsPosts")', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+      body: JSON.stringify({ NewsPostId: newsPostId })
+    });
+    var data = await res.json();
+    if (!res.ok || !data.success){
+      showNpToast(data.message || 'Could not delete the news post.', true);
+      if (btn) btn.disabled = false;
+      return;
+    }
+
+    showNpToast('\uD83D\uDDD1\uFE0F News post removed from the database.');
+    setTimeout(function(){ window.location.reload(); }, 600);
+  } catch (err){
+    showNpToast('Network error, please try again.', true);
+    if (btn) btn.disabled = false;
+  }
+}
+
+@if (editMode)
+{
+    <text>
+    /* ===== Photo Gallery: Admin add/edit/delete/upload ===== */
+    var galleryData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        galleryPhotos.ToDictionary(g => g.PhotoId.ToString(), g => new
+        {
+            id = g.PhotoId,
+            caption = g.Caption,
+            album = g.Album,
+            imageUrl = g.ImageUrl ?? "",
+            icon = g.Icon ?? ""
+        })
+    ).Replace("</", "<\\/"));
+
+    var currentPhotoEditId = null;
+
+    function updatePhotoPreview(url, icon){
+      var preview = document.getElementById('pgPreview');
+      if (url){
+        preview.style.backgroundImage = "url('" + url + "')";
+        preview.innerHTML = '';
+      } else {
+        preview.style.backgroundImage = '';
+        preview.innerHTML = '<i class="' + (icon || 'fas fa-image') + '"></i>';
+      }
+    }
+
+    function openPhotoModal(photoId){
+      currentPhotoEditId = photoId || null;
+      var f = function(id){ return document.getElementById(id); };
+      f('pgError').style.display = 'none';
+      f('pgError').textContent = '';
+      f('pgFile').value = '';
+
+      if (currentPhotoEditId && galleryData[currentPhotoEditId]){
+        var d = galleryData[currentPhotoEditId];
+        document.getElementById('photoModalTitle').textContent = 'Edit Photo';
+        f('pgCaption').value = d.caption || '';
+        f('pgAlbum').value = d.album || '';
+        f('pgIcon').value = d.icon || '';
+        f('pgImageUrl').value = d.imageUrl || '';
+        updatePhotoPreview(d.imageUrl, d.icon);
+      } else {
+        document.getElementById('photoModalTitle').textContent = 'Add Photo';
+        f('pgCaption').value = '';
+        f('pgAlbum').value = '';
+        f('pgIcon').value = '';
+        f('pgImageUrl').value = '';
+        updatePhotoPreview('', 'fas fa-image');
+      }
+
+      document.getElementById('photoModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      f('pgCaption').focus();
+    }
+
+    function closePhotoModal(){
+      document.getElementById('photoModal').classList.remove('open');
+      document.body.style.overflow = '';
+      currentPhotoEditId = null;
+    }
+
+    async function handlePhotoFileChange(input){
+      var file = input.files && input.files[0];
+      if (!file) return;
+      var errorBox = document.getElementById('pgError');
+      errorBox.style.display = 'none';
+
+      var preview = document.getElementById('pgPreview');
+      preview.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+      var formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        var res = await fetch('@Url.Action("UploadGalleryPhoto", "NewsPosts")', {
+          method: 'POST',
+          headers: { 'RequestVerificationToken': getAntiForgeryToken() },
+          body: formData
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not upload the photo.';
+          errorBox.style.display = 'block';
+          updatePhotoPreview('', document.getElementById('pgIcon').value || 'fas fa-image');
+          return;
+        }
+        document.getElementById('pgImageUrl').value = data.url;
+        updatePhotoPreview(data.url, '');
+      } catch (err){
+        errorBox.textContent = 'Network error while uploading, please try again.';
+        errorBox.style.display = 'block';
+        updatePhotoPreview('', 'fas fa-image');
+      }
+    }
+
+    async function savePhoto(btn){
+      var f = function(id){ return document.getElementById(id); };
+      var caption = f('pgCaption').value.trim();
+      var errorBox = f('pgError');
+      errorBox.style.display = 'none';
+
+      if (!caption){
+        errorBox.textContent = 'Photo caption is required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      var payload = {
+        Caption: caption,
+        Album: f('pgAlbum').value.trim(),
+        Icon: f('pgIcon').value.trim(),
+        ImageUrl: f('pgImageUrl').value.trim()
+      };
+
+      var url = currentPhotoEditId ? '@Url.Action("QuickUpdatePhoto", "NewsPosts")' : '@Url.Action("QuickAddPhoto", "NewsPosts")';
+      if (currentPhotoEditId) payload.PhotoId = currentPhotoEditId;
+
+      btn.disabled = true;
+      var originalText = btn.innerHTML;
+      btn.innerHTML = 'Saving...';
+
+      try {
+        var res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify(payload)
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save the photo.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          return;
+        }
+
+        showNpToast('\u2705 Photo saved to the database.');
+        setTimeout(function(){ window.location.reload(); }, 700);
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function deletePhoto(btn, photoId){
+      if (!confirm('Delete this photo permanently from the database?')) return;
+
+      btn.disabled = true;
+
+      try {
+        var res = await fetch('@Url.Action("QuickDeletePhoto", "NewsPosts")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ PhotoId: photoId })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          showNpToast(data.message || 'Could not delete the photo.', true);
+          btn.disabled = false;
+          return;
+        }
+
+        showNpToast('\uD83D\uDDD1\uFE0F Photo removed from the database.');
+        setTimeout(function(){ window.location.reload(); }, 700);
+      } catch (err){
+        showNpToast('Network error, please try again.', true);
+        btn.disabled = false;
+      }
+    }
+
+    /* ===== Video Gallery: Admin add/edit/delete ===== */
+    var videoData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+        galleryVideos.ToDictionary(v => v.VideoId.ToString(), v => new
+        {
+            id = v.VideoId,
+            title = v.Title,
+            category = v.Category ?? "",
+            videoUrl = v.VideoUrl ?? "",
+            thumbnailUrl = v.ThumbnailUrl ?? "",
+            icon = v.Icon ?? "",
+            duration = v.Duration ?? "",
+            views = v.Views,
+            publishDate = v.PublishDate.ToString("yyyy-MM-dd")
+        })
+    ).Replace("</", "<\\/"));
+
+    var currentEditVideoId = null;
+
+    function openVideoModal(videoId){
+      currentEditVideoId = videoId || null;
+      var f = function(id){ return document.getElementById(id); };
+      f('vgError').style.display = 'none';
+      f('vgError').textContent = '';
+
+      if (currentEditVideoId && videoData[currentEditVideoId]){
+        var d = videoData[currentEditVideoId];
+        document.getElementById('videoModalTitle').textContent = 'Edit Video';
+        f('vgTitle').value = d.title || '';
+        f('vgVideoUrl').value = d.videoUrl || '';
+        f('vgCategory').value = d.category || '';
+        f('vgPublishDate').value = d.publishDate || '';
+        f('vgDuration').value = d.duration || '';
+        f('vgViews').value = d.views || 0;
+        f('vgIcon').value = d.icon || '';
+        f('vgThumbnailUrl').value = d.thumbnailUrl || '';
+      } else {
+        document.getElementById('videoModalTitle').textContent = 'Add Video';
+        f('vgTitle').value = '';
+        f('vgVideoUrl').value = '';
+        f('vgCategory').value = '';
+        f('vgPublishDate').value = new Date().toISOString().slice(0,10);
+        f('vgDuration').value = '';
+        f('vgViews').value = 0;
+        f('vgIcon').value = '';
+        f('vgThumbnailUrl').value = '';
+      }
+
+      document.getElementById('videoModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      f('vgTitle').focus();
+    }
+
+    function closeVideoModal(){
+      document.getElementById('videoModal').classList.remove('open');
+      document.body.style.overflow = '';
+      currentEditVideoId = null;
+    }
+
+    async function saveVideo(btn){
+      var f = function(id){ return document.getElementById(id); };
+      var title = f('vgTitle').value.trim();
+      var videoUrl = f('vgVideoUrl').value.trim();
+      var errorBox = f('vgError');
+      errorBox.style.display = 'none';
+
+      if (!title || !videoUrl){
+        errorBox.textContent = 'Title and video link are both required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      var payload = {
+        Title: title,
+        VideoUrl: videoUrl,
+        Category: f('vgCategory').value.trim(),
+        PublishDate: f('vgPublishDate').value,
+        Duration: f('vgDuration').value.trim(),
+        Views: parseInt(f('vgViews').value || '0', 10) || 0,
+        Icon: f('vgIcon').value.trim(),
+        ThumbnailUrl: f('vgThumbnailUrl').value.trim()
+      };
+
+      var url = currentEditVideoId ? '@Url.Action("QuickUpdate", "GalleryVideos")' : '@Url.Action("QuickAdd", "GalleryVideos")';
+      if (currentEditVideoId) payload.VideoId = currentEditVideoId;
+
+      btn.disabled = true;
+      var originalText = btn.innerHTML;
+      btn.innerHTML = 'Saving...';
+
+      try {
+        var res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify(payload)
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save the video.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+          return;
+        }
+
+        showNpToast('\u2705 "' + data.title + '" saved to the database.');
+        setTimeout(function(){ window.location.reload(); }, 700);
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    async function deleteVideo(btn, videoId){
+      if (!confirm('Delete this video permanently from the database?')) return;
+
+      btn.disabled = true;
+
+      try {
+        var res = await fetch('@Url.Action("QuickDelete", "GalleryVideos")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ VideoId: videoId })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          showNpToast(data.message || 'Could not delete the video.', true);
+          btn.disabled = false;
+          return;
+        }
+
+        showNpToast('\uD83D\uDDD1\uFE0F Video removed from the database.');
+        setTimeout(function(){ window.location.reload(); }, 700);
+      } catch (err){
+        showNpToast('Network error, please try again.', true);
+        btn.disabled = false;
+      }
+    }
+    </text>
+}
+</script>
+
+<!-- ===== ACCOUNT DROPDOWN (Log In / Sign Up, or user name + Log Out) ===== -->
+<script>
+window.NAU_AUTH = {
+    isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+    isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+    userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewBag.CurrentUserName ?? "")))
+};
+
+(function setupAccountDropdown() {
+    var enhancedButtons = new WeakSet();
+    var auth = window.NAU_AUTH || { isAuthenticated: false, isAdmin: false, userName: '' };
+
+    function enhance(btn) {
+        if (enhancedButtons.has(btn)) return;
+        var alreadyWrapped = !!btn.closest('.account-dropdown');
+        var isPristineAccountBtn = btn.textContent.trim().toLowerCase() === 'account';
+        if (!alreadyWrapped && !isPristineAccountBtn) return;
+        enhancedButtons.add(btn);
+
+        var wrap = btn.closest('.account-dropdown');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'account-dropdown';
+            btn.parentNode.insertBefore(wrap, btn);
+            wrap.appendChild(btn);
+        }
+
+        btn.removeAttribute('href');
+        btn.setAttribute('role', 'button');
+
+        if (auth.isAuthenticated) {
+            btn.innerHTML = '<i class="fas fa-circle-user" style="margin-right:6px;"></i>' + (auth.userName || 'My Account');
+        } else {
+            btn.innerHTML = 'Account';
+        }
+
+        var menu = document.createElement('div');
+        menu.className = 'account-dropdown-menu';
+        if (auth.isAuthenticated) {
+            menu.innerHTML =
+                '<a href="#" id="navLogoutLink"><i class="fas fa-right-from-bracket" style="margin-right:8px;"></i>Log Out</a>';
+        } else {
+            menu.innerHTML =
+                '<a href="/Account/Login"><i class="fas fa-right-to-bracket" style="margin-right:8px;"></i>Log In</a>';
+        }
+        menu.style.position = 'fixed';
+        menu.style.display = 'none';
+        menu.style.zIndex = '2147483647';
+        menu.style.background = '#fff';
+        menu.style.minWidth = '150px';
+        menu.style.borderRadius = '8px';
+        menu.style.boxShadow = '0 10px 28px rgba(0,0,0,0.2)';
+        menu.style.overflow = 'hidden';
+        document.body.appendChild(menu);
+
+        if (auth.isAuthenticated) {
+            var logoutLink = menu.querySelector('#navLogoutLink');
+            logoutLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/Account/Logout';
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+
+        function positionMenu() {
+            var r = btn.getBoundingClientRect();
+            menu.style.top = (r.bottom + 8) + 'px';
+            menu.style.left = 'auto';
+            menu.style.right = (window.innerWidth - r.right) + 'px';
+        }
+
+        var closeTimer;
+        function openMenu() {
+            clearTimeout(closeTimer);
+            positionMenu();
+            menu.style.display = 'block';
+            wrap.classList.add('open');
+        }
+        function closeMenu() {
+            closeTimer = setTimeout(function () {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }, 150);
+        }
+
+        wrap.addEventListener('mouseenter', openMenu);
+        wrap.addEventListener('mouseleave', closeMenu);
+        menu.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        menu.addEventListener('mouseleave', closeMenu);
+
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            } else {
+                openMenu();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrap.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (menu.style.display === 'block') positionMenu();
+        }, true);
+        window.addEventListener('resize', function () {
+            if (menu.style.display === 'block') positionMenu();
+        });
+    }
+
+    function run() {
+        document.querySelectorAll('.apply-btn').forEach(enhance);
+    }
+
+    run();
+    var observer = new MutationObserver(run);
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+
+
+<script src="~/js/global-search.js" asp-append-version="true"></script>
+<script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+<script src="~/js/schools-submenu.js" asp-append-version="true"></script>
+
+<partial name="_PublicModals" />
+<script src="~/js/public-modals.js" asp-append-version="true"></script>
+</body>
+</html>

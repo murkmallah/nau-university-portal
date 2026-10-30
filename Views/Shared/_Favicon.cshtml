@@ -1,0 +1,8 @@
+@inject NAU_Web.Services.ISiteBrandingService BrandingService
+@{
+    var branding = await BrandingService.GetSettingAsync();
+    var faviconUrl = !string.IsNullOrEmpty(branding?.LogoUrl) ? branding.LogoUrl : "/images/logo.png";
+}
+<link rel="icon" type="image/png" href="@faviconUrl" asp-append-version="true" />
+<link rel="shortcut icon" type="image/png" href="@faviconUrl" asp-append-version="true" />
+<link rel="apple-touch-icon" href="@faviconUrl" />

@@ -1,0 +1,1226 @@
+@model NAU_Web.Models.FinancialPageContent
+@{
+    Layout = null;
+    bool isAdmin  = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+    bool editMode = ViewBag.EditMode == true;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Information &mdash; National Aviation University</title>
+<partial name="_Favicon" />
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/courses-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/financial-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/cms-icon-picker.css" asp-append-version="true">
+
+<script>
+    window.NAU_AUTH = {
+        isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+        isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+        userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.CurrentUserName ?? ""))
+    };
+</script>
+
+<style>
+  /* .announcement / .scroll / .account-dropdown / .apply-btn now come from
+     the single shared file wwwroot/css/public-site.css (linked above), so
+     this page always matches the rest of the site automatically. */
+
+  /* Inline Admin Controls (Schools & SimLabs Pattern) */
+  .fin-admin-btn {
+    border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .2s;
+  }
+  .fin-admin-add { background: var(--green); color: #fff; }
+  .fin-admin-add:hover { background: #166f30; }
+  .fin-admin-edit { background: #eef4f9; color: #1a5fa6; }
+  .fin-admin-edit:hover { background: #1a5fa6; color: #fff; }
+  .fin-admin-delete { background: #fde8e8; color: #c0392b; }
+  .fin-admin-delete:hover { background: #c0392b; color: #fff; }
+
+  /* Modal Backdrop */
+  .fin-modal-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 10000;
+    background: rgba(8,20,40,.75); align-items: center; justify-content: center;
+  }
+  .fin-modal-backdrop.open { display: flex; }
+  .fin-modal {
+    background: #fff; border-radius: 14px; width: 90%; max-width: 520px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; animation: popIn .2s ease;
+  }
+  @@keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .fin-modal-head {
+    background: var(--primary); color: #fff; padding: 16px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: "Montserrat", sans-serif; font-weight: 700; font-size: 16px;
+  }
+  .fin-modal-close { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; }
+  .fin-modal-body { padding: 20px; }
+  .fin-field { margin-bottom: 14px; }
+  .fin-field label { display: block; font-size: 12.5px; font-weight: 600; color: #444; margin-bottom: 5px; }
+  .fin-field input, .fin-field select, .fin-field textarea {
+    width: 100%; padding: 9px 12px; border: 1.5px solid #dde2ec; border-radius: 8px;
+    font-family: "Poppins", sans-serif; font-size: 13px; outline: none; transition: border-color .2s;
+  }
+  .fin-field input:focus, .fin-field select:focus, .fin-field textarea:focus { border-color: var(--green); }
+  .fin-modal-foot { padding: 14px 20px; background: #f8fafc; border-top: 1px solid #eef2f6; display: flex; justify-content: flex-end; gap: 10px; }
+</style>
+</head>
+<body>
+
+@if (editMode)
+{
+    <div style="background:#0b2c4d;color:#fff;text-align:center;padding:10px 20px;font-family:'Poppins',sans-serif;font-size:13.5px;font-weight:600;">
+        <i class="fas fa-lock"></i> You are viewing this page in <strong>Admin Edit Mode</strong>.
+        <a href="/Financial" style="color:#7ec8ff;margin-left:8px;text-decoration:none;">Exit to normal view</a>
+        <a href="/Admin" style="color:#7ec8ff;margin-left:14px;text-decoration:none;"><i class="fas fa-user-shield"></i> Admin Panel</a>
+    </div>
+}
+
+<partial name="_SiteHeader" />
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="page-hero-eyebrow">Admissions &mdash; Financial</div>
+    <h1>Financial Information</h1>
+    <p>Everything you need to know about tuition fees, scholarship opportunities, and accepted payment methods at National Aviation University.</p>
+  </div>
+</div>
+
+<!-- SECTION NAV -->
+<nav class="sec-nav" id="secNav">
+  <div class="sec-nav-inner">
+    <a href="#fee-structure" class="sec-nav-link active" onclick="setActive(this)"><i class="fas fa-coins"></i> Fee Structure</a>
+    <a href="#scholarships" class="sec-nav-link" onclick="setActive(this)"><i class="fas fa-hand-holding-usd"></i> Scholarships</a>
+    <a href="#payment-methods" class="sec-nav-link" onclick="setActive(this)"><i class="fas fa-receipt"></i> Payment Methods</a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="fin-main">
+
+  <!-- ========== FEE STRUCTURE ========== -->
+  <section class="fin-section" id="fee-structure">
+    <div class="fin-section-header">
+      <div class="fin-section-label"><i class="fas fa-coins"></i> @(string.IsNullOrWhiteSpace(Model.FeeSectionLabel) ? "FEE STRUCTURE" : Model.FeeSectionLabel)</div>
+      <h2>@(string.IsNullOrWhiteSpace(Model.FeeSectionTitle) ? "Tuition & Other Fees" : Model.FeeSectionTitle)</h2>
+      <div class="fin-divider"></div>
+      <p>@(string.IsNullOrWhiteSpace(Model.FeeSectionDesc) ? "Fees are charged per semester. Amounts shown are for the 2026 academic year and subject to revision annually. All amounts are in Pakistani Rupees (PKR)." : Model.FeeSectionDesc)</p>
+    </div>
+
+    <div class="fin-notice">
+      <i class="fas fa-info-circle"></i>
+      <div>@Model.FeeNoticeText</div>
+    </div>
+
+    @if (editMode)
+    {
+        <div style="margin-bottom:14px; text-align:right; display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="fin-admin-btn fin-admin-edit" onclick="openFeeHeaderModal()">
+                <i class="fas fa-pen"></i> Edit Section Headings &amp; Notice
+            </button>
+            <button type="button" class="fin-admin-btn fin-admin-edit" onclick="openProgramTabsModal()">
+                <i class="fas fa-tags"></i> Edit Program Tabs
+            </button>
+        </div>
+    }
+
+    <!-- Program Tabs -->
+    <div class="fee-tabs">
+      <button class="fee-tab active" onclick="switchFeeTab(this,'be')">@Model.GetTabLabel("be")</button>
+      <button class="fee-tab" onclick="switchFeeTab(this,'bs')">@Model.GetTabLabel("bs")</button>
+      <button class="fee-tab" onclick="switchFeeTab(this,'mba')">@Model.GetTabLabel("mba")</button>
+      <button class="fee-tab" onclick="switchFeeTab(this,'short')">@Model.GetTabLabel("short")</button>
+    </div>
+
+    @foreach (var cat in new[] { "be", "bs", "mba", "short" })
+    {
+        var items = Model.FeeItems.Where(i => i.Category == cat).OrderBy(i => i.DisplayOrder).ToList();
+        var cards = Model.FeeCards.Where(c => c.Category == cat).ToList();
+
+        var regItem = items.FirstOrDefault(i => i.Component.Contains("Registration", StringComparison.OrdinalIgnoreCase) || i.Frequency.Contains("One-Time", StringComparison.OrdinalIgnoreCase));
+        var subItem = items.FirstOrDefault(i => i.IsSubtotal || i.Component.Contains("Semester Total", StringComparison.OrdinalIgnoreCase));
+
+        <div id="feeTab-@cat" class="fee-tab-content @(cat == "be" ? "active" : "")">
+          @if (editMode)
+          {
+              <div style="margin-bottom:14px; text-align:right;">
+                  <button type="button" class="fin-admin-btn fin-admin-add" onclick="openFeeItemModal('', '@cat')">
+                      <i class="fas fa-plus"></i> Add Fee Component (@Model.GetTabLabel(cat))
+                  </button>
+              </div>
+          }
+          <div class="fee-table-wrap">
+            <table class="fee-table">
+              <thead>
+                <tr>
+                  <th>Fee Component</th>
+                  <th>Amount (PKR)</th>
+                  <th>Frequency</th>
+                  <th>Note</th>
+                  @if (editMode) { <th width="80">Actions</th> }
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (var item in items)
+                {
+                    <tr class="@(item.IsTotal ? "fee-total" : item.IsSubtotal ? "fee-subtotal" : "")">
+                      <td class="fee-label">@item.Component</td>
+                      <td class="fee-amount">@item.Amount</td>
+                      <td>@item.Frequency</td>
+                      <td class="fee-note">@item.Note</td>
+                      @if (editMode)
+                      {
+                          <td>
+                              <button type="button" class="fin-admin-btn fin-admin-edit" title="Edit" onclick="openFeeItemModal('@item.Id', '@item.Category', '@item.Component', '@item.Amount', '@item.Frequency', '@item.Note', @(item.IsSubtotal ? "true":"false"), @(item.IsTotal ? "true":"false"))">
+                                  <i class="fas fa-pen"></i>
+                              </button>
+                              <button type="button" class="fin-admin-btn fin-admin-delete" title="Delete" onclick="deleteFeeItem('@item.Id')">
+                                  <i class="fas fa-trash"></i>
+                              </button>
+                          </td>
+                      }
+                    </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (cards.Any())
+          {
+              <div class="fee-cards">
+                @foreach (var card in cards)
+                {
+                    string cardAmt = card.Amount;
+                    if (card.Title.Contains("Registration", StringComparison.OrdinalIgnoreCase) && regItem != null)
+                    {
+                        cardAmt = regItem.Amount.StartsWith("PKR", StringComparison.OrdinalIgnoreCase) ? regItem.Amount : "PKR " + regItem.Amount;
+                    }
+                    else if (card.Title.Equals("Per Semester", StringComparison.OrdinalIgnoreCase) && subItem != null)
+                    {
+                        cardAmt = subItem.Amount.StartsWith("PKR", StringComparison.OrdinalIgnoreCase) ? subItem.Amount : "PKR " + subItem.Amount;
+                    }
+                    else if (card.Title.Equals("Annual Cost", StringComparison.OrdinalIgnoreCase) && subItem != null)
+                    {
+                        var digits = new string(subItem.Amount.Where(char.IsDigit).ToArray());
+                        if (long.TryParse(digits, out long val))
+                        {
+                            cardAmt = $"PKR {val * 2:N0}";
+                        }
+                    }
+
+                    <div class="fee-card" style="position:relative;">
+                      @if (editMode)
+                      {
+                          <div style="position:absolute; top:8px; right:8px; z-index:5;">
+                              <button type="button" class="fin-admin-btn fin-admin-edit" style="padding:3px 7px; font-size:11px;" title="Edit Card" onclick="openFeeCardModal('@card.Id', '@card.Category', '@card.Title', '@cardAmt', '@card.Period', '@card.Note')">
+                                  <i class="fas fa-pen"></i> Edit
+                              </button>
+                          </div>
+                      }
+                      <div class="fee-card-icon" style="background:@card.BgColor; color:@card.TextColor;"><i class="@card.IconClass"></i></div>
+                      <div class="fee-card-title">@card.Title</div>
+                      <div class="fee-card-amount">@cardAmt</div>
+                      <div class="fee-card-period">@card.Period</div>
+                      <div class="fee-card-note">@card.Note</div>
+                    </div>
+                }
+              </div>
+          }
+        </div>
+    }
+  </section>
+
+  <!-- ========== SCHOLARSHIPS ========== -->
+  <section class="fin-section" id="scholarships">
+    <div class="fin-section-header">
+      <div class="fin-section-label"><i class="fas fa-hand-holding-usd"></i> @(string.IsNullOrWhiteSpace(Model.ScholarshipSectionLabel) ? "SCHOLARSHIPS" : Model.ScholarshipSectionLabel)</div>
+      <h2>@(string.IsNullOrWhiteSpace(Model.ScholarshipSectionTitle) ? "Financial Aid & Scholarships" : Model.ScholarshipSectionTitle)</h2>
+      <div class="fin-divider"></div>
+      <p>@(string.IsNullOrWhiteSpace(Model.ScholarshipSectionDesc) ? "NAU offers merit and need-based scholarship programs to ensure that financial constraints do not prevent talented students from pursuing an aviation career." : Model.ScholarshipSectionDesc)</p>
+    </div>
+
+    <div class="fin-notice">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div>@Model.ScholarshipNoticeText</div>
+    </div>
+
+    @if (editMode)
+    {
+        <div style="margin-bottom:20px; text-align:right; display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="fin-admin-btn fin-admin-edit" onclick="openScholarshipHeaderModal()">
+                <i class="fas fa-pen"></i> Edit Section Headings &amp; Notice
+            </button>
+            <button type="button" class="fin-admin-btn fin-admin-add" onclick="openScholarshipModal('')">
+                <i class="fas fa-plus"></i> Add Scholarship Program
+            </button>
+        </div>
+    }
+
+    <div class="scholar-grid">
+      @foreach (var sch in Model.Scholarships)
+      {
+          <div class="scholar-card" style="position:relative;">
+            @if (editMode)
+            {
+                <div style="position:absolute; top:12px; right:12px; z-index:10; display:flex; gap:6px;">
+                    <button type="button" class="fin-admin-btn fin-admin-edit" title="Edit" onclick="editScholarshipModal('@sch.Id', '@sch.Title', '@sch.Subtitle', '@sch.Percentage', '@sch.PercentageLabel', '@sch.BadgeText', '@sch.BadgeBg', '@sch.BadgeColor', '@sch.HeaderGradient', '@(string.Join("|", sch.Criteria ?? new List<string>()))')">
+                        <i class="fas fa-pen"></i> Edit
+                    </button>
+                    <button type="button" class="fin-admin-btn fin-admin-delete" title="Delete" onclick="deleteScholarship('@sch.Id')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            }
+            <div class="scholar-card-header" style="background:@sch.HeaderGradient;">
+              <div class="scholar-icon" style="background:rgba(255,255,255,0.15);color:#fff;"><i class="fas fa-award"></i></div>
+              <div>
+                <div class="scholar-title">@sch.Title</div>
+                <div class="scholar-subtitle">@sch.Subtitle</div>
+              </div>
+            </div>
+            <div class="scholar-body">
+              <div class="scholar-pct" style="color:@sch.BadgeColor;">@sch.Percentage</div>
+              <div class="scholar-pct-label">@sch.PercentageLabel</div>
+              <ul class="scholar-criteria-list">
+                @if (sch.Criteria != null)
+                {
+                    foreach (var cr in sch.Criteria)
+                    {
+                        <li><i class="fas fa-check-circle"></i><span>@cr</span></li>
+                    }
+                }
+              </ul>
+              @if (!string.IsNullOrEmpty(sch.BadgeText))
+              {
+                  <div class="scholar-badge" style="background:@sch.BadgeBg; color:@sch.BadgeColor; border-color:@sch.BadgeBg;">
+                    <i class="fas fa-star"></i> @sch.BadgeText
+                  </div>
+              }
+            </div>
+          </div>
+      }
+    </div>
+  </section>
+
+  <!-- ========== PAYMENT METHODS ========== -->
+  <section class="fin-section" id="payment-methods">
+    <div class="fin-section-header">
+      <div class="fin-section-label"><i class="fas fa-receipt"></i> @(string.IsNullOrWhiteSpace(Model.PaymentSectionLabel) ? "PAYMENT METHODS" : Model.PaymentSectionLabel)</div>
+      <h2>@(string.IsNullOrWhiteSpace(Model.PaymentSectionTitle) ? "How to Pay Your Fees" : Model.PaymentSectionTitle)</h2>
+      <div class="fin-divider"></div>
+      <p>@(string.IsNullOrWhiteSpace(Model.PaymentSectionDesc) ? "NAU accepts fee payments through multiple channels for your convenience. Always keep your payment receipt safe — it is your official proof of payment." : Model.PaymentSectionDesc)</p>
+    </div>
+
+    <!-- Accepted Banks -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:700;color:var(--primary);margin:0;">
+          <i class="fas fa-university" style="color:var(--green);margin-right:8px;"></i>@(string.IsNullOrWhiteSpace(Model.PaymentSubTitle) ? "Accepted Banks & Payment Options" : Model.PaymentSubTitle)
+        </h3>
+        @if (editMode)
+        {
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="fin-admin-btn fin-admin-edit" onclick="openPaymentHeaderModal()">
+                    <i class="fas fa-pen"></i> Edit Section Headings
+                </button>
+                <button type="button" class="fin-admin-btn fin-admin-add" onclick="openBankModal('')">
+                    <i class="fas fa-plus"></i> Add Bank
+                </button>
+            </div>
+        }
+    </div>
+
+    <div class="bank-list">
+      @foreach (var bank in Model.Banks)
+      {
+          <div class="bank-item">
+            <div class="bank-logo" style="background:@(string.IsNullOrEmpty(bank.LogoUrl) ? bank.LogoBgHex : "transparent");">
+              @if (!string.IsNullOrWhiteSpace(bank.LogoUrl))
+              {
+                  <img src="@bank.LogoUrl" alt="@bank.Name" class="bank-logo-img" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';" />
+                  <span class="bank-logo-fallback" style="display:none;background:@bank.LogoBgHex;color:#fff;">@bank.LogoText</span>
+              }
+              else
+              {
+                  <span style="color:#fff;">@bank.LogoText</span>
+              }
+            </div>
+            <div class="bank-info">
+              <div class="bank-name">@bank.Name</div>
+              <div class="bank-detail">@bank.Details</div>
+            </div>
+            <span class="bank-tag" style="background:@bank.TagBg; color:@bank.TagColor;">@bank.TagText</span>
+            @if (editMode)
+            {
+                <div style="margin-left:14px; display:flex; gap:6px;">
+                    <button type="button" class="fin-admin-btn fin-admin-edit" title="Edit" onclick="editBankModal('@bank.Id', '@bank.Name', '@bank.Details', '@bank.TagText', '@bank.TagBg', '@bank.TagColor', '@bank.LogoText', '@bank.LogoBgHex', '@bank.LogoUrl')">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    <button type="button" class="fin-admin-btn fin-admin-delete" title="Delete" onclick="deleteBank('@bank.Id')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            }
+          </div>
+      }
+    </div>
+  </section>
+
+</main>
+
+<partial name="_SiteFooter" />
+
+
+
+<!-- ADMIN EDIT MODALS (Schools & SimLabs Pattern) -->
+@if (editMode)
+{
+    <!-- FEE ITEM MODAL -->
+    <div id="feeItemModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span id="fimTitle">Add Fee Component</span>
+          <button type="button" class="fin-modal-close" onclick="closeFeeItemModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <input type="hidden" id="fimId" />
+          <input type="hidden" id="fimIsSubtotal" value="false" />
+          <input type="hidden" id="fimIsTotal" value="false" />
+          <div class="fin-field">
+            <label>Program Category</label>
+            <select id="fimCategory">
+              <option value="be">BE Programs</option>
+              <option value="bs">BS Programs</option>
+              <option value="mba">MBA</option>
+              <option value="short">Short Courses</option>
+            </select>
+          </div>
+          <div class="fin-field">
+            <label>Component Name</label>
+            <input type="text" id="fimComponent" placeholder="e.g. Tuition Fee" />
+          </div>
+          <div class="fin-field">
+            <label>Amount (PKR)</label>
+            <input type="text" id="fimAmount" placeholder="e.g. 45,000" />
+            <small id="fimAmountHelp" style="color:#1e8e3e;font-size:11px;margin-top:3px;display:block;"></small>
+          </div>
+          <div class="fin-field">
+            <label>Frequency</label>
+            <input type="text" id="fimFrequency" placeholder="e.g. Per Semester / One-Time" />
+          </div>
+          <div class="fin-field">
+            <label>Note / Eligibility</label>
+            <input type="text" id="fimNote" placeholder="e.g. At time of admission" />
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closeFeeItemModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="saveFeeItem()">Save Component</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHOLARSHIP MODAL -->
+    <div id="scholarshipModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span id="smTitle">Add Scholarship Program</span>
+          <button type="button" class="fin-modal-close" onclick="closeScholarshipModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <input type="hidden" id="smId" />
+          <div class="fin-field">
+            <label>Scholarship Name</label>
+            <input type="text" id="smName" placeholder="e.g. Merit Scholarship" />
+          </div>
+          <div class="fin-field">
+            <label>Subtitle</label>
+            <input type="text" id="smSubtitle" placeholder="e.g. Top academic performers" />
+          </div>
+          <div class="fin-field">
+            <label>Percentage / Waiver</label>
+            <input type="text" id="smPct" placeholder="e.g. 50% – 100%" />
+          </div>
+          <div class="fin-field">
+            <label>Waiver Label</label>
+            <input type="text" id="smPctLabel" placeholder="e.g. Fee waiver on tuition" />
+          </div>
+          <div class="fin-field">
+            <label>Award Badge Text</label>
+            <input type="text" id="smBadge" placeholder="e.g. Academic Excellence Award" />
+          </div>
+          <div class="fin-field">
+            <label>Criteria (Separate each point with a pipe '|' character)</label>
+            <textarea id="smCriteria" rows="3" placeholder="Minimum 85% marks | Top 3 positions in Entry Test"></textarea>
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closeScholarshipModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="saveScholarship()">Save Scholarship</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BANK MODAL -->
+    <div id="bankModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span id="bmTitle">Add / Edit Accepted Bank</span>
+          <button type="button" class="fin-modal-close" onclick="closeBankModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <input type="hidden" id="bmId" />
+          <div class="fin-field">
+            <label>Bank Name</label>
+            <input type="text" id="bmName" placeholder="e.g. Habib Bank Limited (HBL)" />
+          </div>
+          <div class="fin-field">
+            <label>Payment Details</label>
+            <input type="text" id="bmDetails" placeholder="e.g. Over-the-counter &amp; HBL Mobile app" />
+          </div>
+          <div class="fin-field">
+            <label>Tag Text</label>
+            <input type="text" id="bmTag" placeholder="e.g. Primary / Accepted / Mobile" />
+          </div>
+          <div class="fin-field">
+            <label>Real Bank Logo</label>
+            <select id="bmLogoPreset" onchange="onBankLogoPresetChange(this.value)">
+              <option value="/images/banks/hbl.png">HBL (Habib Bank Limited)</option>
+              <option value="/images/banks/nbp.png">NBP (National Bank of Pakistan)</option>
+              <option value="/images/banks/mcb.png">MCB Bank Limited</option>
+              <option value="/images/banks/ubl.png">UBL (United Bank Limited)</option>
+              <option value="/images/banks/easypaisa.png">Easypaisa Mobile Wallet</option>
+              <option value="/images/banks/jazzcash.png">JazzCash Mobile Wallet</option>
+              <option value="custom">Custom Image URL</option>
+            </select>
+          </div>
+          <div class="fin-field">
+            <label>Logo Image URL / Path</label>
+            <input type="text" id="bmLogoUrl" placeholder="/images/banks/hbl.png" />
+          </div>
+          <div class="fin-field">
+            <label>Logo Abbreviation (fallback)</label>
+            <input type="text" id="bmLogoText" placeholder="e.g. HBL" />
+          </div>
+          <div class="fin-field">
+            <label>Logo Background Color Hex</label>
+            <input type="text" id="bmLogoBg" placeholder="e.g. #006b52" value="#006b52" />
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closeBankModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="saveBank()">Save Bank</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEE CARD MODAL -->
+    <div id="feeCardModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span>Edit Fee Summary Card</span>
+          <button type="button" class="fin-modal-close" onclick="closeFeeCardModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <input type="hidden" id="fcmId" />
+          <div class="fin-field">
+            <label>Card Title</label>
+            <input type="text" id="fcmTitle" placeholder="e.g. Registration (One-Time)" />
+          </div>
+          <div class="fin-field">
+            <label>Amount (PKR)</label>
+            <input type="text" id="fcmAmount" placeholder="e.g. PKR 10,000" />
+          </div>
+          <div class="fin-field">
+            <label>Period / Frequency</label>
+            <input type="text" id="fcmPeriod" placeholder="e.g. Paid once at admission" />
+          </div>
+          <div class="fin-field">
+            <label>Note / Description</label>
+            <input type="text" id="fcmNote" placeholder="e.g. Non-refundable after seat confirmation" />
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closeFeeCardModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="saveFeeCard()">Save Card</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEE HEADER MODAL -->
+    <div id="feeHeaderModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span>Edit Fee Section Headings & Notice</span>
+          <button type="button" class="fin-modal-close" onclick="closeFeeHeaderModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <div class="fin-field">
+            <label>Section Eyebrow Label</label>
+            <input type="text" id="fhmLabel" value="@Model.FeeSectionLabel" placeholder="e.g. FEE STRUCTURE" />
+          </div>
+          <div class="fin-field">
+            <label>Section Heading Title</label>
+            <input type="text" id="fhmTitle" value="@Model.FeeSectionTitle" placeholder="e.g. Tuition & Other Fees" />
+          </div>
+          <div class="fin-field">
+            <label>Section Description</label>
+            <textarea id="fhmDesc" rows="3" placeholder="Description text...">@Model.FeeSectionDesc</textarea>
+          </div>
+          <div class="fin-field">
+            <label>Notice Bar Text</label>
+            <textarea id="fhmNotice" rows="3" placeholder="Notice text...">@Model.FeeNoticeText</textarea>
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closeFeeHeaderModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="saveFeeHeader()">Save Headings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRAM TABS MODAL -->
+    <div id="programTabsModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span>Edit Program Tab Names</span>
+          <button type="button" class="fin-modal-close" onclick="closeProgramTabsModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <div class="fin-field">
+            <label>Tab 1 Label (Default: BE Programs)</label>
+            <input type="text" id="ptmBe" value="@Model.GetTabLabel("be")" />
+          </div>
+          <div class="fin-field">
+            <label>Tab 2 Label (Default: BS Programs)</label>
+            <input type="text" id="ptmBs" value="@Model.GetTabLabel("bs")" />
+          </div>
+          <div class="fin-field">
+            <label>Tab 3 Label (Default: MBA)</label>
+            <input type="text" id="ptmMba" value="@Model.GetTabLabel("mba")" />
+          </div>
+          <div class="fin-field">
+            <label>Tab 4 Label (Default: Short Courses)</label>
+            <input type="text" id="ptmShort" value="@Model.GetTabLabel("short")" />
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closeProgramTabsModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="saveProgramTabs()">Save Tabs</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHOLARSHIP HEADER MODAL -->
+    <div id="scholarshipHeaderModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span>Edit Scholarships Section Headings</span>
+          <button type="button" class="fin-modal-close" onclick="closeScholarshipHeaderModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <div class="fin-field">
+            <label>Section Eyebrow Label</label>
+            <input type="text" id="shmLabel" value="@Model.ScholarshipSectionLabel" placeholder="e.g. SCHOLARSHIPS" />
+          </div>
+          <div class="fin-field">
+            <label>Section Heading Title</label>
+            <input type="text" id="shmTitle" value="@Model.ScholarshipSectionTitle" placeholder="e.g. Financial Aid & Scholarships" />
+          </div>
+          <div class="fin-field">
+            <label>Section Description</label>
+            <textarea id="shmDesc" rows="3" placeholder="Description text...">@Model.ScholarshipSectionDesc</textarea>
+          </div>
+          <div class="fin-field">
+            <label>Notice Bar Text</label>
+            <textarea id="shmNotice" rows="3" placeholder="Notice text...">@Model.ScholarshipNoticeText</textarea>
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closeScholarshipHeaderModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="saveScholarshipHeader()">Save Headings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT HEADER MODAL -->
+    <div id="paymentHeaderModal" class="fin-modal-backdrop">
+      <div class="fin-modal">
+        <div class="fin-modal-head">
+          <span>Edit Payment Methods Section Headings</span>
+          <button type="button" class="fin-modal-close" onclick="closePaymentHeaderModal()">&times;</button>
+        </div>
+        <div class="fin-modal-body">
+          <div class="fin-field">
+            <label>Section Eyebrow Label</label>
+            <input type="text" id="phmLabel" value="@Model.PaymentSectionLabel" placeholder="e.g. PAYMENT METHODS" />
+          </div>
+          <div class="fin-field">
+            <label>Section Heading Title</label>
+            <input type="text" id="phmTitle" value="@Model.PaymentSectionTitle" placeholder="e.g. How to Pay Your Fees" />
+          </div>
+          <div class="fin-field">
+            <label>Section Description</label>
+            <textarea id="phmDesc" rows="3" placeholder="Description text...">@Model.PaymentSectionDesc</textarea>
+          </div>
+          <div class="fin-field">
+            <label>Sub-heading Title</label>
+            <input type="text" id="phmSubTitle" value="@Model.PaymentSubTitle" placeholder="e.g. Accepted Banks & Payment Options" />
+          </div>
+        </div>
+        <div class="fin-modal-foot">
+          <button type="button" class="fin-admin-btn" style="background:#eee;color:#333;" onclick="closePaymentHeaderModal()">Cancel</button>
+          <button type="button" class="fin-admin-btn fin-admin-add" onclick="savePaymentHeader()">Save Headings</button>
+        </div>
+      </div>
+    </div>
+}
+
+<script>
+    /* ===== FEE TABS SWITCHER ===== */
+    function switchFeeTab(btn, tab){
+      document.querySelectorAll('.fee-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.fee-tab-content').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      const target = document.getElementById('feeTab-'+tab);
+      if (target) target.classList.add('active');
+    }
+
+    /* ===== SECTION NAV ACTIVE STATE ===== */
+    function setActive(el){
+      document.querySelectorAll('.sec-nav-link').forEach(a=>a.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    /* ===== SCROLL SPY & SMOOTH SCROLL ===== */
+    document.addEventListener("DOMContentLoaded", function() {
+      const sections = ['fee-structure','scholarships','payment-methods'];
+      const navLinks = document.querySelectorAll('.sec-nav-link');
+      const navHeight = 68 + 52;
+
+      window.addEventListener('scroll', function(){
+        let current = '';
+        sections.forEach(function(id){
+          const el = document.getElementById(id);
+          if(el && el.getBoundingClientRect().top <= navHeight + 40) current = id;
+        });
+        navLinks.forEach(function(a){
+          a.classList.remove('active');
+          if(a.getAttribute('href')==='#'+current) a.classList.add('active');
+        });
+      });
+
+      const hash = location.hash;
+      if(hash){
+        const target = document.querySelector(hash);
+        if(target){
+          setTimeout(function(){
+            target.scrollIntoView({ behavior:'smooth' });
+            navLinks.forEach(function(a){ a.classList.remove('active'); if(a.getAttribute('href')===hash) a.classList.add('active'); });
+          }, 150);
+        }
+      }
+    });
+
+    /* ===== ADMIN MODAL HANDLERS (Schools & SimLabs Pattern) ===== */
+    function openFeeItemModal(id, cat, comp, amt, freq, note, isSub, isTot){
+      document.getElementById('fimId').value = id || '';
+      document.getElementById('fimCategory').value = cat || 'be';
+      document.getElementById('fimComponent').value = comp || '';
+      document.getElementById('fimAmount').value = amt || '';
+      document.getElementById('fimFrequency').value = freq || 'Per Semester';
+      document.getElementById('fimNote').value = note || '';
+      document.getElementById('fimIsSubtotal').value = isSub ? 'true' : 'false';
+      document.getElementById('fimIsTotal').value = isTot ? 'true' : 'false';
+      document.getElementById('fimTitle').textContent = id ? 'Edit Fee Component' : 'Add Fee Component';
+
+      const amtHelp = document.getElementById('fimAmountHelp');
+      if (amtHelp) {
+        if (isSub || isTot) {
+          amtHelp.textContent = 'Totals and program estimates are auto-calculated from components upon save.';
+        } else {
+          amtHelp.textContent = 'Semester total and estimated cost will automatically update with this amount.';
+        }
+      }
+
+      document.getElementById('feeItemModal').classList.add('open');
+    }
+    function closeFeeItemModal(){ document.getElementById('feeItemModal').classList.remove('open'); }
+
+    async function saveFeeItem(){
+      const payload = {
+        Id: document.getElementById('fimId').value,
+        Category: document.getElementById('fimCategory').value,
+        Component: document.getElementById('fimComponent').value,
+        Amount: document.getElementById('fimAmount').value,
+        Frequency: document.getElementById('fimFrequency').value,
+        Note: document.getElementById('fimNote').value,
+        IsSubtotal: document.getElementById('fimIsSubtotal').value === 'true',
+        IsTotal: document.getElementById('fimIsTotal').value === 'true'
+      };
+      const res = await fetch('/Financial/SaveFeeItem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving fee item.');
+    }
+
+    async function deleteFeeItem(id){
+      if (!confirm('Are you sure you want to delete this fee component?')) return;
+      const res = await fetch('/Financial/DeleteFeeItem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Id: id })
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+    }
+
+    function openScholarshipModal(id){
+      document.getElementById('smId').value = '';
+      document.getElementById('smName').value = '';
+      document.getElementById('smSubtitle').value = '';
+      document.getElementById('smPct').value = '';
+      document.getElementById('smPctLabel').value = 'Fee waiver on tuition';
+      document.getElementById('smBadge').value = '';
+      document.getElementById('smCriteria').value = '';
+      document.getElementById('smTitle').textContent = 'Add Scholarship Program';
+      document.getElementById('scholarshipModal').classList.add('open');
+    }
+    function editScholarshipModal(id, name, sub, pct, pctLbl, badge, badgeBg, badgeCol, grad, criteria){
+      document.getElementById('smId').value = id;
+      document.getElementById('smName').value = name;
+      document.getElementById('smSubtitle').value = sub;
+      document.getElementById('smPct').value = pct;
+      document.getElementById('smPctLabel').value = pctLbl;
+      document.getElementById('smBadge').value = badge;
+      document.getElementById('smCriteria').value = criteria;
+      document.getElementById('smTitle').textContent = 'Edit Scholarship Program';
+      document.getElementById('scholarshipModal').classList.add('open');
+    }
+    function closeScholarshipModal(){ document.getElementById('scholarshipModal').classList.remove('open'); }
+
+    async function saveScholarship(){
+      const rawCriteria = document.getElementById('smCriteria').value;
+      const criteriaList = rawCriteria.split('|').map(s => s.trim()).filter(s => s.length > 0);
+      const payload = {
+        Id: document.getElementById('smId').value,
+        Title: document.getElementById('smName').value,
+        Subtitle: document.getElementById('smSubtitle').value,
+        Percentage: document.getElementById('smPct').value,
+        PercentageLabel: document.getElementById('smPctLabel').value,
+        BadgeText: document.getElementById('smBadge').value,
+        Criteria: criteriaList
+      };
+      const res = await fetch('/Financial/SaveScholarship', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving scholarship.');
+    }
+
+    async function deleteScholarship(id){
+      if (!confirm('Are you sure you want to delete this scholarship?')) return;
+      const res = await fetch('/Financial/DeleteScholarship', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Id: id })
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+    }
+
+    // Section Sub-Nav & ScrollSpy Controller
+    function updateActiveSecNav(targetId) {
+      if (!targetId) return;
+      if (!targetId.startsWith('#')) targetId = '#' + targetId;
+      const links = document.querySelectorAll('.sec-nav-link');
+      links.forEach(link => {
+        const href = link.getAttribute('href');
+        if (href === targetId) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+    }
+
+    function setActive(el) {
+      if (!el) return;
+      const targetId = el.getAttribute('href');
+      if (targetId) updateActiveSecNav(targetId);
+    }
+
+    function handleSectionHash() {
+      const hash = window.location.hash;
+      if (hash && (hash === '#fee-structure' || hash === '#scholarships' || hash === '#payment-methods')) {
+        updateActiveSecNav(hash);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', handleSectionHash);
+    window.addEventListener('hashchange', handleSectionHash);
+    handleSectionHash();
+
+    // ScrollSpy to dynamically highlight the current section in viewport
+    (function initFinancialScrollSpy() {
+      let scrollTimeout = null;
+      window.addEventListener('scroll', function () {
+        if (scrollTimeout) return;
+        scrollTimeout = setTimeout(function () {
+          scrollTimeout = null;
+          const sections = [
+            document.getElementById('fee-structure'),
+            document.getElementById('scholarships'),
+            document.getElementById('payment-methods')
+          ].filter(Boolean);
+
+          const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+          const triggerPos = scrollY + 180;
+
+          let currentId = '';
+          for (let i = 0; i < sections.length; i++) {
+            const sec = sections[i];
+            const top = sec.offsetTop;
+            const height = sec.offsetHeight;
+            if (triggerPos >= top && triggerPos < top + height) {
+              currentId = '#' + sec.id;
+              break;
+            } else if (triggerPos >= top) {
+              currentId = '#' + sec.id;
+            }
+          }
+
+          if (currentId) {
+            updateActiveSecNav(currentId);
+          }
+        }, 40);
+      }, { passive: true });
+    })();
+
+    function onBankLogoPresetChange(val){
+      if (val !== 'custom') {
+        document.getElementById('bmLogoUrl').value = val;
+      }
+    }
+    function openBankModal(){
+      document.getElementById('bmId').value = '';
+      document.getElementById('bmName').value = '';
+      document.getElementById('bmDetails').value = '';
+      document.getElementById('bmTag').value = 'Accepted';
+      document.getElementById('bmLogoText').value = 'BANK';
+      document.getElementById('bmLogoBg').value = '#006b52';
+      document.getElementById('bmLogoUrl').value = '/images/banks/hbl.png';
+      document.getElementById('bmLogoPreset').value = '/images/banks/hbl.png';
+      document.getElementById('bmTitle').textContent = 'Add Accepted Bank';
+      document.getElementById('bankModal').classList.add('open');
+    }
+    function editBankModal(id, name, details, tag, tagBg, tagCol, logoTxt, logoBg, logoUrl){
+      document.getElementById('bmId').value = id;
+      document.getElementById('bmName').value = name;
+      document.getElementById('bmDetails').value = details;
+      document.getElementById('bmTag').value = tag;
+      document.getElementById('bmLogoText').value = logoTxt;
+      document.getElementById('bmLogoBg').value = logoBg;
+      document.getElementById('bmLogoUrl').value = logoUrl || '';
+      const presetSelect = document.getElementById('bmLogoPreset');
+      if (presetSelect) {
+        if ([...presetSelect.options].some(o => o.value === logoUrl)) {
+          presetSelect.value = logoUrl;
+        } else {
+          presetSelect.value = 'custom';
+        }
+      }
+      document.getElementById('bmTitle').textContent = 'Edit Accepted Bank';
+      document.getElementById('bankModal').classList.add('open');
+    }
+    function closeBankModal(){ document.getElementById('bankModal').classList.remove('open'); }
+
+    async function saveBank(){
+      const payload = {
+        Id: document.getElementById('bmId').value,
+        Name: document.getElementById('bmName').value,
+        Details: document.getElementById('bmDetails').value,
+        TagText: document.getElementById('bmTag').value,
+        LogoText: document.getElementById('bmLogoText').value,
+        LogoBgHex: document.getElementById('bmLogoBg').value,
+        LogoUrl: document.getElementById('bmLogoUrl').value
+      };
+      const res = await fetch('/Financial/SaveBank', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving bank item.');
+    }
+
+    async function deleteBank(id){
+      if (!confirm('Are you sure you want to delete this bank option?')) return;
+      const res = await fetch('/Financial/DeleteBank', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Id: id })
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+    }
+
+    function openFeeCardModal(id, cat, title, amt, period, note){
+      document.getElementById('fcmId').value = id || '';
+      document.getElementById('fcmTitle').value = title || '';
+      document.getElementById('fcmAmount').value = amt || '';
+      document.getElementById('fcmPeriod').value = period || '';
+      document.getElementById('fcmNote').value = note || '';
+      document.getElementById('feeCardModal').classList.add('open');
+    }
+    function closeFeeCardModal(){ document.getElementById('feeCardModal').classList.remove('open'); }
+
+    async function saveFeeCard(){
+      const payload = {
+        Id: document.getElementById('fcmId').value,
+        Title: document.getElementById('fcmTitle').value,
+        Amount: document.getElementById('fcmAmount').value,
+        Period: document.getElementById('fcmPeriod').value,
+        Note: document.getElementById('fcmNote').value
+      };
+      const res = await fetch('/Financial/SaveFeeCard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving fee card.');
+    }
+
+    function openFeeHeaderModal(){ document.getElementById('feeHeaderModal').classList.add('open'); }
+    function closeFeeHeaderModal(){ document.getElementById('feeHeaderModal').classList.remove('open'); }
+
+    async function saveFeeHeader(){
+      const payload = {
+        Label: document.getElementById('fhmLabel').value,
+        Title: document.getElementById('fhmTitle').value,
+        Desc: document.getElementById('fhmDesc').value,
+        Notice: document.getElementById('fhmNotice').value
+      };
+      const res = await fetch('/Financial/SaveFeeHeader', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving fee section headings.');
+    }
+
+    function openProgramTabsModal(){ document.getElementById('programTabsModal').classList.add('open'); }
+    function closeProgramTabsModal(){ document.getElementById('programTabsModal').classList.remove('open'); }
+
+    async function saveProgramTabs(){
+      const payload = {
+        Be: document.getElementById('ptmBe').value,
+        Bs: document.getElementById('ptmBs').value,
+        Mba: document.getElementById('ptmMba').value,
+        Short: document.getElementById('ptmShort').value
+      };
+      const res = await fetch('/Financial/SaveProgramTabs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving program tab names.');
+    }
+
+    function openScholarshipHeaderModal(){ document.getElementById('scholarshipHeaderModal').classList.add('open'); }
+    function closeScholarshipHeaderModal(){ document.getElementById('scholarshipHeaderModal').classList.remove('open'); }
+
+    async function saveScholarshipHeader(){
+      const payload = {
+        Label: document.getElementById('shmLabel').value,
+        Title: document.getElementById('shmTitle').value,
+        Desc: document.getElementById('shmDesc').value,
+        Notice: document.getElementById('shmNotice').value
+      };
+      const res = await fetch('/Financial/SaveScholarshipHeader', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving scholarship section headings.');
+    }
+
+    function openPaymentHeaderModal(){ document.getElementById('paymentHeaderModal').classList.add('open'); }
+    function closePaymentHeaderModal(){ document.getElementById('paymentHeaderModal').classList.remove('open'); }
+
+    async function savePaymentHeader(){
+      const payload = {
+        Label: document.getElementById('phmLabel').value,
+        Title: document.getElementById('phmTitle').value,
+        Desc: document.getElementById('phmDesc').value,
+        SubTitle: document.getElementById('phmSubTitle').value
+      };
+      const res = await fetch('/Financial/SavePaymentHeader', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) location.reload();
+      else alert(data.message || 'Error saving payment section headings.');
+    }
+
+    /* ===== ACCOUNT DROPDOWN (Log In / Sign Up, or user name + Log Out) ===== */
+    (function setupAccountDropdown() {
+        var enhancedButtons = new WeakSet();
+        var auth = window.NAU_AUTH || { isAuthenticated: false, isAdmin: false, userName: '' };
+
+        function enhance(btn) {
+            if (enhancedButtons.has(btn)) return;
+            var alreadyWrapped = !!btn.closest('.account-dropdown');
+            var isPristineAccountBtn = btn.textContent.trim().toLowerCase() === 'account';
+            if (!alreadyWrapped && !isPristineAccountBtn) return;
+            enhancedButtons.add(btn);
+
+            var wrap = btn.closest('.account-dropdown');
+            if (!wrap) {
+                wrap = document.createElement('div');
+                wrap.className = 'account-dropdown';
+                btn.parentNode.insertBefore(wrap, btn);
+                wrap.appendChild(btn);
+            }
+
+            btn.removeAttribute('href');
+            btn.setAttribute('role', 'button');
+
+            if (auth.isAuthenticated) {
+                btn.innerHTML = '<i class="fas fa-circle-user" style="margin-right:6px;"></i>' + (auth.userName || 'My Account');
+            } else {
+                btn.innerHTML = 'Account';
+            }
+
+            var menu = document.createElement('div');
+            menu.className = 'account-dropdown-menu';
+            if (auth.isAuthenticated) {
+                menu.innerHTML =
+                    '<a href="#" id="navLogoutLink"><i class="fas fa-right-from-bracket" style="margin-right:8px;"></i>Log Out</a>';
+            } else {
+                menu.innerHTML =
+                    '<a href="/Account/Login"><i class="fas fa-right-to-bracket" style="margin-right:8px;"></i>Log In</a>';
+            }
+            menu.style.position = 'fixed';
+            menu.style.display = 'none';
+            menu.style.zIndex = '2147483647';
+            menu.style.background = '#fff';
+            menu.style.minWidth = '150px';
+            menu.style.borderRadius = '8px';
+            menu.style.boxShadow = '0 10px 28px rgba(0,0,0,0.2)';
+            menu.style.overflow = 'hidden';
+            document.body.appendChild(menu);
+
+            if (auth.isAuthenticated) {
+                var logoutLink = menu.querySelector('#navLogoutLink');
+                logoutLink.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = '/Account/Logout';
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            }
+
+            function positionMenu() {
+                var r = btn.getBoundingClientRect();
+                menu.style.top = (r.bottom + 8) + 'px';
+                menu.style.left = 'auto';
+                menu.style.right = (window.innerWidth - r.right) + 'px';
+            }
+
+            var closeTimer;
+            function openMenu() {
+                clearTimeout(closeTimer);
+                positionMenu();
+                menu.style.display = 'block';
+                wrap.classList.add('open');
+            }
+            function closeMenu() {
+                closeTimer = setTimeout(function () {
+                    menu.style.display = 'none';
+                    wrap.classList.remove('open');
+                }, 150);
+            }
+
+            wrap.addEventListener('mouseenter', openMenu);
+            wrap.addEventListener('mouseleave', closeMenu);
+            menu.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+            menu.addEventListener('mouseleave', closeMenu);
+
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (menu.style.display === 'block') {
+                    menu.style.display = 'none';
+                    wrap.classList.remove('open');
+                } else {
+                    openMenu();
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!wrap.contains(e.target) && !menu.contains(e.target)) {
+                    menu.style.display = 'none';
+                    wrap.classList.remove('open');
+                }
+            });
+
+            window.addEventListener('scroll', function () {
+                if (menu.style.display === 'block') positionMenu();
+            }, true);
+            window.addEventListener('resize', function () {
+                if (menu.style.display === 'block') positionMenu();
+            });
+        }
+
+        function run() {
+            document.querySelectorAll('.apply-btn').forEach(enhance);
+        }
+
+        run();
+        var observer = new MutationObserver(run);
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
+</script>
+
+<script src="~/js/global-search.js" asp-append-version="true"></script>
+<script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+<script src="~/js/schools-submenu.js" asp-append-version="true"></script>
+
+<partial name="_PublicModals" />
+<script src="~/js/public-modals.js" asp-append-version="true"></script>
+<script src="~/js/cms-icon-picker.js" asp-append-version="true"></script>
+
+</body>
+</html>

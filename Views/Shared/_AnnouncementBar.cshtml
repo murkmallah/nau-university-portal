@@ -1,0 +1,8 @@
+@inject NAU_Web.Services.IAnnouncementService AnnouncementService
+@* =========================================================================
+   SINGLE SOURCE OF TRUTH - ANNOUNCEMENT BAR
+   Dynamically rendered from SQL Server Database (AnnouncementSettings table).
+   Admin can update prefix, message, link, and visibility at /Admin/Announcement.
+   Any change saved in Admin immediately reflects on ALL pages across the site.
+   ========================================================================= *@
+@Html.Raw(await AnnouncementService.GetRenderedAnnouncementBarHtmlAsync())

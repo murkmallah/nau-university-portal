@@ -1,0 +1,414 @@
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div class="page-hero-eyebrow">Admissions &mdash; Financial</div>
+    <h1>Financial Information</h1>
+    <p>Everything you need to know about tuition fees, scholarship opportunities, and accepted payment methods at National Aviation University.</p>
+  </div>
+</div>
+
+<!-- SECTION NAV -->
+<nav class="sec-nav" id="secNav">
+  <div class="sec-nav-inner">
+    <a href="#fee-structure" class="sec-nav-link active" onclick="setActive(this)"><i class="fas fa-coins"></i> Fee Structure</a>
+    <a href="#scholarships" class="sec-nav-link" onclick="setActive(this)"><i class="fas fa-hand-holding-usd"></i> Scholarships</a>
+    <a href="#payment-methods" class="sec-nav-link" onclick="setActive(this)"><i class="fas fa-receipt"></i> Payment Methods</a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="fin-main">
+
+  <!-- ========== FEE STRUCTURE ========== -->
+  <section class="fin-section" id="fee-structure">
+    <div class="fin-section-header">
+      <div class="fin-section-label"><i class="fas fa-coins"></i> Fee Structure</div>
+      <h2>Tuition &amp; Other Fees</h2>
+      <div class="fin-divider"></div>
+      <p>Fees are charged per semester. Amounts shown are for the 2026 academic year and subject to revision annually. All amounts are in Pakistani Rupees (PKR).</p>
+    </div>
+
+    <div class="fin-notice">
+      <i class="fas fa-info-circle"></i>
+      Fees must be paid within the first two weeks of each semester. Late payment may attract a surcharge of PKR 500 per week. CAA employees and nominees may be covered under their respective departmental training budgets.
+    </div>
+
+    <!-- Program Tabs -->
+    <div class="fee-tabs">
+      <button class="fee-tab active" onclick="switchFeeTab(this,'be')">BE Programs</button>
+      <button class="fee-tab" onclick="switchFeeTab(this,'bs')">BS Programs</button>
+      <button class="fee-tab" onclick="switchFeeTab(this,'mba')">MBA</button>
+      <button class="fee-tab" onclick="switchFeeTab(this,'short')">Short Courses</button>
+    </div>
+
+    <!-- BE Programs -->
+    <div id="feeTab-be" class="fee-tab-content active">
+      <div class="fee-table-wrap">
+        <table class="fee-table">
+          <thead>
+            <tr><th>Fee Component</th><th>Amount (PKR)</th><th>Frequency</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="fee-label">Tuition Fee</td><td class="fee-amount">45,000</td><td>Per Semester</td><td class="fee-note">BE ANS / Airport Engineering</td></tr>
+            <tr><td class="fee-label">Registration Fee</td><td class="fee-amount">5,000</td><td>One-Time</td><td class="fee-note">At time of admission</td></tr>
+            <tr><td class="fee-label">Examination Fee</td><td class="fee-amount">3,000</td><td>Per Semester</td><td class="fee-note">Includes mid &amp; final term</td></tr>
+            <tr><td class="fee-label">Lab &amp; Workshop Fee</td><td class="fee-amount">4,000</td><td>Per Semester</td><td class="fee-note">For engineering lab access</td></tr>
+            <tr><td class="fee-label">Library Fee</td><td class="fee-amount">1,500</td><td>Per Semester</td><td class="fee-note">Digital &amp; physical library</td></tr>
+            <tr><td class="fee-label">Activity Fee</td><td class="fee-amount">1,000</td><td>Per Semester</td><td class="fee-note">Sports, clubs, events</td></tr>
+            <tr class="fee-subtotal"><td class="fee-label">Semester Total</td><td class="fee-amount">54,500</td><td>Per Semester</td><td class="fee-note">Excl. one-time registration</td></tr>
+            <tr class="fee-total"><td class="fee-label">Estimated Program Cost</td><td class="fee-amount">4,36,000</td><td>8 Semesters</td><td style="color:rgba(255,255,255,0.7);font-size:11px;">4-year BE program total</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fee-cards">
+        <div class="fee-card">
+          <div class="fee-card-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-university"></i></div>
+          <div class="fee-card-title">Per Semester</div>
+          <div class="fee-card-amount">PKR 54,500</div>
+          <div class="fee-card-period">Every 6 months</div>
+          <div class="fee-card-note">Includes tuition, exam, lab, library &amp; activity fees</div>
+        </div>
+        <div class="fee-card">
+          <div class="fee-card-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-calendar-check"></i></div>
+          <div class="fee-card-title">Annual Cost</div>
+          <div class="fee-card-amount">PKR 1,09,000</div>
+          <div class="fee-card-period">2 semesters/year</div>
+          <div class="fee-card-note">Based on standard 2-semester academic year</div>
+        </div>
+        <div class="fee-card">
+          <div class="fee-card-icon" style="background:#fff7e6;color:#f5a623;"><i class="fas fa-id-badge"></i></div>
+          <div class="fee-card-title">Registration (One-Time)</div>
+          <div class="fee-card-amount">PKR 5,000</div>
+          <div class="fee-card-period">Paid once at admission</div>
+          <div class="fee-card-note">Non-refundable after seat confirmation</div>
+        </div>
+        <div class="fee-card">
+          <div class="fee-card-icon" style="background:#fde8e8;color:#c0392b;"><i class="fas fa-graduation-cap"></i></div>
+          <div class="fee-card-title">Hostel (Optional)</div>
+          <div class="fee-card-amount">PKR 8,000</div>
+          <div class="fee-card-period">Per month</div>
+          <div class="fee-card-note">Subject to availability; apply separately</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BS Programs -->
+    <div id="feeTab-bs" class="fee-tab-content">
+      <div class="fee-table-wrap">
+        <table class="fee-table">
+          <thead>
+            <tr><th>Fee Component</th><th>Amount (PKR)</th><th>Frequency</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="fee-label">Tuition Fee</td><td class="fee-amount">38,000</td><td>Per Semester</td><td class="fee-note">BS Aviation Mgmt / Operations / Cyber Security</td></tr>
+            <tr><td class="fee-label">Registration Fee</td><td class="fee-amount">5,000</td><td>One-Time</td><td class="fee-note">At time of admission</td></tr>
+            <tr><td class="fee-label">Examination Fee</td><td class="fee-amount">2,500</td><td>Per Semester</td><td class="fee-note">Mid &amp; final term</td></tr>
+            <tr><td class="fee-label">Lab / IT Fee</td><td class="fee-amount">2,500</td><td>Per Semester</td><td class="fee-note">Computer &amp; simulation lab</td></tr>
+            <tr><td class="fee-label">Library Fee</td><td class="fee-amount">1,500</td><td>Per Semester</td><td class="fee-note">Digital &amp; physical library</td></tr>
+            <tr><td class="fee-label">Activity Fee</td><td class="fee-amount">1,000</td><td>Per Semester</td><td class="fee-note">Sports, clubs, events</td></tr>
+            <tr class="fee-subtotal"><td class="fee-label">Semester Total</td><td class="fee-amount">45,500</td><td>Per Semester</td><td class="fee-note">Excl. one-time registration</td></tr>
+            <tr class="fee-total"><td class="fee-label">Estimated Program Cost</td><td class="fee-amount">3,64,000</td><td>8 Semesters</td><td style="color:rgba(255,255,255,0.7);font-size:11px;">4-year BS program total</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MBA -->
+    <div id="feeTab-mba" class="fee-tab-content">
+      <div class="fee-table-wrap">
+        <table class="fee-table">
+          <thead>
+            <tr><th>Fee Component</th><th>Amount (PKR)</th><th>Frequency</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="fee-label">Tuition Fee</td><td class="fee-amount">55,000</td><td>Per Semester</td><td class="fee-note">MBA Aviation Management</td></tr>
+            <tr><td class="fee-label">Registration Fee</td><td class="fee-amount">8,000</td><td>One-Time</td><td class="fee-note">At time of admission</td></tr>
+            <tr><td class="fee-label">Examination Fee</td><td class="fee-amount">3,500</td><td>Per Semester</td><td class="fee-note">Mid &amp; final term</td></tr>
+            <tr><td class="fee-label">Library Fee</td><td class="fee-amount">2,000</td><td>Per Semester</td><td class="fee-note">Digital resources access</td></tr>
+            <tr><td class="fee-label">Activity &amp; Tech Fee</td><td class="fee-amount">1,500</td><td>Per Semester</td><td class="fee-note">LMS &amp; digital tools</td></tr>
+            <tr class="fee-subtotal"><td class="fee-label">Semester Total</td><td class="fee-amount">62,000</td><td>Per Semester</td><td class="fee-note">Excl. one-time registration</td></tr>
+            <tr class="fee-total"><td class="fee-label">Estimated Program Cost</td><td class="fee-amount">2,48,000</td><td>4 Semesters</td><td style="color:rgba(255,255,255,0.7);font-size:11px;">2-year MBA program total</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Short Courses -->
+    <div id="feeTab-short" class="fee-tab-content">
+      <div class="fin-notice" style="background:#f0f6ff;border-left-color:#1a5fa6;">
+        <i class="fas fa-info-circle" style="color:#1a5fa6;"></i>
+        Short course fees are charged per-course and may vary by duration and department. CAA/PAA nominees: fees are billed directly to your department. Sponsored candidates from other organizations must submit a payment guarantee letter prior to course commencement.
+      </div>
+      <div class="fee-table-wrap">
+        <table class="fee-table">
+          <thead>
+            <tr><th>Course Duration</th><th>Fee per Nominee (PKR)</th><th>Includes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="fee-label">3 Days</td><td class="fee-amount">8,000 – 12,000</td><td class="fee-note">Course material, certificate</td></tr>
+            <tr><td class="fee-label">1 Week (5 Days)</td><td class="fee-amount">15,000 – 22,000</td><td class="fee-note">Material, certificate, lunch</td></tr>
+            <tr><td class="fee-label">2 Weeks</td><td class="fee-amount">28,000 – 40,000</td><td class="fee-note">Material, certificate, accommodation (if needed)</td></tr>
+            <tr><td class="fee-label">3 Weeks</td><td class="fee-amount">40,000 – 55,000</td><td class="fee-note">Full board, material, certificate</td></tr>
+            <tr><td class="fee-label">4–5 Weeks</td><td class="fee-amount">55,000 – 80,000</td><td class="fee-note">Full board, simulator time, certificate</td></tr>
+            <tr><td class="fee-label">8 Weeks (ATC Assistant)</td><td class="fee-amount">1,10,000 – 1,40,000</td><td class="fee-note">Comprehensive ATC simulator, full board, PCAA certificate</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:12px;color:#888;margin-top:10px;padding-left:4px;">* Actual fees vary by school and batch. Contact the Academics Office for exact challan amounts before registration.</p>
+    </div>
+  </section>
+
+  <!-- ========== SCHOLARSHIPS ========== -->
+  <section class="fin-section" id="scholarships">
+    <div class="fin-section-header">
+      <div class="fin-section-label"><i class="fas fa-hand-holding-usd"></i> Scholarships</div>
+      <h2>Financial Aid &amp; Scholarships</h2>
+      <div class="fin-divider"></div>
+      <p>NAU offers merit and need-based scholarship programs to ensure that financial constraints do not prevent talented students from pursuing an aviation career.</p>
+    </div>
+
+    <div class="fin-notice">
+      <i class="fas fa-exclamation-triangle"></i>
+      Scholarship applications must be submitted within the first three weeks of each semester. Late applications will not be entertained. Maintaining the scholarship requires fulfilling academic and conduct requirements each semester.
+    </div>
+
+    <div class="scholar-grid">
+
+      <div class="scholar-card">
+        <div class="scholar-card-header" style="background:linear-gradient(135deg,#0b2c4d,#1a5fa6);">
+          <div class="scholar-icon" style="background:rgba(255,255,255,0.15);color:#fff;"><i class="fas fa-medal"></i></div>
+          <div>
+            <div class="scholar-title">Merit Scholarship</div>
+            <div class="scholar-subtitle">Top academic performers</div>
+          </div>
+        </div>
+        <div class="scholar-body">
+          <div class="scholar-pct" style="color:#1a5fa6;">50% – 100%</div>
+          <div class="scholar-pct-label">Fee waiver on tuition</div>
+          <ul class="scholar-criteria-list">
+            <li><i class="fas fa-check-circle"></i><span>Minimum <strong>85% marks</strong> in the preceding qualifying exam (FSc/Intermediate)</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Top 3 positions in AU Entry Test within respective program</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Continuation requires CGPA of <strong>3.5 or above</strong> each semester</span></li>
+            <li><i class="fas fa-check-circle"></i><span>No disciplinary action on record</span></li>
+          </ul>
+          <div class="scholar-badge" style="background:#e8f0fe;color:#1a5fa6;border-color:#c5d8f8;">
+            <i class="fas fa-star"></i> Academic Excellence Award
+          </div>
+        </div>
+      </div>
+
+      <div class="scholar-card">
+        <div class="scholar-card-header" style="background:linear-gradient(135deg,#1e5c2e,#1e8e3e);">
+          <div class="scholar-icon" style="background:rgba(255,255,255,0.15);color:#fff;"><i class="fas fa-hands-helping"></i></div>
+          <div>
+            <div class="scholar-title">Need-Based Financial Aid</div>
+            <div class="scholar-subtitle">Supporting deserving students</div>
+          </div>
+        </div>
+        <div class="scholar-body">
+          <div class="scholar-pct" style="color:#1e8e3e;">25% – 75%</div>
+          <div class="scholar-pct-label">Tuition fee assistance</div>
+          <ul class="scholar-criteria-list">
+            <li><i class="fas fa-check-circle"></i><span>Household monthly income below <strong>PKR 50,000</strong></span></li>
+            <li><i class="fas fa-check-circle"></i><span>Attested income and utility bills required at application</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Minimum CGPA of <strong>2.5</strong> to maintain scholarship</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Priority given to orphans and students from under-developed areas</span></li>
+          </ul>
+          <div class="scholar-badge" style="background:#e6f4ea;color:#1e7e34;border-color:#c0e8c8;">
+            <i class="fas fa-leaf"></i> Financial Assistance Grant
+          </div>
+        </div>
+      </div>
+
+      <div class="scholar-card">
+        <div class="scholar-card-header" style="background:linear-gradient(135deg,#7b4f00,#c87800);">
+          <div class="scholar-icon" style="background:rgba(255,255,255,0.15);color:#fff;"><i class="fas fa-quran"></i></div>
+          <div>
+            <div class="scholar-title">Hafiz-e-Quran Scholarship</div>
+            <div class="scholar-subtitle">Government policy benefit</div>
+          </div>
+        </div>
+        <div class="scholar-body">
+          <div class="scholar-pct" style="color:#c87800;">100%</div>
+          <div class="scholar-pct-label">Full tuition waiver</div>
+          <ul class="scholar-criteria-list">
+            <li><i class="fas fa-check-circle"></i><span>Certified Hafiz-e-Quran with valid certificate from an authorized body</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Must meet minimum admission eligibility criteria</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Continuation requires CGPA of <strong>2.0 or above</strong></span></li>
+          </ul>
+          <div class="scholar-badge" style="background:#fff7e6;color:#b8860b;border-color:#fde68a;">
+            <i class="fas fa-certificate"></i> Government Policy Scholarship
+          </div>
+        </div>
+      </div>
+
+      <div class="scholar-card">
+        <div class="scholar-card-header" style="background:linear-gradient(135deg,#4a1b6b,#7c3aed);">
+          <div class="scholar-icon" style="background:rgba(255,255,255,0.15);color:#fff;"><i class="fas fa-person-military-rifle"></i></div>
+          <div>
+            <div class="scholar-title">CAA Employee &amp; Dependent Concession</div>
+            <div class="scholar-subtitle">For PAA / CAA families</div>
+          </div>
+        </div>
+        <div class="scholar-body">
+          <div class="scholar-pct" style="color:#7c3aed;">30% – 50%</div>
+          <div class="scholar-pct-label">Fee concession on tuition</div>
+          <ul class="scholar-criteria-list">
+            <li><i class="fas fa-check-circle"></i><span>Children of serving or retired PAA/PCAA employees</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Employment verification letter from HR department required</span></li>
+            <li><i class="fas fa-check-circle"></i><span>Minimum CGPA of <strong>2.5</strong> for continued eligibility</span></li>
+          </ul>
+          <div class="scholar-badge" style="background:#f3e8ff;color:#7c3aed;border-color:#d8b4fe;">
+            <i class="fas fa-id-card"></i> Employee Benefit Scheme
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="fin-notice" style="margin-top:24px;">
+      <i class="fas fa-file-alt"></i>
+      To apply for any scholarship, download the Scholarship Application Form from the <a href="/" style="color:#0b5394;font-weight:600;">Downloads section</a>, fill it completely, attach all required documents, and submit to the Academics Office within the deadline.
+    </div>
+  </section>
+
+  <!-- ========== PAYMENT METHODS ========== -->
+  <section class="fin-section" id="payment-methods">
+    <div class="fin-section-header">
+      <div class="fin-section-label"><i class="fas fa-receipt"></i> Payment Methods</div>
+      <h2>How to Pay Your Fees</h2>
+      <div class="fin-divider"></div>
+      <p>NAU accepts fee payments through multiple channels for your convenience. Always keep your payment receipt safe &mdash; it is your official proof of payment.</p>
+    </div>
+
+    <div class="pay-grid">
+
+      <!-- Bank Challan -->
+      <div class="pay-card">
+        <div class="pay-card-head">
+          <div class="pay-card-icon" style="background:#e8f0fe;color:#1a5fa6;"><i class="fas fa-building-columns"></i></div>
+          <div>
+            <div class="pay-card-title">Bank Challan</div>
+            <div class="pay-card-subtitle">Recommended method</div>
+          </div>
+        </div>
+        <div class="pay-steps">
+          <div class="pay-step"><div class="pay-step-num">1</div><div class="pay-step-text">Log in to <a href="/Account/Login" style="color:#1a5fa6;font-weight:600;">Student Portal</a> and generate your fee challan</div></div>
+          <div class="pay-step"><div class="pay-step-num">2</div><div class="pay-step-text">Print the challan or take a screenshot of the challan number</div></div>
+          <div class="pay-step"><div class="pay-step-num">3</div><div class="pay-step-text">Visit any <strong>HBL, NBP, MCB, or UBL</strong> branch and pay over the counter</div></div>
+          <div class="pay-step"><div class="pay-step-num">4</div><div class="pay-step-text">Collect the stamped challan receipt and submit a copy to the Accounts Office</div></div>
+        </div>
+      </div>
+
+      <!-- Online / Mobile Banking -->
+      <div class="pay-card">
+        <div class="pay-card-head">
+          <div class="pay-card-icon" style="background:#e6f4ea;color:#1e8e3e;"><i class="fas fa-mobile-screen-button"></i></div>
+          <div>
+            <div class="pay-card-title">Online &amp; Mobile Banking</div>
+            <div class="pay-card-subtitle">Pay from anywhere</div>
+          </div>
+        </div>
+        <div class="pay-steps">
+          <div class="pay-step"><div class="pay-step-num">1</div><div class="pay-step-text">Generate your challan from the <a href="/Account/Login" style="color:#1a5fa6;font-weight:600;">Student Portal</a></div></div>
+          <div class="pay-step"><div class="pay-step-num">2</div><div class="pay-step-text">Open your bank's app or internet banking (HBL Mobile, Easypaisa, JazzCash, UBL Digital, etc.)</div></div>
+          <div class="pay-step"><div class="pay-step-num">3</div><div class="pay-step-text">Select <strong>Utility / Institution Payments</strong> &rarr; Search for <strong>NAU / CATI Hyderabad</strong></div></div>
+          <div class="pay-step"><div class="pay-step-num">4</div><div class="pay-step-text">Enter your challan number, verify the amount, and confirm payment</div></div>
+          <div class="pay-step"><div class="pay-step-num">5</div><div class="pay-step-text">Save the digital transaction receipt (PDF/screenshot) and upload to the portal</div></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Accepted Banks -->
+    <h3 style="font-family:'Montserrat',sans-serif;font-size:16px;font-weight:700;color:var(--primary);margin-bottom:14px;">
+      <i class="fas fa-university" style="color:var(--green);margin-right:8px;"></i>Accepted Banks &amp; Payment Options
+    </h3>
+    <div class="bank-list">
+      <div class="bank-item">
+        <div class="bank-logo">
+          <img src="/images/banks/hbl.png" alt="Habib Bank Limited (HBL)" class="bank-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <span class="bank-logo-fallback" style="display:none;background:#006b52;color:#fff;">HBL</span>
+        </div>
+        <div class="bank-info">
+          <div class="bank-name">Habib Bank Limited (HBL)</div>
+          <div class="bank-detail">Over-the-counter &amp; HBL Mobile app &amp; HBL PayConnect</div>
+        </div>
+        <span class="bank-tag" style="background:#e6f4ea;color:#1e7e34;">Primary</span>
+      </div>
+      <div class="bank-item">
+        <div class="bank-logo">
+          <img src="/images/banks/nbp.png" alt="National Bank of Pakistan (NBP)" class="bank-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <span class="bank-logo-fallback" style="display:none;background:#006039;color:#fff;">NBP</span>
+        </div>
+        <div class="bank-info">
+          <div class="bank-name">National Bank of Pakistan (NBP)</div>
+          <div class="bank-detail">Over-the-counter &amp; NBP Digital</div>
+        </div>
+        <span class="bank-tag" style="background:#e8f0fe;color:#1a5fa6;">Accepted</span>
+      </div>
+      <div class="bank-item">
+        <div class="bank-logo">
+          <img src="/images/banks/mcb.png" alt="MCB Bank" class="bank-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <span class="bank-logo-fallback" style="display:none;background:#ffffff;color:#003366;">MCB</span>
+        </div>
+        <div class="bank-info">
+          <div class="bank-name">MCB Bank</div>
+          <div class="bank-detail">Over-the-counter &amp; MCB Internet Banking</div>
+        </div>
+        <span class="bank-tag" style="background:#e8f0fe;color:#1a5fa6;">Accepted</span>
+      </div>
+      <div class="bank-item">
+        <div class="bank-logo">
+          <img src="/images/banks/ubl.png" alt="United Bank Limited (UBL)" class="bank-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <span class="bank-logo-fallback" style="display:none;background:#005baa;color:#fff;">UBL</span>
+        </div>
+        <div class="bank-info">
+          <div class="bank-name">United Bank Limited (UBL)</div>
+          <div class="bank-detail">Over-the-counter &amp; UBL Digital App</div>
+        </div>
+        <span class="bank-tag" style="background:#e8f0fe;color:#1a5fa6;">Accepted</span>
+      </div>
+      <div class="bank-item">
+        <div class="bank-logo">
+          <img src="/images/banks/easypaisa.png" alt="Easypaisa" class="bank-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <span class="bank-logo-fallback" style="display:none;background:#00a859;color:#fff;">EP</span>
+        </div>
+        <div class="bank-info">
+          <div class="bank-name">Easypaisa</div>
+          <div class="bank-detail">Mobile wallet payment via challan number</div>
+        </div>
+        <span class="bank-tag" style="background:#e6f4ea;color:#1e7e34;">Mobile</span>
+      </div>
+      <div class="bank-item">
+        <div class="bank-logo">
+          <img src="/images/banks/jazzcash.png" alt="JazzCash" class="bank-logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <span class="bank-logo-fallback" style="display:none;background:#d81e05;color:#fff;">JAZZ</span>
+        </div>
+        <div class="bank-info">
+          <div class="bank-name">JazzCash</div>
+          <div class="bank-detail">Mobile wallet payment &amp; retail shop agents</div>
+        </div>
+        <span class="bank-tag" style="background:#fff7e6;color:#c87800;">Mobile</span>
+      </div>
+    </div>
+
+    <div class="fin-notice" style="margin-top:24px;">
+      <i class="fas fa-shield-halved"></i>
+      <div>Always pay the <strong>exact challan amount</strong>. Overpayments or underpayments will delay seat confirmation. For payment issues, contact the Accounts Office within 48 hours with your transaction ID.</div>
+    </div>
+  </section>
+
+  <!-- ACTION STRIP -->
+  <div class="fin-action-strip">
+    <div class="fin-action-strip-text">
+      <h3>Ready to Apply?</h3>
+      <p>Admissions for Fall 2026 are open. Limited seats available per program.</p>
+    </div>
+    <div class="fin-action-strip-btns">
+      <a href="/Account/Register" class="fin-strip-btn primary"><i class="fas fa-paper-plane"></i> Apply Now</a>
+      <a href="/" class="fin-strip-btn secondary"><i class="fas fa-home"></i> Back to Home</a>
+    </div>
+  </div>
+
+</main>

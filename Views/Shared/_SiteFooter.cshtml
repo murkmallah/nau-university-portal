@@ -1,0 +1,92 @@
+@inject NAU_Web.Services.ISiteBrandingService BrandingService
+@inject NAU_Web.Services.IFooterService FooterService
+@{
+    var branding = await BrandingService.GetSettingAsync();
+    var footer = await FooterService.GetSettingAsync();
+
+    var title = branding.SiteTitle ?? "National Aviation University";
+    var logo = !string.IsNullOrWhiteSpace(branding.DarkModeLogoUrl) ? branding.DarkModeLogoUrl : (branding.LogoUrl ?? "/images/logo.png");
+    var filterStyle = string.IsNullOrWhiteSpace(branding.DarkModeLogoUrl) ? "filter:brightness(0) invert(1);" : "";
+
+    List<NAU_Web.Models.FooterSocialLinkItem> socialLinks = new();
+    if (!string.IsNullOrWhiteSpace(footer.SocialLinksJson))
+    {
+        try { socialLinks = System.Text.Json.JsonSerializer.Deserialize<List<NAU_Web.Models.FooterSocialLinkItem>>(footer.SocialLinksJson) ?? new(); } catch {}
+    }
+
+    List<NAU_Web.Models.FooterColumnItem> quickColumns = new();
+    if (!string.IsNullOrWhiteSpace(footer.QuickLinksJson))
+    {
+        try { quickColumns = System.Text.Json.JsonSerializer.Deserialize<List<NAU_Web.Models.FooterColumnItem>>(footer.QuickLinksJson) ?? new(); } catch {}
+    }
+
+    List<NAU_Web.Models.FooterLinkItem> bottomLinks = new();
+    if (!string.IsNullOrWhiteSpace(footer.BottomLinksJson))
+    {
+        try { bottomLinks = System.Text.Json.JsonSerializer.Deserialize<List<NAU_Web.Models.FooterLinkItem>>(footer.BottomLinksJson) ?? new(); } catch {}
+    }
+
+    var aboutText = !string.IsNullOrWhiteSpace(footer.AboutText) ? footer.AboutText : "A premier institution dedicated to excellence in aviation education, training, research and innovation.";
+    var copyrightText = !string.IsNullOrWhiteSpace(footer.CopyrightText) ? footer.CopyrightText : $"© {DateTime.UtcNow.Year} {title}. All Rights Reserved.";
+}
+<!-- ===== UNIFIED NAU SITE FOOTER ===== -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="/" style="display:flex;align-items:center;gap:12px;margin-bottom:14px;text-decoration:none;">
+        <img src="@logo" alt="@title Logo" onerror="this.style.display='none'" style="height:48px;width:auto;display:block;object-fit:contain;@filterStyle">
+        <span style="font-size:20px;font-weight:700;color:#fff;font-family:'Poppins',sans-serif;white-space:nowrap;">@title</span>
+      </a>
+      <p>@aboutText</p>
+      @if (socialLinks.Count > 0)
+      {
+        <div class="social-links">
+          @foreach (var s in socialLinks)
+          {
+            <a href="@s.Url" target="@(string.IsNullOrWhiteSpace(s.Target) ? "_blank" : s.Target)" rel="noopener noreferrer" title="@s.Title" aria-label="@s.Title"><i class="@s.Icon"></i></a>
+          }
+        </div>
+      }
+    </div>
+    @foreach (var col in quickColumns)
+    {
+      <div class="footer-col">
+        <h4 style="font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;">@col.ColumnTitle</h4>
+        <ul>
+          @foreach (var l in col.Links)
+          {
+            <li><a href="@l.Url" target="@(string.IsNullOrWhiteSpace(l.Target) ? "_self" : l.Target)">@l.Text</a></li>
+          }
+        </ul>
+      </div>
+    }
+    <div class="footer-col">
+      <h4 style="font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#fff;">Contact Us</h4>
+      @if (!string.IsNullOrWhiteSpace(footer.ContactAddress))
+      {
+        <div class="contact-item"><i class="fas fa-map-marker-alt"></i><span>@footer.ContactAddress</span></div>
+      }
+      @if (!string.IsNullOrWhiteSpace(footer.ContactPhone))
+      {
+        var phoneUrl = "tel:" + footer.ContactPhone.Trim().Replace(" ", "").Replace("-", "");
+        <div class="contact-item"><i class="fas fa-phone"></i><a href="@phoneUrl">@footer.ContactPhone</a></div>
+      }
+      @if (!string.IsNullOrWhiteSpace(footer.ContactEmail))
+      {
+        var mailUrl = "mailto:" + footer.ContactEmail.Trim();
+        <div class="contact-item"><i class="fas fa-envelope"></i><a href="@mailUrl">@footer.ContactEmail</a></div>
+      }
+      @if (!string.IsNullOrWhiteSpace(footer.ContactWebsite))
+      {
+        var rawWeb = footer.ContactWebsite.Trim();
+        var webUrl = (rawWeb.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || rawWeb.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            ? rawWeb
+            : "https://" + rawWeb;
+        <div class="contact-item"><i class="fas fa-globe"></i><a href="@webUrl" target="_blank" rel="noopener noreferrer">@rawWeb</a></div>
+      }
+    </div>
+  </div>
+  <div class="footer-bottom" style="justify-content:center;text-align:center;">
+    <span>@copyrightText</span>
+  </div>
+</footer>

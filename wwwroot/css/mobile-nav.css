@@ -1,0 +1,87 @@
+/* =========================================================
+   Mobile Navigation — ADDITIVE FILE
+   Sirf <=900px screens par asar hota hai. Maujooda desktop
+   design ya CSS mein koi tabdeeli nahi ki gayi.
+   ========================================================= */
+
+.nav-toggle-btn{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-size:22px;
+  color:#0b2c4d;
+  flex-shrink:0;
+}
+
+@media(max-width:900px){
+
+  .navbar{ flex-wrap:wrap; position:relative; }
+
+  .nav-toggle-btn{ display:flex; }
+
+  .navbar > .menu{
+    display:none !important;
+    flex-direction:column;
+    align-items:stretch;
+    width:100%;
+    height:auto;
+    background:#fff;
+    position:absolute;
+    top:100%;
+    left:0;
+    right:0;
+    box-shadow:0 8px 20px rgba(0,0,0,0.12);
+    max-height:80vh;
+    overflow-y:auto;
+    gap:0;
+    z-index:1050;
+  }
+
+  .navbar > .menu.nav-open{
+    display:flex !important;
+  }
+
+  .navbar .menu-item{
+    width:100%;
+    display:block;
+  }
+
+  .navbar .menu-item > .nav-link{
+    height:auto;
+    padding:14px 20px;
+    width:100%;
+    justify-content:space-between;
+  }
+
+  .navbar .menu-item.dd-open > .nav-link .chevron{
+    transform:rotate(180deg);
+  }
+
+  .navbar .dropdown{
+    display:none;
+    position:static;
+    box-shadow:none;
+    border-top:none;
+    background:#f7f9fc;
+    animation:none;
+  }
+
+  .navbar .menu-item.dd-open .dropdown{
+    display:block;
+  }
+
+  .navbar .dd-inner{
+    flex-direction:column;
+    padding:8px 16px 16px;
+    max-width:none;
+  }
+
+  .navbar .dd-col{
+    margin-left:0 !important;
+  }
+}

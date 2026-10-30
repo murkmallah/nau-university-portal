@@ -1,0 +1,585 @@
+@model List<NAU_Web.Models.NavMenuSetting>
+@{
+    ViewData["Title"] = "Navigation Menu Manager";
+    Layout = null;
+
+    var menus = Model.Where(x => x.Category == "Menu").OrderBy(x => x.DisplayOrder).ToList();
+    var columns = Model.Where(x => x.Category == "Column" || x.Category == "Card").ToList();
+    var links = Model.Where(x => x.Category == "Link").ToList();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Menu Manager - NAU CMS</title>
+    <partial name="_Favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071f36;
+            --green: #1e8e3e;
+            --green-light: #e6f4ea;
+            --red: #d93025;
+            --red-light: #fce8e6;
+            --gray-bg: #f4f7fa;
+            --border: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Top Header */
+        .admin-nav-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            padding: 24px 36px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .header-left i.title-icon {
+            font-size: 28px;
+            color: #4ed47a;
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .header-left h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+        .header-left p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            margin-top: 2px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all .2s;
+        }
+        .btn-outline {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.22);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+        .btn-reset {
+            background: #fff;
+            color: var(--primary);
+        }
+        .btn-reset:hover {
+            background: #f1f5f9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Container */
+        .admin-nav-container {
+            max-width: 1280px;
+            margin: 32px auto 60px;
+            padding: 0 24px;
+        }
+
+        .info-banner {
+            background: #fff;
+            border-left: 4px solid var(--green);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .info-banner-text {
+            font-size: 13.5px;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+        .info-banner-text strong {
+            color: var(--primary);
+        }
+
+        /* Menu Accordion Cards */
+        .nav-menu-card {
+            background: #fff;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+            overflow: hidden;
+            transition: box-shadow .2s;
+        }
+        .nav-menu-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        /* Top Menu Header */
+        .menu-card-header {
+            background: #fafcff;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .menu-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .menu-icon-badge {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .menu-title-text h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Montserrat', sans-serif;
+        }
+        .menu-title-text span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Toggle Switches */
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toggle-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+        }
+        .toggle-label.is-visible { color: var(--green); }
+        .toggle-label.is-hidden { color: var(--red); }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 26px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--red);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider {
+            background-color: var(--green);
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Column Grid inside Menu */
+        .menu-columns-grid {
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            background: #fff;
+        }
+
+        .col-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: border-color .2s, background-color .2s;
+        }
+        .col-card.is-hidden-card {
+            background: #fff5f5;
+            border-color: #fca5a5;
+            opacity: 0.85;
+        }
+
+        .col-card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .col-card-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .col-card-title i {
+            color: #1e8e3e;
+            font-size: 14px;
+        }
+        .col-badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .col-badge.badge-visible { background: var(--green-light); color: var(--green); }
+        .col-badge.badge-hidden { background: var(--red-light); color: var(--red); }
+
+        /* Items List */
+        .col-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .col-item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 10px;
+            background: #fff;
+            border-radius: 6px;
+            border: 1px solid #edf2f7;
+            font-size: 12.5px;
+            transition: all .15s;
+        }
+        .col-item-row:hover {
+            border-color: #cbd5e1;
+            transform: translateX(2px);
+        }
+        .col-item-name {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+        .col-item-name i {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+        .col-item-row.is-hidden-row {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+        .col-item-row.is-hidden-row .col-item-name {
+            color: #991b1b;
+            text-decoration: line-through;
+        }
+
+        /* Item Mini Switch */
+        .mini-switch {
+            width: 36px;
+            height: 20px;
+        }
+        .mini-switch .slider:before {
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+        }
+        .mini-switch input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--primary-dark);
+            color: #fff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999999;
+        }
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        #toast.toast-success i { color: #4ed47a; }
+        #toast.toast-error i { color: #f87171; }
+    </style>
+</head>
+<body>
+
+    <header class="admin-nav-header">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-compass title-icon"></i>
+                <div>
+                    <h1>Navigation Menu Manager</h1>
+                    <p>Hide or show top menus, dropdown columns (e.g. Faculties), and links with auto-adjusting layout</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button type="button" class="btn btn-reset" onclick="resetAllNavMenus()"><i class="fas fa-rotate-left"></i> Reset All to Visible</button>
+                <a href="/" target="_blank" class="btn btn-outline"><i class="fas fa-globe"></i> View Website</a>
+                <a href="/Admin" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Admin Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-nav-container">
+        <div class="info-banner">
+            <div class="info-banner-text">
+                <i class="fas fa-lightbulb" style="color:#eab308;margin-right:6px;font-size:16px;"></i>
+                <strong>Auto-Adjusting Layout:</strong> When you hide a menu, column, or link, it immediately disappears from the live website and the remaining items automatically adjust their width and spacing so there is <strong>never any empty space or broken design</strong>.
+            </div>
+            <a href="/" target="_blank" style="color:var(--green);font-weight:700;font-size:13px;text-decoration:none;white-space:nowrap;">Test Live Navbar &rarr;</a>
+        </div>
+
+        @foreach (var menu in menus)
+        {
+            var menuCols = columns.Where(x => x.ParentKey == menu.MenuKey).OrderBy(x => x.DisplayOrder).ToList();
+            var isMenuVisible = !menu.IsHidden;
+            var menuIcon = menu.MenuKey switch {
+                "menu_academics" => "fa-graduation-cap",
+                "menu_admissions" => "fa-door-open",
+                "menu_training" => "fa-plane-departure",
+                "menu_campus_life" => "fa-building-columns",
+                "menu_useful_links" => "fa-link",
+                "menu_about" => "fa-circle-info",
+                "menu_contact" => "fa-envelope",
+                _ => "fa-bars"
+            };
+
+            <div class="nav-menu-card" id="card-@menu.MenuKey">
+                <div class="menu-card-header">
+                    <div class="menu-title-wrap">
+                        <div class="menu-icon-badge">
+                            <i class="fas @menuIcon"></i>
+                        </div>
+                        <div class="menu-title-text">
+                            <h2>@menu.Title</h2>
+                            <span>Top Navigation Menu &bull; @menuCols.Count Dropdown Sections</span>
+                        </div>
+                    </div>
+                    <div class="toggle-wrap">
+                        <span class="toggle-label @(isMenuVisible ? "is-visible" : "is-hidden")" id="label-@menu.MenuKey">
+                            @(isMenuVisible ? "Visible on Site" : "Hidden from Site")
+                        </span>
+                        <label class="switch">
+                            <input type="checkbox" @(isMenuVisible ? "checked" : "") onchange="toggleNav('@menu.MenuKey', this.checked, 'menu')">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                @if (menuCols.Any())
+                {
+                    <div class="menu-columns-grid">
+                        @foreach (var col in menuCols)
+                        {
+                            var isColVisible = !col.IsHidden;
+                            var colLinks = links.Where(x => x.ParentKey == col.MenuKey).OrderBy(x => x.DisplayOrder).ToList();
+
+                            <div class="col-card @(isColVisible ? "" : "is-hidden-card")" id="colcard-@col.MenuKey">
+                                <div class="col-card-head">
+                                    <div class="col-card-title">
+                                        <i class="fas fa-folder-open"></i> @col.Title
+                                    </div>
+                                    <div class="toggle-wrap">
+                                        <span class="col-badge @(isColVisible ? "badge-visible" : "badge-hidden")" id="badge-@col.MenuKey">
+                                            @(isColVisible ? "Visible" : "Hidden")
+                                        </span>
+                                        <label class="switch mini-switch">
+                                            <input type="checkbox" @(isColVisible ? "checked" : "") onchange="toggleNav('@col.MenuKey', this.checked, 'column')">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                @if (colLinks.Any())
+                                {
+                                    <div class="col-items-list">
+                                        @foreach (var item in colLinks)
+                                        {
+                                            var isItemVisible = !item.IsHidden;
+                                            <div class="col-item-row @(isItemVisible ? "" : "is-hidden-row")" id="itemrow-@item.MenuKey">
+                                                <span class="col-item-name">
+                                                    <i class="fas fa-link"></i> @item.Title
+                                                </span>
+                                                <label class="switch mini-switch">
+                                                    <input type="checkbox" @(isItemVisible ? "checked" : "") onchange="toggleNav('@item.MenuKey', this.checked, 'item')">
+                                                    <span class="slider"></span>
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </main>
+
+    <div id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Updated</span></div>
+
+    <script>
+        function showToast(msg, isError) {
+            var toast = document.getElementById("toast");
+            var toastMsg = document.getElementById("toastMsg");
+            toastMsg.textContent = msg;
+            toast.className = isError ? "show toast-error" : "show toast-success";
+            toast.querySelector("i").className = isError ? "fas fa-exclamation-circle" : "fas fa-check-circle";
+            setTimeout(function() { toast.className = ""; }, 3000);
+        }
+
+        function toggleNav(menuKey, isChecked, type) {
+            var isHidden = !isChecked; // if checked => visible (not hidden)
+            
+            // Visual state update immediately
+            if (type === 'menu') {
+                var label = document.getElementById("label-" + menuKey);
+                if (label) {
+                    label.textContent = isChecked ? "Visible on Site" : "Hidden from Site";
+                    label.className = "toggle-label " + (isChecked ? "is-visible" : "is-hidden");
+                }
+            } else if (type === 'column') {
+                var badge = document.getElementById("badge-" + menuKey);
+                var colcard = document.getElementById("colcard-" + menuKey);
+                if (badge) {
+                    badge.textContent = isChecked ? "Visible" : "Hidden";
+                    badge.className = "col-badge " + (isChecked ? "badge-visible" : "badge-hidden");
+                }
+                if (colcard) {
+                    if (isChecked) colcard.classList.remove("is-hidden-card");
+                    else colcard.classList.add("is-hidden-card");
+                }
+            } else if (type === 'item') {
+                var row = document.getElementById("itemrow-" + menuKey);
+                if (row) {
+                    if (isChecked) row.classList.remove("is-hidden-row");
+                    else row.classList.add("is-hidden-row");
+                }
+            }
+
+            fetch("/Admin/ToggleNavMenu", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ menuKey: menuKey, isHidden: isHidden })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showToast(menuKey + " is now " + (isChecked ? "VISIBLE" : "HIDDEN") + " on site.");
+                } else {
+                    showToast(data.message || "Failed to update.", true);
+                }
+            })
+            .catch(function() {
+                showToast("Connection error while updating navigation.", true);
+            });
+        }
+
+        function resetAllNavMenus() {
+            if (!confirm("Are you sure you want to reset all navigation menus and columns to VISIBLE?")) return;
+
+            fetch("/Admin/ResetNavMenu", { method: "POST" })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showToast("All menus reset to visible. Reloading...");
+                    setTimeout(function() { window.location.reload(); }, 800);
+                } else {
+                    showToast(data.message || "Failed to reset.", true);
+                }
+            })
+            .catch(function() {
+                showToast("Connection error.", true);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+﻿@model NAU_Web.Models.Faculty
+@{
+    ViewData["Title"] = "Manage Content — " + Model.Name;
+}
+
+<h1>Manage Content: @Model.Name</h1>
+<a asp-action="Index">&larr; Back to Faculties</a>
+
+<h3 class="mt-4">Programs</h3>
+<table class="table">
+    <tr><th>Code</th><th>Name</th><th>Department</th><th></th></tr>
+    @foreach (var p in Model.Programs)
+    {
+        <tr>
+            <td>@p.Code</td>
+            <td>@p.Name</td>
+            <td>@p.Department</td>
+            <td>
+                <a asp-action="ManageProgram" asp-route-id="@p.ProgramId">Manage Careers/Highlights</a> |
+                <form asp-action="DeleteProgram" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@p.ProgramId" />
+                    <input type="hidden" name="facultyId" value="@Model.FacultyId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+
+<h4>Add Program</h4>
+<form asp-action="AddProgram" method="post" class="d-flex flex-wrap gap-2 mb-4">
+    <input type="hidden" name="facultyId" value="@Model.FacultyId" />
+    <input name="code" placeholder="Code e.g. AVCS" class="form-control" style="max-width:120px;" />
+    <input name="name" placeholder="Program Name" class="form-control" />
+    <input name="department" placeholder="Department" class="form-control" />
+    <input name="icon" placeholder="Icon (fa-plane)" class="form-control" style="max-width:150px;" />
+    <input name="colorHex" placeholder="#0b2c4d" class="form-control" style="max-width:110px;" />
+    <input name="undergradYears" placeholder="4 Years" class="form-control" style="max-width:110px;" />
+    <input name="adpyears" placeholder="2 Years" class="form-control" style="max-width:110px;" />
+    <input name="gradYears" placeholder="2 Years" class="form-control" style="max-width:110px;" />
+    <textarea name="overview" placeholder="Overview" class="form-control" style="width:100%;"></textarea>
+    <button type="submit" class="btn btn-primary">Add Program</button>
+</form>

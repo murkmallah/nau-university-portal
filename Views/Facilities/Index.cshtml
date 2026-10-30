@@ -1,0 +1,77 @@
+@model IEnumerable<NAU_Web.Models.Facility>
+
+@{
+    ViewData["Title"] = "Facilities";
+}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<h1>Facilities</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-success">+ Add New Facility</a>
+    <a href="/facilities.html" target="_blank" class="btn btn-outline-secondary">View Public Page &#8599;</a>
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No facilities yet. Click "+ Add New Facility" to create one.</div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Icon</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Slug</th>
+                <th>Order</th>
+                <th>Status</th>
+                <th style="min-width:280px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.OrderBy(f => f.DisplayOrder))
+            {
+                <tr>
+                    <td style="font-size:20px;color:@(string.IsNullOrEmpty(item.ColorHex) ? "#0b2c4d" : item.ColorHex);">
+                        @if (!string.IsNullOrEmpty(item.CardIcon))
+                        {
+                            <i class="@item.CardIcon"></i>
+                        }
+                    </td>
+                    <td><strong>@item.Name</strong></td>
+                    <td>@item.Category</td>
+                    <td><code>@item.Slug</code></td>
+                    <td>@item.DisplayOrder</td>
+                    <td>
+                        @if (item.IsAvailable)
+                        {
+                            <span class="badge bg-success">Visible on site</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Hidden</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.FacilityId" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a asp-action="ManageContent" asp-route-id="@item.FacilityId" class="btn btn-sm btn-outline-primary">Manage Content</a>
+                        <form asp-action="ToggleAvailable" asp-route-id="@item.FacilityId" method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            @if (item.IsAvailable)
+                            {
+                                <button type="submit" class="btn btn-sm btn-outline-warning">Hide</button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn btn-sm btn-outline-success">Show</button>
+                            }
+                        </form>
+                        <a asp-action="Delete" asp-route-id="@item.FacilityId" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

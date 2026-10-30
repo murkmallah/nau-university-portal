@@ -1,0 +1,74 @@
+@model NAU_Web.Models.SimulationLabSection
+@{
+    ViewData["Title"] = "Manage Content — " + Model.Title;
+}
+
+<h1>Manage Content: @Model.Title</h1>
+<a asp-action="Index">&larr; Back to Sections</a>
+
+<h3 class="mt-4">Images</h3>
+<table class="table">
+    <tr><th>Preview</th><th>Title</th><th>Badge</th><th>Large?</th><th></th></tr>
+    @foreach (var img in Model.SimulationLabImages.OrderBy(i => i.DisplayOrder))
+    {
+        <tr>
+            <td style="font-size:20px;">
+                @if (!string.IsNullOrEmpty(img.ImageUrl))
+                {
+                    <img src="@img.ImageUrl" style="height:40px;" />
+                }
+                else if (!string.IsNullOrEmpty(img.IconClass))
+                {
+                    <i class="@img.IconClass"></i>
+                }
+            </td>
+            <td>@img.Title</td>
+            <td>@img.Badge</td>
+            <td>@(img.IsLarge ? "Yes" : "No")</td>
+            <td>
+                <form asp-action="DeleteImage" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@img.SimulationLabImageId" />
+                    <input type="hidden" name="sectionId" value="@Model.SimulationLabSectionId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddImage" method="post" class="d-flex gap-2 mb-4 flex-wrap">
+    <input type="hidden" name="sectionId" value="@Model.SimulationLabSectionId" />
+    <input name="title" placeholder="Title, e.g. Full Flight Simulator (FFS) Level D" class="form-control" style="max-width:280px;" />
+    <input name="badge" placeholder="Badge, e.g. Main Simulator Bay" class="form-control" style="max-width:200px;" />
+    <input name="iconClass" placeholder="fas fa-plane (placeholder icon)" class="form-control" style="max-width:220px;" />
+    <input name="imageUrl" placeholder="/uploads/xxx.jpg (once uploaded via Cms)" class="form-control" style="max-width:260px;" />
+    <div class="form-check align-self-center">
+        <input type="checkbox" class="form-check-input" name="isLarge" value="true" id="isLarge" />
+        <label class="form-check-label" for="isLarge">Large tile</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Image</button>
+</form>
+
+<h3>Feature Chips <small class="text-muted">(the small pills under the images, e.g. "PCAA Approved")</small></h3>
+<table class="table">
+    <tr><th>Icon</th><th>Label</th><th></th></tr>
+    @foreach (var f in Model.SimulationLabFeatures.OrderBy(f => f.DisplayOrder))
+    {
+        <tr>
+            <td>@f.IconClass</td>
+            <td>@f.Label</td>
+            <td>
+                <form asp-action="DeleteFeature" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@f.SimulationLabFeatureId" />
+                    <input type="hidden" name="sectionId" value="@Model.SimulationLabSectionId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddFeature" method="post" class="d-flex gap-2 mb-4">
+    <input type="hidden" name="sectionId" value="@Model.SimulationLabSectionId" />
+    <input name="iconClass" placeholder="fas fa-check-circle" class="form-control" />
+    <input name="label" placeholder="PCAA Approved" class="form-control" />
+    <button type="submit" class="btn btn-primary">Add Feature</button>
+</form>

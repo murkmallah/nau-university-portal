@@ -1,0 +1,273 @@
+@model NAU_Web.Models.ChatbotOptions
+@{
+    Layout = null;
+    var stats = ViewBag.Stats as Dictionary<string, int> ?? new Dictionary<string, int>();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot Settings - NAU Admin</title>
+    <partial name="_Favicon" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f4f7fb; margin: 0; color: #1e293b; }
+        .admin-nav { background: #0b2c4d; padding: 16px 32px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+        .admin-nav-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .admin-nav a { color: #fff; text-decoration: none; font-size: 13px; margin-left: 16px; opacity: 0.9; }
+        .admin-nav a:hover { opacity: 1; text-decoration: underline; }
+        
+        .container { max-width: 1100px; margin: 32px auto; padding: 0 20px; }
+        
+        .alert { padding: 14px 18px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: #fff; border-radius: 12px; padding: 18px; box-shadow: 0 2px 10px rgba(11,44,77,0.06); border-left: 4px solid #1a5fa6; }
+        .stat-val { font-size: 24px; font-weight: 700; color: #0b2c4d; font-family: 'Montserrat', sans-serif; }
+        .stat-label { font-size: 12.5px; color: #64748b; margin-top: 4px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
+        @@media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        .card { background: #fff; border-radius: 14px; padding: 26px; box-shadow: 0 4px 18px rgba(11,44,77,0.06); margin-bottom: 24px; }
+        .card-header { font-size: 17px; font-weight: 600; font-family: 'Montserrat', sans-serif; color: #0b2c4d; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #edf2f7; padding-bottom: 12px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+        .form-control, select, textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 13.5px; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.2s; }
+        .form-control:focus, select:focus, textarea:focus { border-color: #1a5fa6; }
+        .form-hint { font-size: 11.5px; color: #64748b; margin-top: 4px; }
+
+        .btn { padding: 10px 22px; border-radius: 8px; font-weight: 600; font-size: 13.5px; cursor: pointer; border: none; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: all 0.2s; }
+        .btn-primary { background: #1a5fa6; color: #fff; }
+        .btn-primary:hover { background: #0b2c4d; }
+        .btn-secondary { background: #e2e8f0; color: #334155; }
+        .btn-secondary:hover { background: #cbd5e1; }
+
+        /* Test Box */
+        .test-input-group { display: flex; gap: 10px; margin-bottom: 16px; }
+        .test-result-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; min-height: 180px; max-height: 380px; overflow-y: auto; font-size: 13px; }
+        .kb-item { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; margin-bottom: 8px; font-size: 12px; }
+        .kb-title { font-weight: 600; color: #0b2c4d; }
+        .kb-cat { display: inline-block; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 6px; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+        <div class="admin-nav-title">
+            <div style="background:#ffffff; padding:4px 8px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                <img src="/images/logo.png" alt="NAU Logo" style="height:28px; width:auto; display:block;" onerror="this.style.display='none'">
+            </div>
+            <span>NAU Admin: AI Chatbot Configuration</span>
+        </div>
+        <div>
+            <a href="/Admin"><i class="fas fa-arrow-left"></i> Back to Admin Panel</a>
+            <a href="/" target="_blank"><i class="fas fa-globe"></i> View Website</a>
+        </div>
+    </div>
+
+    <div class="container">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+            </div>
+        }
+
+        <!-- Knowledge Base Real-Time Sync Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-val">@(stats.GetValueOrDefault("Pages", 0))</div>
+                <div class="stat-label"><i class="fas fa-file-alt"></i> CMS Pages Indexed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">@(stats.GetValueOrDefault("Programs", 0))</div>
+                <div class="stat-label"><i class="fas fa-award"></i> Degree Programs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">@(stats.GetValueOrDefault("Courses", 0) + stats.GetValueOrDefault("Atp2026Courses", 0))</div>
+                <div class="stat-label"><i class="fas fa-graduation-cap"></i> Courses &amp; ATP 2026</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">@(stats.GetValueOrDefault("Facilities", 0))</div>
+                <div class="stat-label"><i class="fas fa-building"></i> Facilities &amp; Services</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">@(stats.GetValueOrDefault("SimulationLabs", 0))</div>
+                <div class="stat-label"><i class="fas fa-plane"></i> Simulator &amp; Labs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">@(stats.GetValueOrDefault("NewsPosts", 0))</div>
+                <div class="stat-label"><i class="fas fa-newspaper"></i> News &amp; Notices</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <!-- Settings Form -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-sliders"></i> Chatbot Settings &amp; AI Provider
+                </div>
+
+                <form asp-controller="Chatbot" asp-action="SaveSettings" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-group">
+                        <label class="form-label">AI Engine Provider</label>
+                        <select name="Provider" class="form-control" id="providerSelect" onchange="toggleApiFields()">
+                            <option value="BuiltIn" selected="@(Model.Provider == "BuiltIn")">Built-in Smart Semantic Engine (Zero Key / Offline)</option>
+                            <option value="Gemini" selected="@(Model.Provider == "Gemini")">Google Gemini API (Generative AI + Live Grounding)</option>
+                            <option value="OpenAI" selected="@(Model.Provider == "OpenAI")">OpenAI API (GPT-4o Mini + Live Grounding)</option>
+                        </select>
+                        <div class="form-hint">The chatbot connects in real-time to your live database and ATP 2026 catalog regardless of provider.</div>
+                    </div>
+
+                    <div class="form-group" id="apiKeyGroup">
+                        <label class="form-label">API Key</label>
+                        <input type="password" name="ApiKey" class="form-control" value="@Model.ApiKey" placeholder="Enter Gemini or OpenAI API Key" id="apiKeyInput" />
+                        <div class="form-hint">Configured with your Google Gemini API key.</div>
+                    </div>
+
+                    <div class="form-group" id="modelGroup">
+                        <label class="form-label">Model Name</label>
+                        <input type="text" name="Model" class="form-control" value="@Model.Model" placeholder="gemini-3.5-flash, gemini-flash-latest, gemini-3.1-flash-lite, gpt-4o-mini" />
+                        <div class="form-hint">Recommended for Gemini: <code>gemini-3.5-flash</code> (Fast &amp; Accurate), <code>gemini-flash-latest</code>, or <code>gemini-3.1-flash-lite</code>.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Bot Display Name</label>
+                        <input type="text" name="BotName" class="form-control" value="@Model.BotName" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Welcome Message</label>
+                        <textarea name="WelcomeMessage" rows="3" class="form-control">@Model.WelcomeMessage</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">System Persona &amp; Prompt</label>
+                        <textarea name="SystemPrompt" rows="4" class="form-control">@Model.SystemPrompt</textarea>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Configuration
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Real-Time Testing Playground -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-flask"></i> Live Database Knowledge Tester
+                </div>
+                <p style="font-size: 12.5px; color: #64748b; margin-top: 0;">
+                    Type any query below to test what live records from the database and CMS pages are retrieved in real-time.
+                </p>
+
+                <div class="test-input-group">
+                    <input type="text" id="testQuery" class="form-control" placeholder="e.g. What are the hostel timings? or short courses" value="hostel facilities and mess" />
+                    <button type="button" class="btn btn-primary" id="testBtn" onclick="runKnowledgeTest()">
+                        <i class="fas fa-search"></i> Test
+                    </button>
+                </div>
+
+                <div class="form-label">Retrieved Real-Time Knowledge Chunks:</div>
+                <div id="testResults" class="test-result-box">
+                    <div style="color: #94a3b8; text-align: center; padding: 20px;">
+                        Click "Test" to preview real-time knowledge matching from the database.
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <div class="form-label">Bot Full Answer Simulation:</div>
+                    <div id="botAnswerSim" style="background:#f1f5f9; border-radius:8px; padding:12px; font-size:12.5px; min-height:80px;">
+                        <em>Answer preview will appear here.</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function toggleApiFields() {
+            var prov = document.getElementById('providerSelect').value;
+            var keyGroup = document.getElementById('apiKeyGroup');
+            var modelGroup = document.getElementById('modelGroup');
+            if (prov === 'BuiltIn') {
+                keyGroup.style.opacity = '0.6';
+                modelGroup.style.opacity = '0.6';
+            } else {
+                keyGroup.style.opacity = '1';
+                modelGroup.style.opacity = '1';
+            }
+        }
+
+        async function runKnowledgeTest() {
+            var q = document.getElementById('testQuery').value.trim();
+            if (!q) return;
+
+            var resultsBox = document.getElementById('testResults');
+            var answerBox = document.getElementById('botAnswerSim');
+            resultsBox.innerHTML = '<div style="text-align:center; padding:10px; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Querying live database...</div>';
+            answerBox.innerHTML = '<em>Generating...</em>';
+
+            try {
+                // 1. Fetch live knowledge chunks
+                var resKb = await fetch('/Chatbot/TestKnowledge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: q })
+                });
+                var kbData = await resKb.json();
+
+                if (kbData && kbData.length > 0) {
+                    var html = '';
+                    kbData.forEach(function(item) {
+                        html += '<div class="kb-item">';
+                        html += '<div class="kb-title">' + item.title + ' <span class="kb-cat">' + item.category + '</span> (Score: ' + item.score.toFixed(1) + ')</div>';
+                        html += '<div style="color:#475569; margin-top:4px;">' + item.content + '</div>';
+                        if (item.url) {
+                            html += '<div style="margin-top:4px;"><a href="' + item.url + '" target="_blank" style="color:#1a5fa6; font-size:11px;">' + item.url + '</a></div>';
+                        }
+                        html += '</div>';
+                    });
+                    resultsBox.innerHTML = html;
+                } else {
+                    resultsBox.innerHTML = '<div style="color:#ef4444; padding:10px;">No specific matching records found. Fallback general topics will be used.</div>';
+                }
+
+                // 2. Fetch full bot answer simulation
+                var resBot = await fetch('/Chatbot/Ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: q })
+                });
+                var botData = await resBot.json();
+                if (botData && botData.reply) {
+                    answerBox.innerHTML = '<pre style="white-space:pre-wrap; font-family:inherit; margin:0;">' + botData.reply + '</pre>';
+                }
+            } catch (err) {
+                resultsBox.innerHTML = '<div style="color:#ef4444; padding:10px;">Error testing query: ' + err.message + '</div>';
+            }
+        }
+
+        toggleApiFields();
+    </script>
+</body>
+</html>

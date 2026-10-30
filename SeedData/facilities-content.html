@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facilities – National Aviation University</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/public-site.css">
+  <link rel="stylesheet" href="/css/courses-page.css">
+  <link rel="stylesheet" href="/css/mobile-nav.css">
+  <link rel="stylesheet" href="/css/public-modals.css">
+
+  <style>
+    :root {
+      --primary: #0b2c4d;
+      --green: #1e8e3e;
+      --bg: #f5f7fb;
+      --white: #fff;
+      --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      --navy: #0d2c54;
+      --gold: #f5a623;
+      --text: #333;
+      --text-light: #666;
+      --border: #e0e0e0;
+      --bg-light: #f7f9fc;
+      --font-head: "Montserrat", sans-serif;
+    }
+
+    /* Announcement Bar & Account Dropdown */
+    .announcement {
+      background: var(--primary);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 64px;
+      overflow: hidden;
+      font-size: 13px;
+      font-family: "Poppins", sans-serif;
+    }
+    .announcement .scroll { display:flex; align-items:center; gap:8px; }
+    .announcement .scroll span {
+      font-weight: 700 !important;
+      background: transparent !important;
+      color: #f5a623 !important;
+      padding: 0 !important;
+      border-radius: 0 !important;
+      font-size: inherit !important;
+      letter-spacing: normal !important;
+      margin-right: 6px !important;
+      display: inline !important;
+    }
+    .account-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    .account-dropdown>.apply-btn {
+      background: var(--green); color: #fff; text-decoration: none;
+      padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      display: inline-flex; align-items: center; cursor: pointer; transition: background .2s;
+      border: none; outline: none; font-family: "Poppins", sans-serif;
+    }
+    .account-dropdown>.apply-btn:hover { background: #166f30; }
+    .account-dropdown>.apply-btn::after {
+      content: "\f078";
+      font-family: "Font Awesome 6 Free";
+      font-weight: 900;
+      font-size: 10px;
+      margin-left: 8px;
+      opacity: .85;
+      display: inline-block;
+      transition: transform .2s;
+    }
+
+    .account-dropdown.open>.apply-btn::after,
+    .account-dropdown:hover>.apply-btn::after {
+      transform: rotate(180deg);
+    }
+
+    .account-dropdown-menu {
+      display: none;
+      min-width: 150px;
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 2000;
+    }
+
+    .account-dropdown-menu a {
+      display: block;
+      padding: 11px 16px;
+      color: #0b2c4d;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-bottom: 1px solid #f0f2f5;
+    }
+
+    .account-dropdown-menu a:last-child {
+      border-bottom: none;
+    }
+
+    .account-dropdown-menu a:hover {
+      background: #f5f7fb;
+      color: #1e8e3e;
+    }
+
+    /* Navbar */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 48px;
+      background: white;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      height: 68px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo img {
+      height: 48px;
+      width: auto;
+    }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      padding: 80px 48px;
+      background: linear-gradient(135deg, #0b2c4d 0%, #0d3a6e 50%, #1a5fa6 100%);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .hero-bg-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.05;
+      background-image:
+        radial-gradient(circle at 20% 30%, #fff 1px, transparent 1px),
+        radial-gradient(circle at 80% 70%, #fff 1px, transparent 1px);
+      background-size: 60px 60px, 80px 80px;
+    }
+
+    .hero-deco {
+      position: absolute;
+      left: 50%;
+      top: -120px;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .hero-breadcrumb {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: "";
+      display: inline-block;
+      width: 28px;
+      height: 2px;
+      background: var(--gold);
+    }
+
+    .hero h1 {
+      font-family: var(--font-head);
+      font-size: 44px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: #4ed47a;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.75);
+      line-height: 1.75;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+      background: #fff;
+      padding: 20px 48px;
+      border-bottom: 1px solid #eef0f4;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      margin-right: 4px;
+    }
+
+    .filter-btn {
+      padding: 8px 18px;
+      border-radius: 25px;
+      border: 1.5px solid #dde2ea;
+      background: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-light);
+      transition: all .2s;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .filter-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .filter-btn:hover:not(.active) {
+      background: #f0f4f9;
+      border-color: #b0bdd0;
+      color: var(--primary);
+    }
+
+    /* Facilities Section */
+    .facilities-section {
+      padding: 60px 48px;
+    }
+
+    .facilities-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .section-head {
+      margin-bottom: 36px;
+    }
+
+    .results-count {
+      font-size: 14px;
+      color: var(--text-light);
+      margin-top: 6px;
+    }
+
+    .results-count strong {
+      color: var(--navy);
+    }
+
+    .facilities-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 28px;
+    }
+
+    .facility-card {
+      background: #fff;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid #eef0f4;
+      transition: transform .3s, box-shadow .3s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .facility-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 50px rgba(11, 44, 77, 0.13);
+    }
+
+    .facility-card-visual {
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .facility-card-icon-large {
+      font-size: 80px;
+      opacity: 0.18;
+      color: #fff;
+      position: absolute;
+      transition: opacity .3s, transform .3s;
+    }
+
+    .facility-card-icon-center {
+      font-size: 52px;
+      position: relative;
+      z-index: 2;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      transition: transform .3s, background .3s;
+    }
+
+    .facility-card:hover .facility-card-icon-center {
+      transform: scale(1.1);
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .facility-card-visual-link {
+      display: block;
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .facility-card-visual-link:hover .facility-card-icon-center {
+      transform: scale(1.18);
+      background: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.15);
+    }
+
+    .facility-card-visual-link:hover .facility-card-icon-large {
+      opacity: 0.28;
+      transform: scale(1.05);
+    }
+
+    .fc-library .facility-card-visual {
+      background: linear-gradient(135deg, #0b2c4d, #1a5fa6);
+    }
+
+    .fc-cafeteria .facility-card-visual {
+      background: linear-gradient(135deg, #7c2d12, #b45309);
+    }
+
+    .fc-hostel .facility-card-visual {
+      background: linear-gradient(135deg, #064e3b, #059669);
+    }
+
+    .fc-mess .facility-card-visual {
+      background: linear-gradient(135deg, #4c1d95, #7c3aed);
+    }
+
+    .fc-sports .facility-card-visual {
+      background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    }
+
+    .fc-medical .facility-card-visual {
+      background: linear-gradient(135deg, #7f1d1d, #dc2626);
+    }
+
+    .fc-masjid .facility-card-visual {
+      background: linear-gradient(135deg, #1a3a2a, #1e8e3e);
+    }
+
+    .fc-smart .facility-card-visual {
+      background: linear-gradient(135deg, #1e1b4b, #4338ca);
+    }
+
+    .facility-status {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(4px);
+    }
+
+    .facility-status.available {
+      background: rgba(30, 142, 62, 0.25);
+      border-color: rgba(78, 212, 122, 0.5);
+      color: #4ed47a;
+    }
+
+    .facility-status.coming {
+      background: rgba(245, 166, 35, 0.2);
+      border-color: rgba(245, 166, 35, 0.4);
+      color: #fcd34d;
+    }
+
+    .facility-card-body {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .facility-category {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .facility-name {
+      font-family: var(--font-head);
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+
+    .facility-desc {
+      font-size: 13.5px;
+      color: var(--text-light);
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 20px;
+    }
+
+    .facility-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .facility-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-light);
+      color: var(--text-light);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+      border: 1px solid #e4e9f0;
+    }
+
+    .facility-tag i {
+      font-size: 10px;
+      color: var(--primary);
+    }
+
+    .facility-card-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #f0f2f6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .facility-hrs {
+      font-size: 12px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .facility-hrs i {
+      color: var(--green);
+    }
+
+    .read-more-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--primary);
+      color: #fff;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: background .2s, transform .15s;
+    }
+
+    .read-more-btn:hover {
+      background: #0d3a6e;
+      transform: translateX(2px);
+    }
+
+    /* Stats & CTA */
+    .stats-strip {
+      background: var(--primary);
+      padding: 48px 20px;
+    }
+
+    .stats-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: var(--font-head);
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-top: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .cta-strip {
+      background: linear-gradient(135deg, var(--green), #166f30);
+      padding: 56px 20px;
+      text-align: center;
+    }
+
+    .cta-strip h2 {
+      font-family: var(--font-head);
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .cta-strip p {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 24px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: var(--green);
+      padding: 13px 26px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all .2s;
+      margin: 6px;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .cta-btn.outline {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .cta-btn.outline:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+
+    @media(max-width:900px) {
+      .facilities-section {
+        padding: 40px 20px;
+      }
+
+      .filter-bar {
+        padding: 16px 20px;
+      }
+    }
+
+    @media(max-width:768px) {
+      .announcement {
+        padding: 8px 20px;
+      }
+
+      .navbar {
+        padding: 0 20px;
+      }
+
+      .hero {
+        padding: 60px 20px;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      .facilities-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-inner {
+        gap: 32px;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-up {
+      animation: fadeInUp .55s ease both;
+    }
+
+    .fc-d1 {
+      animation-delay: 0s;
+    }
+
+    .fc-d2 {
+      animation-delay: .08s;
+    }
+
+    .fc-d3 {
+      animation-delay: .16s;
+    }
+
+    .fc-d4 {
+      animation-delay: .24s;
+    }
+
+    .fc-d5 {
+      animation-delay: .32s;
+    }
+
+    .fc-d6 {
+      animation-delay: .40s;
+    }
+  </style>
+</head>
+
+<body>  <!-- ANNOUNCEMENT -->
+  <div class="announcement">
+    <div class="scroll"><span>ANNOUNCEMENT:</span> Admissions Open Now</div>
+    <div class="account-dropdown"><a class="apply-btn" role="button" href="#">Account</a></div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="/" class="logo">
+      <img src="/images/logo.png" alt="NAU Logo" onerror="this.style.display='none'" style="height:52px;width:auto;display:block;object-fit:contain;">
+      <div style="display:flex;flex-direction:column;justify-content:center;gap:1px;">
+        <span style="font-size:24px;font-weight:900;color:#0b2c4d;font-family:'Montserrat',sans-serif;line-height:1.1;letter-spacing:0px;">National Aviation University</span>
+        <span style="font-size:12px;font-weight:500;color:#474b50;letter-spacing:2.5px;font-family:'Open Sans',sans-serif;line-height:1;">LEARN &middot; LEAD &middot; FLY HIGH</span>
+      </div>
+    </a>
+
+    <button type="button" class="nav-toggle-btn" aria-label="Toggle navigation menu"><i class="fas fa-bars"></i></button>
+
+    <div class="menu">
+
+      <!-- ACADEMICS -->
+      <div class="menu-item">
+        <a href="/Faculties/Public" class="nav-link">Academics <i class="fas fa-chevron-down chevron"></i></a>
+        <div class="dropdown">
+          <div class="dd-inner">
+            <div class="dd-col">
+              <div class="dd-col-title">Faculties</div>
+              <a href="/Faculties/Detail/engineering" class="dd-link"><span class="dd-icon"><i class="fas fa-cogs"></i></span><span class="dd-text"><strong>Faculty of Engineering</strong><span>ANS Engineering &amp; Airport Engineering</span></span></a>
+              <a href="/Faculties/Detail/information-technology-cyber-security" class="dd-link"><span class="dd-icon"><i class="fas fa-laptop-code"></i></span><span class="dd-text"><strong>Faculty of IT &amp; Cyber Security </strong><span>Aviation Cyber Security</span></span></a>
+              <a href="/Faculties/Detail/operations" class="dd-link"><span class="dd-icon"><i class="fas fa-plane-departure"></i></span><span class="dd-text"><strong>Faculty of Aviation Operations</strong><span>Air Traffic Management &amp; Airport Operations</span></span></a>
+              <a href="/Faculties/Detail/management" class="dd-link"><span class="dd-icon"><i class="fas fa-chart-line"></i></span><span class="dd-text"><strong>Faculty of Management Sciences</strong><span>Aviation Management &amp; MBA</span></span></a>
+              <a href="/Faculties/Public" class="dd-view-all">View All Faculties <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="dd-col">
+              <div class="dd-col-title">Schools</div>
+              <div class="dd-school-item">
+                <a href="/Courses/Public?school=navigation" class="dd-link dd-school-link"><span class="dd-icon"><i class="fas fa-broadcast-tower"></i></span><span class="dd-text"><strong>School of Air Navigation Services (ANS)</strong><span>Air Traffic Control &amp; CNS/ATM Systems</span></span><i class="fas fa-chevron-right dd-school-arrow" onclick="event.preventDefault(); event.stopPropagation(); toggleSchoolSubmenu(this);"></i></a>
+                <div class="dd-submenu" data-school="navigation"></div>
+              </div>
+              <div class="dd-school-item">
+                <a href="/Courses/Public?school=regulatory" class="dd-link dd-school-link"><span class="dd-icon"><i class="fas fa-scale-balanced"></i></span><span class="dd-text"><strong>School of Regulatory Services</strong><span>Aviation Safety &amp; Regulatory Compliance</span></span><i class="fas fa-chevron-right dd-school-arrow" onclick="event.preventDefault(); event.stopPropagation(); toggleSchoolSubmenu(this);"></i></a>
+                <div class="dd-submenu" data-school="regulatory"></div>
+              </div>
+              <div class="dd-school-item">
+                <a href="/Courses/Public?school=airport" class="dd-link dd-school-link"><span class="dd-icon"><i class="fas fa-fire-extinguisher"></i></span><span class="dd-text"><strong>School of Airport Services</strong><span>Ground Operations &amp; Rescue/Firefighting</span></span><i class="fas fa-chevron-right dd-school-arrow" onclick="event.preventDefault(); event.stopPropagation(); toggleSchoolSubmenu(this);"></i></a>
+                <div class="dd-submenu" data-school="airport"></div>
+              </div>
+              <div class="dd-school-item">
+                <a href="/Courses/Public?school=management" class="dd-link dd-school-link"><span class="dd-icon"><i class="fas fa-briefcase"></i></span><span class="dd-text"><strong>School of Aviation Management</strong><span>Leadership &amp; Management Training</span></span><i class="fas fa-chevron-right dd-school-arrow" onclick="event.preventDefault(); event.stopPropagation(); toggleSchoolSubmenu(this);"></i></a>
+                <div class="dd-submenu" data-school="management"></div>
+              </div>
+              <a href="/Courses/Public" class="dd-view-all">View All Schools <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="dd-col">
+              <div class="dd-col-title">Student Resources</div>
+              <a href="/Account/Login" class="dd-link"><span class="dd-icon"><i class="fas fa-user-circle"></i></span><span class="dd-text"><strong>Online Portal</strong><span>Access results, schedules &amp; fee challan</span></span></a>
+              <a href="#" class="dd-link" onclick="openResults(event)"><span class="dd-icon"><i class="fas fa-poll"></i></span><span class="dd-text"><strong>Results</strong><span>Check your exam results</span></span></a>
+              <a href="#" class="dd-link" onclick="openCalendar(event)"><span class="dd-icon"><i class="fas fa-calendar-alt"></i></span><span class="dd-text"><strong>Academic Calendar</strong><span>Semester dates and schedules</span></span></a>
+              <a href="/CourseCatalog" class="dd-link"><span class="dd-icon"><i class="fas fa-book-open"></i></span><span class="dd-text"><strong>Course Catalog</strong><span>All programs and syllabi</span></span></a>
+              <a href="#" class="dd-link" onclick="openExamSchedule(event)"><span class="dd-icon"><i class="fas fa-file-alt"></i></span><span class="dd-text"><strong>Examination Schedule</strong><span>Mid &amp; final term timetables</span></span></a>
+              <a href="#" class="dd-link" onclick="openDownloads(event)"><span class="dd-icon"><i class="fas fa-download"></i></span><span class="dd-text"><strong>Downloads</strong><span>Forms, guides &amp; documents</span></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMISSIONS -->
+      <div class="menu-item">
+        <a href="/Account/Register" class="nav-link">Admissions <i class="fas fa-chevron-down chevron"></i></a>
+        <div class="dropdown">
+          <div class="dd-inner">
+            <div class="dd-col">
+              <div class="dd-col-title">How to Apply</div>
+              <a href="/Account/Register" class="dd-link"><span class="dd-icon"><i class="fas fa-paper-plane"></i></span><span class="dd-text"><strong>Apply Online</strong><span>Submit your application now</span></span></a>
+              <a href="#" class="dd-link" onclick="openEligibility(event)"><span class="dd-icon"><i class="fas fa-list-check"></i></span><span class="dd-text"><strong>Eligibility Criteria</strong><span>Entry requirements per program</span></span></a>
+              <a href="#" class="dd-link" onclick="openRequiredDocs(event)"><span class="dd-icon"><i class="fas fa-file-upload"></i></span><span class="dd-text"><strong>Required Documents</strong><span>Documents needed for admission</span></span></a>
+            </div>
+            <div class="dd-col">
+              <div class="dd-col-title">Financial</div>
+              <a href="/financial.html#fee-structure" class="dd-link"><span class="dd-icon"><i class="fas fa-coins"></i></span><span class="dd-text"><strong>Fee Structure</strong><span>Semester-wise fee breakdown</span></span></a>
+              <a href="/financial.html#scholarships" class="dd-link"><span class="dd-icon"><i class="fas fa-hand-holding-usd"></i></span><span class="dd-text"><strong>Scholarships</strong><span>Merit and need-based aid</span></span></a>
+              <a href="/financial.html#payment-methods" class="dd-link"><span class="dd-icon"><i class="fas fa-receipt"></i></span><span class="dd-text"><strong>Payment Methods</strong><span>Bank and online payment options</span></span></a>
+            </div>
+            <div class="dd-col" style="flex:0 0 220px;">
+              <a href="/Account/Register" class="dd-featured">
+                <div class="feat-label">Admissions Open 2026</div>
+                <div class="feat-title">Begin Your Aviation Career Today</div>
+                <div class="feat-desc">Applications are being accepted for Fall 2026. Limited seats available.</div>
+                <span class="feat-btn">Apply Now</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRAINING -->
+      <div class="menu-item">
+        <a href="/SimulationLabs/Public" class="nav-link">Training <i class="fas fa-chevron-down chevron"></i></a>
+        <div class="dropdown">
+          <div class="dd-inner">
+            <div class="dd-col">
+              <div class="dd-col-title">Simulation &amp; Labs</div>
+              <a href="/SimulationLabs/Public#flight-simulators" class="dd-link"><span class="dd-icon"><i class="fas fa-plane"></i></span><span class="dd-text"><strong>Flight Simulators</strong><span>State-of-the-art FFS &amp; FTD devices</span></span></a>
+              <a href="/SimulationLabs/Public#atc-simulator" class="dd-link"><span class="dd-icon"><i class="fas fa-tower-broadcast"></i></span><span class="dd-text"><strong>ATC Simulator</strong><span>Live radar and voice simulation</span></span></a>
+              <a href="/SimulationLabs/Public#avionics-lab" class="dd-link"><span class="dd-icon"><i class="fas fa-microchip"></i></span><span class="dd-text"><strong>Avionics Lab</strong><span>Practical avionics systems training</span></span></a>
+            </div>
+            <div class="dd-col">
+              <div class="dd-col-title">Professional Courses</div>
+              <a href="#" class="dd-link" onclick="openProfCourses(event,'pcaa')"><span class="dd-icon"><i class="fas fa-user-graduate"></i></span><span class="dd-text"><strong>PCAA Type Ratings</strong><span>Endorsed by Civil Aviation Authority</span></span></a>
+              <a href="#" class="dd-link" onclick="openProfCourses(event,'icao')"><span class="dd-icon"><i class="fas fa-globe"></i></span><span class="dd-text"><strong>ICAO Courses</strong><span>Internationally recognized programs</span></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAMPUS LIFE -->
+      <div class="menu-item">
+        <a href="/facilities.html" class="nav-link">Campus Life <i class="fas fa-chevron-down chevron"></i></a>
+        <div class="dropdown">
+          <div class="dd-inner">
+            <div class="dd-col">
+              <div class="dd-col-title">Facilities</div>
+              <a href="/facility-library.html" class="dd-link"><span class="dd-icon"><i class="fas fa-book"></i></span><span class="dd-text"><strong>Library &amp; Resource Center</strong><span>Digital and physical collections</span></span></a>
+              <a href="/facility-cafeteria.html" class="dd-link"><span class="dd-icon"><i class="fas fa-utensils"></i></span><span class="dd-text"><strong>Cafeteria &amp; Dining</strong><span>On-campus food services</span></span></a>
+              <a href="/facility-hostel.html" class="dd-link"><span class="dd-icon"><i class="fas fa-bed"></i></span><span class="dd-text"><strong>Hostel</strong><span>On-campus residential accommodation</span></span></a>
+              <a href="/facility-mess.html" class="dd-link"><span class="dd-icon"><i class="fas fa-utensils"></i></span><span class="dd-text"><strong>Mess</strong><span>Student dining and meal services</span></span></a>
+              <a href="/facilities.html" class="dd-view-all">View All Facilities <i class="fas fa-arrow-right"></i></a>
+            </div>
+            <div class="dd-col">
+              <div class="dd-col-title">Student Life</div>
+              <a href="#" class="dd-link" onclick="openEvents(event)"><span class="dd-icon"><i class="fas fa-calendar-check"></i></span><span class="dd-text"><strong>Events &amp; Activities</strong><span>Seminars, trips and cultural days</span></span></a>
+              <a href="https://paa.gov.pk/media/job-opportunities" target="_blank" rel="noopener noreferrer" class="dd-link"><span class="dd-icon"><i class="fas fa-briefcase"></i></span><span class="dd-text"><strong>Career Services</strong><span>Placement and internship support</span></span></a>
+            </div>
+            <div class="dd-col">
+              <div class="dd-col-title">News &amp; Media</div>
+              <a href="/NewsPosts/Public#latest-news" class="dd-link"><span class="dd-icon"><i class="fas fa-newspaper"></i></span><span class="dd-text"><strong>Latest News</strong><span>University announcements</span></span></a>
+              <a href="/NewsPosts/Public#photo-gallery" class="dd-link"><span class="dd-icon"><i class="fas fa-images"></i></span><span class="dd-text"><strong>Photo Gallery</strong><span>Campus life in pictures</span></span></a>
+              <a href="/NewsPosts/Public#video-gallery" class="dd-link"><span class="dd-icon"><i class="fas fa-video"></i></span><span class="dd-text"><strong>Video Gallery</strong><span>Events and training videos</span></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USEFUL LINKS -->
+      <div class="menu-item">
+        <a href="/links.html" class="nav-link">Useful Links <i class="fas fa-chevron-down chevron"></i></a>
+        <div class="dropdown">
+          <div class="dd-inner">
+            <div class="dd-col" style="flex:0 0 auto;min-width:260px;">
+              <div class="dd-col-title">Useful links</div>
+              <a href="https://cati-lms.pitb.gov.pk/" target="_blank" rel="noopener noreferrer" class="dd-link"><span class="dd-icon"><i class="fas fa-flag"></i></span><span class="dd-text"><strong>LMS</strong></span></a>
+              <a href="https://cati-elibrary.pitb.gov.pk/" target="_blank" rel="noopener noreferrer" class="dd-link"><span class="dd-icon"><i class="fas fa-landmark"></i></span><span class="dd-text"><strong>E-library</strong></span></a>
+              <a href="/links.html" class="dd-view-all">View All Links <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ABOUT -->
+      <div class="menu-item">
+        <a href="/about.html" class="nav-link">About <i class="fas fa-chevron-down chevron"></i></a>
+        <div class="dropdown">
+          <div class="dd-inner">
+            <div class="dd-col" style="flex:0 0 auto;min-width:260px;">
+              <div class="dd-col-title">About</div>
+              <a href="/about.html#history-caa" class="dd-link"><span class="dd-icon"><i class="fas fa-flag"></i></span><span class="dd-text"><strong>History of CAA in Pakistan</strong><span>Evolution of Civil Aviation Authority</span></span></a>
+              <a href="/about.html#history-cati" class="dd-link"><span class="dd-icon"><i class="fas fa-landmark"></i></span><span class="dd-text"><strong>History of CATI</strong><span>Our journey and founding milestones</span></span></a>
+              <a href="/Faculties/Detail/management" class="dd-link"><span class="dd-icon"><i class="fas fa-sitemap"></i></span><span class="dd-text"><strong>Management</strong><span>Leadership and organizational structure</span></span></a>
+            </div>
+            <div class="dd-col" style="flex:0 0 220px;margin-left:auto;">
+              <a href="/about.html" class="dd-featured">
+                <div class="feat-label">Established 2026</div>
+                <div class="feat-title">Pakistan's Premier Aviation Institution</div>
+                <div class="feat-desc">Located at Airport Road, Hyderabad — shaping future aviation leaders.</div>
+                <span class="feat-btn">Learn More</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="menu-item">
+        <a href="/Contact" class="nav-link">Contact <i class="fas fa-chevron-down chevron"></i></a>
+        <div class="dropdown">
+          <div class="dd-inner">
+            <div class="dd-col">
+              <div class="dd-col-title">Get In Touch</div>
+              <a href="/Contact" class="dd-link"><span class="dd-icon"><i class="fas fa-map-marker-alt"></i></span><span class="dd-text"><strong>Visit Us</strong><span>Airport Road, Hyderabad, Sindh</span></span></a>
+              <a href="tel:+92229260310" class="dd-link"><span class="dd-icon"><i class="fas fa-phone"></i></span><span class="dd-text"><strong>Call Us</strong><span>+92 22 9260310-19</span></span></a>
+              <a href="mailto:AdID.Academics@paa.gov.pk" class="dd-link"><span class="dd-icon"><i class="fas fa-envelope"></i></span><span class="dd-text"><strong>Email Us</strong><span>AdID.Academics@paa.gov.pk</span></span></a>
+            </div>
+            <div class="dd-col">
+              <div class="dd-col-title">Departments</div>
+              <a href="mailto:admissions@au.edu.pk" class="dd-link"><span class="dd-icon"><i class="fas fa-user-graduate"></i></span><span class="dd-text"><strong>Admissions Office</strong><span>admissions@au.edu.pk</span></span></a>
+              <a href="mailto:research@au.edu.pk" class="dd-link"><span class="dd-icon"><i class="fas fa-microscope"></i></span><span class="dd-text"><strong>Research Office</strong><span>research@au.edu.pk</span></span></a>
+              <a href="mailto:pr@au.edu.pk" class="dd-link"><span class="dd-icon"><i class="fas fa-comments"></i></span><span class="dd-text"><strong>Public Relations</strong><span>pr@au.edu.pk</span></span></a>
+            </div>
+            <div class="dd-col" style="flex:0 0 220px;">
+              <a href="/Account/Login" class="dd-featured">
+                <div class="feat-label">Student Portal</div>
+                <div class="feat-title">Access Your Online Portal</div>
+                <div class="feat-desc">Check results, schedules, fee challan and more from anywhere.</div>
+                <span class="feat-btn">Sign In</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEARCH -->
+      <div class="search-wrap">
+        <i class="fas fa-search search-icon" onclick="toggleSearch(event)"></i>
+        <input id="searchBox" class="search-box" placeholder="Search..." onblur="closeSearch()">
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-pattern"></div>
+    <div class="hero-deco"></div>
+    <div class="hero-content">
+      <div class="hero-breadcrumb">
+        <a href="/">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/facilities.html">Campus Life</a>
+        <i class="fas fa-chevron-right"></i>
+        <span style="color:rgba(255,255,255,0.85)">All Facilities</span>
+      </div>
+      <div class="hero-eyebrow">Campus Life</div>
+      <h1>Our Campus <em>Facilities</em></h1>
+      <p>Everything you need for a complete university experience — from state-of-the-art learning resources to
+        comfortable dining and living spaces.</p>
+    </div>
+  </section>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter by:</span>
+    <button class="filter-btn active" onclick="filterCards('all',this)">All Facilities</button>
+    <button class="filter-btn" onclick="filterCards('Learning Resources',this)">Learning Resources</button>
+    <button class="filter-btn" onclick="filterCards('Dining Services',this)">Dining Services</button>
+    <button class="filter-btn" onclick="filterCards('Residential Accommodation',this)">Hostel &amp; Living</button>
+    <button class="filter-btn" onclick="filterCards('Sports & Recreation',this)">Sports</button>
+    <button class="filter-btn" onclick="filterCards('Health & Wellness',this)">Health Care</button>
+  </div>
+
+  <!-- FACILITIES GRID -->
+  <section class="facilities-section">
+    <div class="facilities-inner">
+      <div class="section-head">
+        <p class="results-count">Showing <strong id="countLabel">8</strong> campus facilities</p>
+      </div>
+      <div class="facilities-grid" id="facilitiesGrid">
+
+        <!-- Library -->
+        <div class="facility-card fc-library animate-up fc-d1" data-category="Learning Resources"
+          data-href="/facility-library.html">
+          <a href="/facility-library.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-book-open facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-book-open" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Learning Resources</span>
+            <div class="facility-name">Library &amp; Resource Center</div>
+            <div class="facility-desc">A comprehensive academic library housing over 15,000 print and digital resources
+              including aviation textbooks, ICAO publications, research journals, and access to international
+              e-databases. Study rooms, computer labs, and dedicated quiet zones are available for all students.</div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-book"></i> 15,000+ Books</span>
+              <span class="facility-tag"><i class="fas fa-desktop"></i> 40+ Computers</span>
+              <span class="facility-tag"><i class="fas fa-wifi"></i> Wi-Fi</span>
+              <span class="facility-tag"><i class="fas fa-users"></i> Study Rooms</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Mon–Sat, 8AM – 8PM</span>
+            <a href="/facility-library.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Cafeteria -->
+        <div class="facility-card fc-cafeteria animate-up fc-d2" data-category="Dining Services"
+          data-href="/facility-cafeteria.html">
+          <a href="/facility-cafeteria.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-utensils facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-utensils" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Dining Services</span>
+            <div class="facility-name">Cafeteria &amp; Dining</div>
+            <div class="facility-desc">A spacious, air-conditioned campus cafeteria serving freshly prepared, hygienic,
+              and affordable meals three times a day. With a capacity of 300+ seats, a dedicated café corner, and weekly
+              rotating menus, our dining facility caters to all student tastes and dietary needs.</div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-chair"></i> 300+ Seats</span>
+              <span class="facility-tag"><i class="fas fa-utensils"></i> 3 Meals/Day</span>
+              <span class="facility-tag"><i class="fas fa-snowflake"></i> AC Hall</span>
+              <span class="facility-tag"><i class="fas fa-leaf"></i> Veg Options</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Mon–Sat, 7:30AM – 9PM</span>
+            <a href="/facility-cafeteria.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Mosque -->
+        <div class="facility-card fc-masjid animate-up fc-d3" data-category="Learning Resources"
+          data-href="/facility-masjid.html">
+          <a href="/facility-masjid.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-mosque facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-mosque" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Spiritual &amp; Worship</span>
+            <div class="facility-name">Mosque</div>
+            <div class="facility-desc">A serene and spacious on-campus Mosque providing a dedicated place of worship for
+              students, faculty, and staff. Equipped with ablution facilities, separate sections for male and female
+              worshippers, and loudspeaker system for all five daily prayers and Jumu'ah congregations.</div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-mosque"></i> 5 Daily Prayers</span>
+              <span class="facility-tag"><i class="fas fa-users"></i> 200+ Capacity</span>
+              <span class="facility-tag"><i class="fas fa-venus-mars"></i> Separate Sections</span>
+              <span class="facility-tag"><i class="fas fa-tint"></i> Wudu Facility</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Open 24/7</span>
+            <a href="/facility-masjid.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Sports -->
+        <div class="facility-card fc-sports animate-up fc-d4" data-category="Sports & Recreation"
+          data-href="/facility-sports.html">
+          <a href="/facility-sports.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-running facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-running" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Sports &amp; Recreation</span>
+            <div class="facility-name">Sports Complex</div>
+            <div class="facility-desc">A fully equipped sports complex supporting a wide range of indoor and outdoor
+              activities including cricket, football, basketball, badminton, and table tennis. Professionally maintained
+              grounds, changing rooms, and coaching staff help students stay active and competitive throughout the year.
+            </div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-futbol"></i> Multi-Sport</span>
+              <span class="facility-tag"><i class="fas fa-trophy"></i> Inter-University</span>
+              <span class="facility-tag"><i class="fas fa-dumbbell"></i> Gym Access</span>
+              <span class="facility-tag"><i class="fas fa-user-tie"></i> Coaching Staff</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Daily, 6AM – 9PM</span>
+            <a href="/facility-sports.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Smart Campus -->
+        <div class="facility-card fc-smart animate-up fc-d5" data-category="Learning Resources"
+          data-href="/facility-smart-campus.html">
+          <a href="/facility-smart-campus.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-microchip facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-microchip" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Technology &amp; Innovation</span>
+            <div class="facility-name">Smart Campus</div>
+            <div class="facility-desc">A technology-driven campus ecosystem integrating IoT-enabled classrooms,
+              biometric attendance, smart energy management, and a centralized digital dashboard. Students benefit from
+              seamless Wi-Fi coverage, e-learning portals, smart ID cards, and real-time facility monitoring across the
+              entire campus.</div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-wifi"></i> Campus-Wide Wi-Fi</span>
+              <span class="facility-tag"><i class="fas fa-id-card"></i> Smart ID Cards</span>
+              <span class="facility-tag"><i class="fas fa-chalkboard-teacher"></i> Smart Classrooms</span>
+              <span class="facility-tag"><i class="fas fa-solar-panel"></i> Energy Mgmt</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Always On, 24/7</span>
+            <a href="/facility-smart-campus.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Mess -->
+        <div class="facility-card fc-mess animate-up fc-d4" data-category="Dining Services"
+          data-href="/facility-mess.html">
+          <a href="/facility-mess.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-utensils facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-bowl-food" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Student Dining</span>
+            <div class="facility-name">Mess</div>
+            <div class="facility-desc">A subsidized, hygienically managed mess facility providing nutritious breakfast,
+              lunch, and dinner to NAU students every day of the year. Halal-certified meals prepared fresh daily using
+              quality ingredients with weekly rotating menus and special occasion meals.</div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-utensils"></i> 3 Meals/Day</span>
+              <span class="facility-tag"><i class="fas fa-users"></i> 400+ Students</span>
+              <span class="facility-tag"><i class="fas fa-mosque"></i> Halal</span>
+              <span class="facility-tag"><i class="fas fa-calendar-check"></i> 7 Days/Week</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Daily, 7AM – 9PM</span>
+            <a href="/facility-mess.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Hostel -->
+        <div class="facility-card fc-hostel animate-up fc-d3" data-category="Residential Accommodation"
+          data-href="/facility-hostel.html">
+          <a href="/facility-hostel.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-building facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-building" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Residential Accommodation</span>
+            <div class="facility-name">Hostel</div>
+            <div class="facility-desc">A safe, secure, and fully-equipped residential facility providing students with
+              comfortable accommodation on campus. Features single, double, and triple-sharing rooms with 24/7 security,
+              high-speed Wi-Fi, power backup, and dedicated warden support.</div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-bed"></i> 200+ Beds</span>
+              <span class="facility-tag"><i class="fas fa-shield-alt"></i> 24/7 Security</span>
+              <span class="facility-tag"><i class="fas fa-wifi"></i> Wi-Fi</span>
+              <span class="facility-tag"><i class="fas fa-lightbulb"></i> Power Backup</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Open 24/7</span>
+            <a href="/facility-hostel.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+        <!-- Medical -->
+        <div class="facility-card fc-medical animate-up fc-d6" data-category="Health & Wellness"
+          data-href="/facility-medical.html">
+          <a href="/facility-medical.html" class="facility-card-visual facility-card-visual-link">
+            <i class="fas fa-hospital facility-card-icon-large"></i>
+            <div class="facility-card-icon-center"><i class="fas fa-stethoscope" style="font-size:26px;color:#fff;"></i>
+            </div>
+          </a>
+          <div class="facility-card-body">
+            <span class="facility-category">Health &amp; Wellness</span>
+            <div class="facility-name">Medical Center</div>
+            <div class="facility-desc">An on-campus medical center staffed by qualified doctors and paramedical
+              personnel to provide primary healthcare, emergency first aid, and routine health checkups to all students
+              and staff. Equipped with a dispensary, sick bay, and referral services to partner hospitals for
+              specialized care.</div>
+            <div class="facility-tags">
+              <span class="facility-tag"><i class="fas fa-user-md"></i> Qualified Doctors</span>
+              <span class="facility-tag"><i class="fas fa-pills"></i> Dispensary</span>
+              <span class="facility-tag"><i class="fas fa-ambulance"></i> Emergency Aid</span>
+              <span class="facility-tag"><i class="fas fa-hospital-alt"></i> Referral Services</span>
+            </div>
+          </div>
+          <div class="facility-card-footer">
+            <span class="facility-hrs"><i class="fas fa-clock"></i> Mon–Sat, 8AM – 6PM</span>
+            <a href="/facility-medical.html" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- No results -->
+      <div id="noResults" style="display:none;text-align:center;padding:60px 20px;color:var(--text-light);">
+        <i class="fas fa-search" style="font-size:40px;opacity:0.3;display:block;margin-bottom:16px;"></i>
+        <p style="font-size:15px;">No facilities match this filter.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS STRIP -->
+  <div class="stats-strip">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-num">8+</div>
+        <div class="stat-label">Campus Facilities</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">15,000+</div>
+        <div class="stat-label">Library Volumes</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">300+</div>
+        <div class="stat-label">Dining Capacity</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Campus Security &amp; Power</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA STRIP -->
+  <section class="cta-strip">
+    <h2>Experience NAU Campus Life First-Hand</h2>
+    <p>Schedule a guided campus tour or explore our world-class aviation training facilities today.</p>
+    <a href="/Account/Register" class="cta-btn"><i class="fas fa-paper-plane"></i> Apply for Admission</a>
+    <a href="/about.html" class="cta-btn outline"><i class="fas fa-info-circle"></i> About NAU</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="/" style="display:flex;align-items:center;gap:12px;margin-bottom:14px;text-decoration:none;">
+        <img src="/images/logo.png" alt="NAU Logo" style="height:48px;width:auto;filter:brightness(0) invert(1);" onerror="this.style.display='none'">
+        <span style="font-size:20px;font-weight:700;color:#fff;font-family:'Poppins',sans-serif;white-space:nowrap;">National Aviation University</span>
+      </a>
+      <p>A premier institution dedicated to excellence in aviation education, training, research and innovation.</p>
+      <div class="social-links">
+        <a href="https://www.facebook.com/CATI.PK/" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/cati.gov.pk?igsh=NzE1anhjOGJkemNh" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com/company/civil-aviation-training-institute-cati/posts/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.youtube.com/@CATIHyderabad" target="_blank" rel="noopener noreferrer" title="YouTube" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        <a href="https://wa.me/92229260310" target="_blank" rel="noopener noreferrer" title="WhatsApp" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="/about.html">About Us</a></li>
+        <li><a href="/Faculties/Public">Academics</a></li>
+        <li><a href="/Account/Register">Admissions</a></li>
+        <li><a href="/SimulationLabs/Public">Training</a></li>
+        <li><a href="/facilities.html">Campus Life</a></li>
+        <li><a href="/Contact">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Us</h4>
+      <div class="contact-item"><i class="fas fa-map-marker-alt"></i><span>Airport Road, Hyderabad Sindh, Pakistan</span></div>
+      <div class="contact-item"><i class="fas fa-phone"></i><span>+92 22 9260310-19</span></div>
+      <div class="contact-item"><i class="fas fa-envelope"></i><span>AdID.Academics@paa.gov.pk</span></div>
+      <div class="contact-item"><i class="fas fa-globe"></i><span>www.cati.edu.pk</span></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span style="white-space:nowrap;">&copy; 2026 National Aviation University. All Rights Reserved.</span>
+    <div class="footer-bottom-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Use</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+</footer>
+
+  <script>
+    function filterCards(cat, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cards = document.querySelectorAll('.facility-card');
+      let count = 0;
+      cards.forEach(card => {
+        if (cat === 'all' || card.dataset.category === cat) {
+          card.style.display = '';
+          count++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      document.getElementById('countLabel').textContent = count;
+      document.getElementById('noResults').style.display = count === 0 ? 'block' : 'none';
+    }
+
+    // Make entire card clickable
+    document.querySelectorAll('.facility-card[data-href]').forEach(card => {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('.read-more-btn')) return;
+        window.location.href = this.dataset.href;
+      });
+    });
+  </script>
+
+  <script>
+    /* ===== Account dropdown (Sign Up / Log In / Logout) dynamic enhancer ===== */
+    (function () {
+      function enhance(btn) {
+        if (!btn || btn.dataset.accountEnhanced) return;
+        btn.dataset.accountEnhanced = 'true';
+
+        var auth = window.NAU_AUTH || { isAuthenticated: false, isAdmin: false, userName: '' };
+
+        var wrap = btn.closest('.account-dropdown');
+        if (!wrap) {
+          wrap = document.createElement('div');
+          wrap.className = 'account-dropdown';
+          btn.parentNode.insertBefore(wrap, btn);
+          wrap.appendChild(btn);
+        }
+
+        btn.removeAttribute('href');
+        btn.setAttribute('role', 'button');
+
+        if (auth.isAuthenticated) {
+          btn.innerHTML = '<i class="fas fa-circle-user" style="margin-right:6px;"></i>' + (auth.userName || 'My Account');
+        } else {
+          btn.innerHTML = 'Account';
+        }
+
+        var menu = document.createElement('div');
+        menu.className = 'account-dropdown-menu';
+        if (auth.isAuthenticated) {
+          menu.innerHTML =
+            '<a href="#" id="navLogoutLink"><i class="fas fa-right-from-bracket" style="margin-right:8px;"></i>Log Out</a>';
+        } else {
+          menu.innerHTML =
+            '<a href="/Account/Login"><i class="fas fa-right-to-bracket" style="margin-right:8px;"></i>Log In</a>';
+        }
+        menu.style.position = 'fixed';
+        menu.style.display = 'none';
+        menu.style.zIndex = '2147483647';
+        menu.style.background = '#fff';
+        menu.style.minWidth = '150px';
+        menu.style.borderRadius = '8px';
+        menu.style.boxShadow = '0 10px 28px rgba(0,0,0,0.2)';
+        menu.style.overflow = 'hidden';
+        document.body.appendChild(menu);
+
+        if (auth.isAuthenticated) {
+          var logoutLink = menu.querySelector('#navLogoutLink');
+          if (logoutLink) {
+            logoutLink.addEventListener('click', function (e) {
+              e.preventDefault();
+              var form = document.createElement('form');
+              form.method = 'post';
+              form.action = '/Account/Logout';
+              document.body.appendChild(form);
+              form.submit();
+            });
+          }
+        }
+
+        function positionMenu() {
+          var r = btn.getBoundingClientRect();
+          menu.style.top = (r.bottom + 8) + 'px';
+          menu.style.left = 'auto';
+          menu.style.right = (window.innerWidth - r.right) + 'px';
+        }
+
+        var closeTimer;
+        function openMenu() {
+          clearTimeout(closeTimer);
+          positionMenu();
+          menu.style.display = 'block';
+          wrap.classList.add('open');
+        }
+        function closeMenu() {
+          closeTimer = setTimeout(function () {
+            menu.style.display = 'none';
+            wrap.classList.remove('open');
+          }, 150);
+        }
+
+        wrap.addEventListener('mouseenter', openMenu);
+        wrap.addEventListener('mouseleave', closeMenu);
+        menu.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        menu.addEventListener('mouseleave', closeMenu);
+
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (menu.style.display === 'block') {
+            menu.style.display = 'none';
+            wrap.classList.remove('open');
+          } else {
+            openMenu();
+          }
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!wrap.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+            wrap.classList.remove('open');
+          }
+        });
+
+        window.addEventListener('scroll', function () {
+          if (menu.style.display === 'block') positionMenu();
+        }, true);
+        window.addEventListener('resize', function () {
+          if (menu.style.display === 'block') positionMenu();
+        });
+      }
+
+      function run() {
+        document.querySelectorAll('.apply-btn').forEach(enhance);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+      } else {
+        run();
+      }
+    })();
+  </script>
+
+  <script src="/js/global-search.js"></script>
+  <script src="/js/mobile-nav.js"></script>
+  <script src="/js/schools-submenu.js"></script>
+
+</body>
+
+</html>

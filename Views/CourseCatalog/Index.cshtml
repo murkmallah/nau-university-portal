@@ -1,0 +1,1305 @@
+@model NAU_Web.Models.CourseCatalogPageContent
+@{
+    Layout = null;
+    bool editMode = ViewBag.EditMode == true;
+    bool isAdmin = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Catalog – National Aviation University</title>
+  <partial name="_Favicon" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+  <link rel="stylesheet" href="~/css/courses-page.css" asp-append-version="true">
+  <link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+  <link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+  <style>
+    :root {
+      --primary: #0b2c4d;
+      --navy: #0b2c4d;
+      --green: #1e8e3e;
+      --gold: #f5a623;
+      --bg: #f5f7fb;
+      --text: #333;
+      --text-light: #666;
+      --border: #e0e0e0;
+      --font-head: 'Montserrat', sans-serif;
+    }
+
+    /* ===== Account dropdown (Sign Up / Log In) ===== */
+    .account-dropdown{ position:relative; display:inline-block; }
+    .account-dropdown > .apply-btn::after{
+      content:"\f078";
+      font-family:"Font Awesome 6 Free"; font-weight:900;
+      font-size:10px; margin-left:8px; opacity:.85; display:inline-block;
+      transition:transform .2s;
+    }
+    .account-dropdown.open > .apply-btn::after,
+    .account-dropdown:hover > .apply-btn::after{ transform:rotate(180deg); }
+    .account-dropdown-menu{
+      display:none;
+      position:absolute;
+      top:calc(100% + 8px);
+      right:0;
+      background:#fff;
+      min-width:150px;
+      border-radius:8px;
+      box-shadow:0 10px 28px rgba(0,0,0,0.2);
+      overflow:hidden;
+      z-index:2000;
+    }
+    .account-dropdown.open .account-dropdown-menu,
+    .account-dropdown:hover .account-dropdown-menu{ display:block; }
+    .account-dropdown-menu a{
+      display:block;
+      padding:11px 16px;
+      color:#0b2c4d;
+      text-decoration:none;
+      font-size:13.5px;
+      font-weight:600;
+      border-bottom:1px solid #f0f2f5;
+    }
+    .account-dropdown-menu a:last-child{ border-bottom:none; }
+    .account-dropdown-menu a:hover{ background:#f5f7fb; color:#1e8e3e; }
+
+    body { background: var(--bg); color: var(--text); font-family: 'Poppins', sans-serif; margin: 0; padding: 0; }
+
+    .hero {
+      position: relative; padding: 80px 48px;
+      background: linear-gradient(135deg, #0b2c4d 0%, #0d3660 50%, #1a5fa6 100%);
+      text-align: center; overflow: hidden;
+    }
+    .hero-bg-pattern {
+      position: absolute; inset: 0; opacity: 0.05;
+      background-image:
+        radial-gradient(circle at 20% 30%, #fff 1px, transparent 1px),
+        radial-gradient(circle at 80% 70%, #fff 1px, transparent 1px);
+      background-size: 60px 60px, 80px 80px;
+    }
+    .hero-deco {
+      position: absolute; left: 50%; top: -120px; transform: translateX(-50%);
+      width: 600px; height: 600px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 680px; margin: 0 auto; }
+    .hero-breadcrumb {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 12px; color: rgba(255,255,255,0.55); margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .hero-breadcrumb a { color: rgba(255,255,255,0.55); text-decoration: none; transition: color .2s; }
+    .hero-breadcrumb a:hover { color: #fff; }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 4px;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: ""; display: inline-block; width: 28px; height: 2px; background: var(--gold);
+    }
+    .hero h1 {
+      font-family: var(--font-head); font-size: 44px; font-weight: 800;
+      color: #fff; line-height: 1.15; margin-bottom: 16px;
+    }
+    .hero h1 em { font-style: normal; color: #4ed47a; }
+    .hero p {
+      font-size: 16px; color: rgba(255,255,255,0.75); line-height: 1.75; max-width: 560px; margin: 0 auto;
+    }
+
+    .controls-bar {
+      background: #fff; padding: 16px 48px;
+      border-bottom: 1px solid #eef0f4;
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      position: sticky; top: 68px; z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+    .controls-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1; }
+    .filter-label { font-size: 13px; font-weight: 700; color: var(--navy); margin-right: 4px; white-space: nowrap; display: flex; align-items: center; }
+    .school-tab {
+      padding: 9px 18px; border-radius: 25px;
+      border: 1.5px solid #cbd5e1; background: #ffffff;
+      cursor: pointer; font-size: 13px; font-weight: 600; color: #334155;
+      transition: all .2s ease; font-family: "Poppins", sans-serif;
+      display: inline-flex; align-items: center; gap: 8px;
+      outline: none; user-select: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .school-tab * {
+      pointer-events: none;
+    }
+    .school-tab:hover:not(.active) {
+      background: #f8fafc;
+      border-color: #94a3b8;
+      color: var(--navy);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    .school-tab.active {
+      background: #0b2c4d !important;
+      border-color: #0b2c4d !important;
+      color: #ffffff !important;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(11, 44, 77, 0.28) !important;
+      transform: translateY(-2px);
+    }
+    .school-tab i { font-size: 12px; }
+
+    .controls-right { display: flex; align-items: center; gap: 10px; }
+    .course-search-wrap {
+      display: flex; align-items: center; gap: 10px;
+      background: #f8fafc; border: 1.5px solid #cbd5e1;
+      border-radius: 25px; padding: 8px 18px;
+      transition: all .2s ease;
+    }
+    .course-search-wrap:focus-within {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(11, 44, 77, 0.1);
+    }
+    .course-search-wrap i.search-glass { color: #64748b; font-size: 13px; cursor: pointer; }
+    .course-search-input {
+      background: transparent; border: none; outline: none;
+      color: #0f172a; font-family: "Poppins", sans-serif; font-size: 13px; width: 230px;
+    }
+    .search-clear-btn {
+      background: transparent; border: none; outline: none;
+      color: #94a3b8; font-size: 12px; cursor: pointer; padding: 2px 4px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+    }
+    .search-clear-btn:hover { color: #ef4444; }
+
+    .stats-bar {
+      background: #fff; padding: 12px 48px;
+      border-bottom: 1px solid #eef0f4;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .status-filter {
+      padding: 8px 16px; border-radius: 25px;
+      border: 1.5px solid #dde2ea; background: #fff;
+      cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-light);
+      transition: all .2s; font-family: "Poppins", sans-serif;
+    }
+    .status-filter.active { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+    .status-filter:hover:not(.active) { background: #f0f4f9; border-color: #b0bdd0; color: var(--primary); }
+
+    .stat-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: #f5f7fb; border: 1px solid #e4e8ef;
+      border-radius: 8px; padding: 7px 14px; font-size: 12px; color: #555;
+    }
+    .stat-chip strong { font-weight: 700; color: var(--primary); font-size: 15px; }
+    .stat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .stat-dot.up { background: #1e8e3e; }
+    .stat-dot.done { background: #6b7280; }
+    .stat-dot.tbd { background: #f39c12; }
+    .stat-dot.all { background: #888; }
+
+    .catalog-section { padding: 40px 24px; }
+    .catalog-inner { max-width: 1480px; margin: 0 auto; }
+    .school-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 28px; padding-bottom: 18px;
+      border-bottom: 2px solid #eef0f4;
+    }
+    .school-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: #fff; flex-shrink: 0;
+    }
+    .school-name {
+      font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--navy);
+    }
+    .school-count { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+
+    .courses-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px; margin-bottom: 48px;
+    }
+    .course-card {
+      background: #fff; border: 1px solid #e4e8ef; border-radius: 14px;
+      padding: 18px 20px; cursor: pointer;
+      transition: box-shadow .25s, transform .2s, border-color .2s;
+      display: flex; flex-direction: column; gap: 12px;
+      position: relative; overflow: hidden;
+    }
+    .course-card:hover { box-shadow: 0 8px 28px rgba(11,44,77,.13); transform: translateY(-3px); border-color: #c5cdd8; }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .card-title { font-weight: 600; font-size: 13.5px; color: #1a2a3a; line-height: 1.45; flex: 1; }
+    .card-badge {
+      padding: 3px 10px; border-radius: 12px; font-size: 10.5px; font-weight: 700;
+      white-space: nowrap; flex-shrink: 0; margin-top: 2px; letter-spacing: 0.3px;
+    }
+    .card-badge.upcoming { background: #e8f8ee; color: #1e8e3e; }
+    .card-badge.completed { background: #e8eef6; color: #0b2c4d; }
+    .card-badge.tbd { background: #fff4e0; color: #c17d00; }
+
+    .card-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+    .card-meta span { font-size: 11.5px; color: #777; display: flex; align-items: center; gap: 5px; }
+    .card-meta i { color: #aaa; font-size: 10px; }
+
+    .card-actions {
+      display: flex; gap: 6px; margin-left: auto; align-items: center;
+    }
+    .card-act-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid #dde2ea; background: #fff;
+      color: var(--navy); font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .2s;
+    }
+    .card-act-btn:hover { background: #f0f4f9; transform: scale(1.05); }
+    .card-act-btn.danger { color: #c0392b; }
+    .card-act-btn.danger:hover { background: #fdecea; border-color: #c0392b; }
+
+    .no-results { grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #bbb; }
+    .no-results i { font-size: 48px; margin-bottom: 16px; display: block; opacity: 0.5; }
+    .no-results p { font-size: 15px; }
+
+    .stats-strip {
+      background: linear-gradient(135deg, var(--primary) 0%, #0d3a6e 100%);
+      padding: 40px 24px;
+    }
+    .stats-inner {
+      max-width: 1480px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-around; gap: 20px; flex-wrap: wrap;
+    }
+    .stat-item { text-align: center; }
+    .stat-num { font-family: var(--font-head); font-size: 36px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-label { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 6px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .cta-strip {
+      background: #fff; padding: 60px 48px; text-align: center;
+      border-top: 1px solid #eef0f4;
+    }
+    .cta-strip h2 {
+      font-family: var(--font-head); font-size: 28px; font-weight: 800;
+      color: var(--navy); margin-bottom: 12px;
+    }
+    .cta-strip p { color: var(--text-light); font-size: 15px; max-width: 520px; margin: 0 auto 28px; }
+    .cta-buttons { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 28px; border-radius: 7px;
+      font-family: var(--font-head); font-size: 14px; font-weight: 700;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: background .2s, transform .15s, box-shadow .2s;
+    }
+    .cta-btn.primary {
+      background: var(--green); color: #fff;
+      box-shadow: 0 4px 16px rgba(30,142,62,0.35);
+    }
+    .cta-btn.primary:hover { background: #166f30; transform: translateY(-2px); }
+
+    /* Modals */
+    .detail-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(8,20,40,.7); z-index: 99999;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(5px); padding: 20px;
+    }
+    .detail-backdrop.open { display: flex; animation: fadeIn .25s ease; }
+    @@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    .detail-modal {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 520px;
+      max-height: 88vh; overflow-y: auto; padding: 36px; position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    }
+    .detail-close {
+      position: absolute; top: 20px; right: 20px;
+      width: 34px; height: 34px; border-radius: 8px;
+      background: #f5f7fb; border: 1.5px solid #dde2ea;
+      color: #555; cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .detail-close:hover { background: var(--primary); color: #fff; }
+    .detail-school-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; padding: 5px 12px; border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .detail-title {
+      font-family: var(--font-head); font-size: 18px; font-weight: 800;
+      color: var(--navy); line-height: 1.4; margin-bottom: 22px;
+    }
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    }
+    .detail-item {
+      background: #f7f9fc; border-radius: 10px; padding: 14px 16px;
+      border: 1px solid #eef0f4;
+    }
+    .detail-item label { display: block; font-size: 10px; font-weight: 700; color: #9aa5b4; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 5px; }
+    .detail-item span { font-size: 14px; font-weight: 600; color: var(--navy); }
+    .detail-note {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #f0f8ff; border: 1px solid #d0e8ff; border-radius: 10px;
+      padding: 14px 16px; font-size: 13px; color: #0b2c4d; line-height: 1.5;
+    }
+    .detail-note i { color: #0b2c4d; margin-top: 2px; flex-shrink: 0; }
+    .detail-action { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .detail-btn {
+      flex: 1; padding: 11px 18px; border-radius: 8px;
+      font-family: "Poppins", sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all .2s;
+    }
+    .detail-btn.primary { background: var(--green); color: #fff; }
+    .detail-btn.primary:hover { background: #166f30; }
+    .detail-btn.secondary { background: #f0f4f8; color: var(--navy); border: 1.5px solid #dde2ea; }
+    .detail-btn.secondary:hover { background: #e4ecf4; }
+
+    /* Admin controls */
+    .admin-hero-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.2); color: #fff;
+      border: 1px solid rgba(255,255,255,0.4); border-radius: 6px;
+      padding: 6px 14px; font-size: 12px; font-weight: 600;
+      cursor: pointer; margin-top: 14px; transition: background .2s;
+    }
+    .admin-hero-btn:hover { background: rgba(255,255,255,0.3); }
+
+    .admin-action-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--green); color: #fff;
+      border: none; border-radius: 20px;
+      padding: 8px 16px; font-size: 12.5px; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    .admin-action-btn:hover { background: #166f30; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12.5px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+    .form-control {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #dde2ea; border-radius: 8px;
+      font-family: 'Poppins', sans-serif; font-size: 13.5px; outline: none; box-sizing: border-box;
+    }
+    .form-control:focus { border-color: var(--primary); }
+
+    .nau-admin-panel-btn {
+      position: fixed; bottom: 98px; right: 24px; z-index: 9999;
+      background: var(--primary); color: #fff;
+      border-radius: 30px; padding: 10px 18px;
+      font-size: 13px; font-weight: 700; font-family: 'Montserrat', sans-serif;
+      box-shadow: 0 4px 18px rgba(11,44,77,0.35); text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px; transition: all .2s;
+    }
+    .nau-admin-panel-btn:hover { background: var(--green); transform: translateY(-2px); color: #fff; }
+
+    @@media(max-width: 900px){
+      .controls-bar { padding: 14px 20px; }
+      .catalog-section { padding: 30px 20px; }
+      .stats-strip { padding: 30px 20px; }
+      .cta-strip { padding: 40px 20px; }
+      .hero { padding: 60px 20px; }
+      .hero h1 { font-size: 32px; }
+      .courses-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+@Html.AntiForgeryToken()
+
+<partial name="_SiteHeader" />
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-deco"></div>
+  <div class="hero-content">
+    <div class="hero-breadcrumb">
+      <a href="/"><i class="fas fa-home"></i> Home</a>
+      <i class="fas fa-chevron-right"></i>
+      <span>Course Catalog</span>
+    </div>
+    <div class="hero-eyebrow" id="heroEyebrow">@Model.Hero.Eyebrow</div>
+    <h1 id="heroTitle">@Model.Hero.Title</h1>
+    <p id="heroDesc">@Model.Hero.Description</p>
+    @if (editMode)
+    {
+        <div>
+          <button type="button" class="admin-hero-btn" onclick="openEditHeroModal()"><i class="fas fa-pen"></i> Edit Hero Section</button>
+        </div>
+    }
+  </div>
+</section>
+
+<!-- CONTROLS BAR -->
+<div class="controls-bar">
+  <div class="controls-left">
+    <span class="filter-label"><i class="fas fa-building" style="margin-right:4px;color:var(--green)"></i> School:</span>
+    <div id="schoolTabsContainer" style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" class="school-tab active" id="tab-all" data-school-index="-1" onclick="switchCourseCatalogSchool(-1, this)">
+        <i class="fas fa-layer-group"></i> <span>All Schools</span>
+      </button>
+      @for (int i = 0; i < (Model.Schools?.Count ?? 0); i++)
+      {
+          var s = Model.Schools![i];
+          var iconName = string.IsNullOrEmpty(s.Icon) || s.Icon == "fa-tower-cell" ? "fa-tower-broadcast" : s.Icon;
+          <button type="button" class="school-tab" id="tab-@i" data-school-index="@i" onclick="switchCourseCatalogSchool(@i, this)">
+            <i class="fas @iconName"></i> <span>@s.Name</span>
+          </button>
+      }
+    </div>
+    @if (editMode)
+    {
+        <button type="button" class="admin-action-btn" onclick="openAddSchoolModal()" style="margin-left:8px;"><i class="fas fa-plus"></i> Add School</button>
+    }
+  </div>
+  <div class="controls-right">
+    <div class="course-search-wrap">
+      <i class="fas fa-search search-glass" onclick="document.getElementById('searchInput').focus(); renderCatalog();"></i>
+      <input type="text" class="course-search-input" placeholder="Search courses…" id="searchInput" oninput="onSearchInputChanged()" onkeydown="if(event.key==='Enter'){event.preventDefault();renderCatalog();}">
+      <button type="button" class="search-clear-btn" id="searchClearBtn" onclick="clearCourseSearch()" style="display:none;" title="Clear search"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS FILTERS + STATS BAR -->
+<div class="stats-bar" id="statsBar">
+  <button class="status-filter active" onclick="setStatus('all',this)">All</button>
+  <button class="status-filter" onclick="setStatus('upcoming',this)">
+    <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#1e8e3e;display:inline-block"></span> Upcoming</span>
+  </button>
+  <button class="status-filter" onclick="setStatus('completed',this)">
+    <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#6b7280;display:inline-block"></span> Completed</span>
+  </button>
+  <button class="status-filter" onclick="setStatus('tbd',this)">
+    <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#f39c12;display:inline-block"></span> TBD</span>
+  </button>
+  <div style="margin-left:auto;display:flex;gap:10px;flex-wrap:wrap" id="statChips"></div>
+</div>
+
+<!-- CATALOG GRID -->
+<section class="catalog-section">
+  <div class="catalog-inner">
+    <div class="school-header" id="schoolHeader">
+      <div class="school-icon" id="schoolIcon"></div>
+      <div style="flex:1;">
+        <div class="school-name" id="schoolName"></div>
+        <div class="school-count" id="schoolCount"></div>
+      </div>
+      @if (editMode)
+      {
+          <button type="button" class="admin-action-btn" onclick="openAddCourseModal()"><i class="fas fa-plus"></i> Add Course to School</button>
+          <button type="button" class="card-act-btn danger" title="Delete this school" onclick="deleteCurrentSchool()"><i class="fas fa-trash"></i></button>
+      }
+    </div>
+    <div class="courses-grid" id="coursesGrid"></div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<section class="stats-strip">
+  <div class="stats-inner">
+    @foreach (var st in Model.Stats)
+    {
+        <div class="stat-item">
+          <div class="stat-num">@st.Number</div>
+          <div class="stat-label">@st.Label</div>
+        </div>
+    }
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+  <h2>@Model.Cta.Heading</h2>
+  <p>@Model.Cta.Subheading</p>
+  <div class="cta-buttons">
+    <a href="@Model.Cta.ButtonUrl" class="cta-btn primary"><i class="fas fa-pen"></i> @Model.Cta.ButtonText</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<partial name="_SiteFooter" />
+
+<!-- READ-ONLY DETAIL MODAL -->
+<div id="detailModal" class="detail-backdrop" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-modal">
+    <button class="detail-close" onclick="closeDetail()"><i class="fas fa-times"></i></button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+@if (editMode)
+{
+    <!-- EDIT HERO MODAL -->
+    <div id="heroModal" class="detail-backdrop" onclick="if(event.target===this)closeHeroModal()">
+      <div class="detail-modal">
+        <button class="detail-close" onclick="closeHeroModal()"><i class="fas fa-times"></i></button>
+        <h3 style="font-family:'Montserrat',sans-serif;margin-top:0;color:var(--navy);">Edit Hero Section</h3>
+        <div class="form-group">
+          <label>Eyebrow Text</label>
+          <input type="text" id="editHeroEyebrow" class="form-control" value="@Model.Hero.Eyebrow">
+        </div>
+        <div class="form-group">
+          <label>Main Title</label>
+          <input type="text" id="editHeroTitle" class="form-control" value="@Model.Hero.Title">
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="editHeroDesc" class="form-control" rows="4">@Model.Hero.Description</textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+          <button type="button" class="detail-btn secondary" onclick="closeHeroModal()">Cancel</button>
+          <button type="button" class="detail-btn primary" onclick="saveHeroSection()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD / EDIT COURSE MODAL -->
+    <div id="courseModal" class="detail-backdrop" onclick="if(event.target===this)closeCourseModal()">
+      <div class="detail-modal">
+        <button class="detail-close" onclick="closeCourseModal()"><i class="fas fa-times"></i></button>
+        <h3 style="font-family:'Montserrat',sans-serif;margin-top:0;color:var(--navy);" id="courseModalTitle">Add Course</h3>
+        <input type="hidden" id="courseFormId" value="0">
+        <div class="form-group">
+          <label>Target School</label>
+          <select id="courseFormSchoolId" class="form-control">
+            @foreach (var s in Model.Schools ?? new List<NAU_Web.Models.CourseCatalogSchool>())
+            {
+                <option value="@s.Id">@s.Name</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Course Title</label>
+          <input type="text" id="courseFormTitle" class="form-control" placeholder="e.g. Basic ATC Course No. 46">
+        </div>
+        <div class="form-group">
+          <label>Duration</label>
+          <input type="text" id="courseFormDuration" class="form-control" placeholder="e.g. 01 Week / 40 Weeks">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="text" id="courseFormStartDate" class="form-control" placeholder="e.g. 05.01.2026 or TBD">
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="text" id="courseFormEndDate" class="form-control" placeholder="e.g. 09.01.2026 or TBD">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Note / Description</label>
+          <textarea id="courseFormNote" class="form-control" rows="2">Part of NAU – ATP 2026 Academic Training Plan, Hyderabad</textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+          <button type="button" class="detail-btn secondary" onclick="closeCourseModal()">Cancel</button>
+          <button type="button" class="detail-btn primary" id="saveCourseBtn" onclick="saveCourseForm()">Save Course</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD SCHOOL MODAL -->
+    <div id="schoolModal" class="detail-backdrop" onclick="if(event.target===this)closeSchoolModal()">
+      <div class="detail-modal">
+        <button class="detail-close" onclick="closeSchoolModal()"><i class="fas fa-times"></i></button>
+        <h3 style="font-family:'Montserrat',sans-serif;margin-top:0;color:var(--navy);">Add School</h3>
+        <div class="form-group">
+          <label>School Name</label>
+          <input type="text" id="schoolFormName" class="form-control" placeholder="e.g. School of Aerospace">
+        </div>
+        <div class="form-group">
+          <label>FontAwesome Icon</label>
+          <input type="text" id="schoolFormIcon" class="form-control" value="fa-graduation-cap">
+        </div>
+        <div class="form-group">
+          <label>Accent Color</label>
+          <input type="color" id="schoolFormColor" class="form-control" value="#0b2c4d" style="height:44px;">
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+          <button type="button" class="detail-btn secondary" onclick="closeSchoolModal()">Cancel</button>
+          <button type="button" class="detail-btn primary" onclick="saveSchoolForm()">Add School</button>
+        </div>
+      </div>
+    </div>
+}
+
+
+
+<script src="~/js/schools-submenu.js" asp-append-version="true"></script>
+<script>
+var catalogData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+var editMode = @Html.Raw(editMode ? "true" : "false");
+var currentSchool = -1; // -1 means All Schools, 0..N means specific school
+var currentStatus = 'all';
+
+function parseDateRobust(str) {
+  if (!str || str === 'TBD' || str === 'tbd') return null;
+  // Format DD.MM.YYYY
+  if (typeof str === 'string' && str.includes('.')) {
+    var p = str.split('.');
+    if (p.length === 3) {
+      var d = new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+      return isNaN(d) ? null : d;
+    }
+  }
+  // Format YYYY-MM-DD
+  if (typeof str === 'string' && str.includes('-')) {
+    var p = str.split('-');
+    if (p.length === 3) {
+      var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10));
+      return isNaN(d) ? null : d;
+    }
+  }
+  var parsed = new Date(str);
+  return isNaN(parsed) ? null : parsed;
+}
+
+function escapeHtmlText(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function getStatus(c) {
+  if (!c) return 'completed';
+  if (c.StatusOverride || c.statusOverride) return c.StatusOverride || c.statusOverride;
+  var start = c.StartDate || c.startDate;
+  var end = c.EndDate || c.endDate;
+  if (!start || start === 'TBD' || start === 'tbd') return 'tbd';
+  var endDate = parseDateRobust(end) || parseDateRobust(start);
+  if (!endDate) return 'completed';
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return endDate >= today ? 'upcoming' : 'completed';
+}
+
+function onSearchInputChanged() {
+  var input = document.getElementById('searchInput');
+  var clearBtn = document.getElementById('searchClearBtn');
+  if (clearBtn) {
+    clearBtn.style.display = (input && input.value.trim().length > 0) ? 'flex' : 'none';
+  }
+  renderCatalog();
+}
+
+function clearCourseSearch() {
+  var input = document.getElementById('searchInput');
+  var clearBtn = document.getElementById('searchClearBtn');
+  if (input) input.value = '';
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderCatalog();
+}
+
+window.switchCourseCatalogSchool = function(i, btn) {
+  var schools = (catalogData && (catalogData.Schools || catalogData.schools)) || [];
+  var idx = typeof i === 'number' ? i : parseInt(i, 10);
+  if (isNaN(idx) || idx < -1 || idx >= schools.length) idx = -1;
+  currentSchool = idx;
+
+  var tabs = document.querySelectorAll('.school-tab');
+  for (var k = 0; k < tabs.length; k++) {
+    tabs[k].classList.remove('active');
+    tabs[k].removeAttribute('style');
+  }
+
+  var targetBtn = (idx === -1)
+    ? (document.getElementById('tab-all') || document.querySelector('.school-tab[data-school-index="-1"]'))
+    : (document.getElementById('tab-' + idx) || document.querySelector('.school-tab[data-school-index="' + idx + '"]'));
+  if (!targetBtn && btn) targetBtn = btn;
+
+  var themeColor = '#0b2c4d';
+  if (idx >= 0 && schools[idx]) {
+    var s = schools[idx];
+    themeColor = s.Color || s.color || '#0b2c4d';
+  }
+
+  if (targetBtn) {
+    targetBtn.classList.add('active');
+    targetBtn.style.setProperty('background', themeColor, 'important');
+    targetBtn.style.setProperty('border-color', themeColor, 'important');
+    targetBtn.style.setProperty('color', '#ffffff', 'important');
+  }
+
+  renderCatalog();
+};
+window.switchSchool = window.switchCourseCatalogSchool;
+
+function setStatus(s, btn) {
+  currentStatus = s;
+  document.querySelectorAll('.status-filter').forEach(function (b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  renderCatalog();
+}
+
+function renderCatalog() {
+  var schools = (catalogData && (catalogData.Schools || catalogData.schools)) || [];
+  var grid = document.getElementById('coursesGrid');
+  if (!grid) return;
+
+  if (!schools || !schools.length) {
+    grid.innerHTML = '<div class="no-results"><p>No schools or courses found.</p></div>';
+    return;
+  }
+
+  var searchInput = document.getElementById('searchInput');
+  var rawSearch = searchInput ? searchInput.value : '';
+  var search = rawSearch.trim().toLowerCase();
+
+  // Determine active scope of schools
+  var activeSchools = [];
+  if (currentSchool === -1) {
+    activeSchools = schools.map(function(s, idx) { return { school: s, sIdx: idx }; });
+  } else {
+    var sIdx = currentSchool;
+    if (sIdx < 0 || sIdx >= schools.length) sIdx = 0;
+    activeSchools = [{ school: schools[sIdx], sIdx: sIdx }];
+  }
+
+  // Update header
+  var iconEl = document.getElementById('schoolIcon');
+  var nameEl = document.getElementById('schoolName');
+  var countEl = document.getElementById('schoolCount');
+
+  if (currentSchool === -1) {
+    if (iconEl) {
+      iconEl.style.background = '#0b2c4d';
+      iconEl.innerHTML = '<i class="fas fa-layer-group"></i>';
+    }
+    if (nameEl) {
+      nameEl.textContent = 'All Schools Course Catalog';
+    }
+  } else {
+    var s = schools[currentSchool] || {};
+    var sColor = s.Color || s.color || '#0b2c4d';
+    var sIcon = s.Icon || s.icon || 'fa-tower-cell';
+    var sName = s.Name || s.name || '';
+    if (iconEl) {
+      iconEl.style.background = sColor;
+      iconEl.innerHTML = '<i class="fas ' + sIcon + '"></i>';
+    }
+    if (nameEl) {
+      nameEl.textContent = sName;
+    }
+  }
+
+  // Collect items
+  var allItems = [];
+  var totalCoursesInScope = 0;
+  var totalUpcoming = 0;
+  var totalCompleted = 0;
+  var totalTbd = 0;
+
+  activeSchools.forEach(function (item) {
+    var s = item.school;
+    var sIdx = item.sIdx;
+    var sColor = s.Color || s.color || '#0b2c4d';
+    var sIcon = s.Icon || s.icon || 'fa-graduation-cap';
+    var sName = s.Name || s.name || '';
+    var courses = s.Courses || s.courses || [];
+
+    courses.forEach(function (c, cIdx) {
+      totalCoursesInScope++;
+      var st = getStatus(c);
+      if (st === 'upcoming') totalUpcoming++;
+      else if (st === 'completed') totalCompleted++;
+      else if (st === 'tbd') totalTbd++;
+
+      var title = (c.Title || c.title || '').toLowerCase();
+      var duration = (c.Duration || c.duration || '').toLowerCase();
+      var note = (c.Note || c.note || '').toLowerCase();
+      var startDate = (c.StartDate || c.startDate || '').toLowerCase();
+      var schoolNameLower = sName.toLowerCase();
+
+      var matchSearch = !search ||
+        title.includes(search) ||
+        duration.includes(search) ||
+        note.includes(search) ||
+        startDate.includes(search) ||
+        schoolNameLower.includes(search);
+
+      var matchStatus = currentStatus === 'all' || currentStatus === st;
+
+      if (matchSearch && matchStatus) {
+        allItems.push({
+          course: c,
+          cIdx: cIdx,
+          sIdx: sIdx,
+          schoolName: sName,
+          schoolColor: sColor,
+          schoolIcon: sIcon,
+          status: st
+        });
+      }
+    });
+  });
+
+  if (countEl) {
+    if (currentSchool === -1) {
+      countEl.textContent = allItems.length + ' course' + (allItems.length !== 1 ? 's' : '') + ' shown across 4 schools (' + totalCoursesInScope + ' total)';
+    } else {
+      countEl.textContent = allItems.length + ' course' + (allItems.length !== 1 ? 's' : '') + ' shown (' + totalCoursesInScope + ' total)';
+    }
+  }
+
+  var statChips = document.getElementById('statChips');
+  if (statChips) {
+    statChips.innerHTML =
+      '<div class="stat-chip"><span class="stat-dot all"></span><strong>' + totalCoursesInScope + '</strong> Total</div>' +
+      '<div class="stat-chip"><span class="stat-dot up"></span><strong>' + totalUpcoming + '</strong> Upcoming</div>' +
+      '<div class="stat-chip"><span class="stat-dot done"></span><strong>' + totalCompleted + '</strong> Completed</div>' +
+      '<div class="stat-chip"><span class="stat-dot tbd"></span><strong>' + totalTbd + '</strong> TBD</div>';
+  }
+
+  if (!allItems.length) {
+    var otherMatches = [];
+    if (search.length > 0 && currentSchool !== -1) {
+      schools.forEach(function (s, sIdx) {
+        if (sIdx !== currentSchool) {
+          var sCourses = s.Courses || s.courses || [];
+          var count = sCourses.filter(function (c) {
+            var t = (c.Title || c.title || '').toLowerCase();
+            var d = (c.Duration || c.duration || '').toLowerCase();
+            return t.includes(search) || d.includes(search);
+          }).length;
+          if (count > 0) {
+            otherMatches.push({ idx: sIdx, name: s.Name || s.name || '', count: count, color: s.Color || s.color || '#0b2c4d', icon: s.Icon || s.icon || 'fa-building' });
+          }
+        }
+      });
+    }
+
+    var otherHtml = '';
+    if (otherMatches.length > 0) {
+      otherHtml = '<div style="margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:10px;">' +
+        '<span style="font-size:13px;font-weight:600;color:#64748b;">Found matches in other schools:</span>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">' +
+        otherMatches.map(function (m) {
+          return '<button type="button" class="school-tab" style="background:#ffffff;border:1.5px solid ' + m.color + ';color:' + m.color + ';padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;" onclick="switchSchool(' + m.idx + ')"><i class="fas ' + m.icon + '"></i> Switch to ' + escapeHtmlText(m.name) + ' (' + m.count + ' match' + (m.count > 1 ? 'es' : '') + ')</button>';
+        }).join('') +
+        '<button type="button" class="school-tab" style="background:#0b2c4d;color:#fff;border:none;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;" onclick="switchSchool(-1)"><i class="fas fa-layer-group"></i> View All Schools</button>' +
+        '</div></div>';
+    }
+
+    grid.innerHTML = '<div class="no-results" style="padding:48px 24px;text-align:center;"><i class="fas fa-search" style="font-size:36px;color:#94a3b8;margin-bottom:14px;display:block;"></i><p style="font-size:15px;color:#334155;font-weight:600;">No courses match "' + escapeHtmlText(rawSearch) + '".</p>' + otherHtml + '</div>';
+    return;
+  }
+
+  grid.innerHTML = allItems.map(function (item) {
+    var c = item.course;
+    var st = item.status;
+    var label = st === 'upcoming' ? 'Upcoming' : st === 'tbd' ? 'TBD' : 'Completed';
+    var title = c.Title || c.title || '';
+    var duration = c.Duration || c.duration || '-';
+    var startDate = c.StartDate || c.startDate || 'TBD';
+    var id = c.Id || c.id || 0;
+
+    var adminBtns = '';
+    if (editMode) {
+      adminBtns =
+        '<div class="card-actions" onclick="event.stopPropagation();">' +
+          '<button type="button" class="card-act-btn" title="Edit course" onclick="openEditCourseModal(' + item.sIdx + ',' + item.cIdx + ')"><i class="fas fa-pen"></i></button>' +
+          '<button type="button" class="card-act-btn danger" title="Delete course" onclick="deleteCourse(' + id + ')"><i class="fas fa-trash"></i></button>' +
+        '</div>';
+    }
+
+    var schoolBadge = '';
+    if (currentSchool === -1) {
+      schoolBadge = '<div style="margin-bottom:6px;"><span style="display:inline-flex;align-items:center;gap:5px;background:' + item.schoolColor + '15;color:' + item.schoolColor + ';border:1px solid ' + item.schoolColor + '35;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;"><i class="fas ' + item.schoolIcon + '"></i> ' + escapeHtmlText(item.schoolName) + '</span></div>';
+    }
+
+    return '<div class="course-card" style="border-left: 4px solid ' + item.schoolColor + '" onclick="openDetail(' + item.sIdx + ',' + item.cIdx + ')">' +
+      '<div class="card-top">' +
+        '<div style="flex:1;">' + schoolBadge + '<div class="card-title">' + escapeHtmlText(title) + '</div></div>' +
+        '<span class="card-badge ' + st + '">' + label + '</span>' +
+      '</div>' +
+      '<div class="card-meta">' +
+        '<span><i class="fas fa-hourglass-half"></i> ' + escapeHtmlText(duration) + '</span>' +
+        '<span><i class="fas fa-calendar-check"></i> ' + escapeHtmlText(startDate) + '</span>' +
+        adminBtns +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openDetail(si, ci) {
+  var schools = (catalogData && (catalogData.Schools || catalogData.schools)) || [];
+  var school = schools[si] || {};
+  var courses = school.Courses || school.courses || [];
+  var c = courses[ci] || {};
+  var st = getStatus(c);
+  var label = st === 'upcoming' ? 'Upcoming' : st === 'tbd' ? 'TBD' : 'Completed';
+  var schoolColor = school.Color || school.color || '#0b2c4d';
+  var schoolIcon = school.Icon || school.icon || 'fa-tower-cell';
+  var schoolName = school.Name || school.name || '';
+  var title = c.Title || c.title || '';
+  var duration = c.Duration || c.duration || '-';
+  var startDate = c.StartDate || c.startDate || 'TBD';
+  var endDate = c.EndDate || c.endDate || 'TBD';
+  var note = c.Note || c.note || 'Part of NAU – ATP 2026 Academic Training Plan, Hyderabad';
+
+  document.getElementById('detailContent').innerHTML =
+    '<div class="detail-school-tag" style="background:' + schoolColor + '1a;color:' + schoolColor + '"><i class="fas ' + schoolIcon + '"></i> ' + schoolName + '</div>' +
+    '<div class="detail-title">' + title + '</div>' +
+    '<div class="detail-grid">' +
+      '<div class="detail-item"><label>Duration</label><span>' + duration + '</span></div>' +
+      '<div class="detail-item"><label>Status</label><span><span class="card-badge ' + st + '" style="margin:0">' + label + '</span></span></div>' +
+      '<div class="detail-item"><label>Start Date</label><span>' + startDate + '</span></div>' +
+      '<div class="detail-item"><label>End Date</label><span>' + endDate + '</span></div>' +
+    '</div>' +
+    '<div class="detail-note"><i class="fas fa-info-circle"></i> ' + note + '</div>' +
+    '<div class="detail-action">' +
+      '<a href="/Account/Register" class="detail-btn primary"><i class="fas fa-pen"></i> Enroll Now</a>' +
+      '<button class="detail-btn secondary" onclick="closeDetail()"><i class="fas fa-arrow-left"></i> Back to Catalog</button>' +
+    '</div>';
+  document.getElementById('detailModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detailModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function initTabs() {
+  var schools = (catalogData && (catalogData.Schools || catalogData.schools)) || [];
+  if (!schools || !schools.length) return;
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var schoolParam = urlParams.get('school');
+  var selectedIdx = -1; // Default to All Schools
+
+  if (schoolParam) {
+    if (schoolParam.toLowerCase() === 'all') {
+      selectedIdx = -1;
+    } else {
+      var numIdx = parseInt(schoolParam, 10);
+      if (!isNaN(numIdx) && numIdx >= 0 && numIdx < schools.length) {
+        selectedIdx = numIdx;
+      } else {
+        var matchIdx = schools.findIndex(function (s) {
+          var slug = (s.Slug || s.slug || '').toLowerCase();
+          var name = (s.Name || s.name || '').toLowerCase();
+          return slug === schoolParam.toLowerCase() || name === schoolParam.toLowerCase();
+        });
+        if (matchIdx >= 0) selectedIdx = matchIdx;
+      }
+    }
+  }
+
+  switchCourseCatalogSchool(selectedIdx);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  var container = document.getElementById('schoolTabsContainer');
+  if (container) {
+    container.addEventListener('click', function (e) {
+      var btn = e.target.closest('.school-tab');
+      if (btn) {
+        var rawIdx = btn.getAttribute('data-school-index');
+        var idx = parseInt(rawIdx, 10);
+        if (isNaN(idx)) idx = -1;
+        switchCourseCatalogSchool(idx, btn);
+      }
+    });
+  }
+});
+
+// ===== AJAX Helper =====
+function getCsrfToken() {
+  var el = document.querySelector('input[name="__RequestVerificationToken"]');
+  return el ? el.value : '';
+}
+
+async function postAjax(url, data) {
+  var res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'RequestVerificationToken': getCsrfToken()
+    },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+// ===== Admin Operations =====
+function openEditHeroModal() {
+  document.getElementById('heroModal').classList.add('open');
+}
+function closeHeroModal() {
+  document.getElementById('heroModal').classList.remove('open');
+}
+async function saveHeroSection() {
+  var eyebrow = document.getElementById('editHeroEyebrow').value.trim();
+  var title = document.getElementById('editHeroTitle').value.trim();
+  var desc = document.getElementById('editHeroDesc').value.trim();
+  var res = await postAjax('/CourseCatalog/QuickSaveHero', { Eyebrow: eyebrow, Title: title, Description: desc });
+  if (res.success) {
+    location.reload();
+  } else {
+    alert(res.message || 'Error saving hero section');
+  }
+}
+
+function openAddCourseModal() {
+  document.getElementById('courseModalTitle').textContent = 'Add Course';
+  document.getElementById('courseFormId').value = '0';
+  document.getElementById('courseFormSchoolId').value = catalogData.Schools[currentSchool].Id;
+  document.getElementById('courseFormTitle').value = '';
+  document.getElementById('courseFormDuration').value = '01 Week';
+  document.getElementById('courseFormStartDate').value = 'TBD';
+  document.getElementById('courseFormEndDate').value = 'TBD';
+  document.getElementById('courseFormNote').value = 'Part of NAU – ATP 2026 Academic Training Plan, Hyderabad';
+  document.getElementById('courseModal').classList.add('open');
+}
+
+function openEditCourseModal(si, ci) {
+  var school = catalogData.Schools[si];
+  var c = school.Courses[ci];
+  document.getElementById('courseModalTitle').textContent = 'Edit Course';
+  document.getElementById('courseFormId').value = c.Id;
+  document.getElementById('courseFormSchoolId').value = school.Id;
+  document.getElementById('courseFormTitle').value = c.Title;
+  document.getElementById('courseFormDuration').value = c.Duration || '';
+  document.getElementById('courseFormStartDate').value = c.StartDate || '';
+  document.getElementById('courseFormEndDate').value = c.EndDate || '';
+  document.getElementById('courseFormNote').value = c.Note || '';
+  document.getElementById('courseModal').classList.add('open');
+}
+
+function closeCourseModal() {
+  document.getElementById('courseModal').classList.remove('open');
+}
+
+async function saveCourseForm() {
+  var id = parseInt(document.getElementById('courseFormId').value, 10);
+  var schoolId = parseInt(document.getElementById('courseFormSchoolId').value, 10);
+  var title = document.getElementById('courseFormTitle').value.trim();
+  var duration = document.getElementById('courseFormDuration').value.trim();
+  var start = document.getElementById('courseFormStartDate').value.trim();
+  var end = document.getElementById('courseFormEndDate').value.trim();
+  var note = document.getElementById('courseFormNote').value.trim();
+
+  if (!title) {
+    alert('Course title is required.');
+    return;
+  }
+
+  var btn = document.getElementById('saveCourseBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  var url = id > 0 ? '/CourseCatalog/QuickUpdateCourse' : '/CourseCatalog/QuickAddCourse';
+  var body = { CourseId: id, SchoolId: schoolId, Title: title, Duration: duration, StartDate: start, EndDate: end, Note: note };
+
+  var res = await postAjax(url, body);
+  if (res.success) {
+    location.reload();
+  } else {
+    alert(res.message || 'Error saving course');
+    btn.disabled = false;
+    btn.textContent = 'Save Course';
+  }
+}
+
+async function deleteCourse(courseId) {
+  if (!confirm('Are you sure you want to delete this course from the database?')) return;
+  var res = await postAjax('/CourseCatalog/QuickDeleteCourse', { CourseId: courseId });
+  if (res.success) {
+    location.reload();
+  } else {
+    alert(res.message || 'Error deleting course');
+  }
+}
+
+function openAddSchoolModal() {
+  document.getElementById('schoolFormName').value = '';
+  document.getElementById('schoolFormIcon').value = 'fa-graduation-cap';
+  document.getElementById('schoolFormColor').value = '#0b2c4d';
+  document.getElementById('schoolModal').classList.add('open');
+}
+function closeSchoolModal() {
+  document.getElementById('schoolModal').classList.remove('open');
+}
+async function saveSchoolForm() {
+  var name = document.getElementById('schoolFormName').value.trim();
+  var icon = document.getElementById('schoolFormIcon').value.trim();
+  var color = document.getElementById('schoolFormColor').value.trim();
+  if (!name) { alert('School name is required'); return; }
+  var res = await postAjax('/CourseCatalog/QuickAddSchool', { Name: name, Icon: icon, Color: color });
+  if (res.success) {
+    location.reload();
+  } else {
+    alert(res.message || 'Error adding school');
+  }
+}
+
+async function deleteCurrentSchool() {
+  var school = catalogData.Schools[currentSchool];
+  if (!confirm(`Are you sure you want to delete "${school.Name}" and all of its courses?`)) return;
+  var res = await postAjax('/CourseCatalog/QuickDeleteSchool', { SchoolId: school.Id });
+  if (res.success) {
+    location.reload();
+  } else {
+    alert(res.message || 'Error deleting school');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeDetail();
+    if (typeof closeHeroModal === 'function') closeHeroModal();
+    if (typeof closeCourseModal === 'function') closeCourseModal();
+    if (typeof closeSchoolModal === 'function') closeSchoolModal();
+  }
+});
+
+initTabs();
+renderCatalog();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function () {
+    initTabs();
+    renderCatalog();
+  });
+}
+</script>
+
+<!-- ===== ACCOUNT DROPDOWN (Log In / Sign Up, or user name + Log Out) ===== -->
+<script>
+window.NAU_AUTH = {
+    isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+    isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+    userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewBag.CurrentUserName ?? "")))
+};
+
+(function setupAccountDropdown() {
+    var enhancedButtons = new WeakSet();
+    var auth = window.NAU_AUTH || { isAuthenticated: false, isAdmin: false, userName: '' };
+
+    function enhance(btn) {
+        if (enhancedButtons.has(btn)) return;
+        var alreadyWrapped = !!btn.closest('.account-dropdown');
+        var isPristineAccountBtn = btn.textContent.trim().toLowerCase() === 'account';
+        if (!alreadyWrapped && !isPristineAccountBtn) return;
+        enhancedButtons.add(btn);
+
+        var wrap = btn.closest('.account-dropdown');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'account-dropdown';
+            btn.parentNode.insertBefore(wrap, btn);
+            wrap.appendChild(btn);
+        }
+
+        btn.removeAttribute('href');
+        btn.setAttribute('role', 'button');
+
+        if (auth.isAuthenticated) {
+            btn.innerHTML = '<i class="fas fa-circle-user" style="margin-right:6px;"></i>' + (auth.userName || 'My Account');
+        } else {
+            btn.innerHTML = 'Account';
+        }
+
+        var menu = document.createElement('div');
+        menu.className = 'account-dropdown-menu';
+        if (auth.isAuthenticated) {
+            menu.innerHTML =
+                '<a href="#" id="navLogoutLink"><i class="fas fa-right-from-bracket" style="margin-right:8px;"></i>Log Out</a>';
+        } else {
+            menu.innerHTML =
+                '<a href="/Account/Login"><i class="fas fa-right-to-bracket" style="margin-right:8px;"></i>Log In</a>';
+        }
+        menu.style.position = 'fixed';
+        menu.style.display = 'none';
+        menu.style.zIndex = '2147483647';
+        menu.style.background = '#fff';
+        menu.style.minWidth = '150px';
+        menu.style.borderRadius = '8px';
+        menu.style.boxShadow = '0 10px 28px rgba(0,0,0,0.2)';
+        menu.style.overflow = 'hidden';
+        document.body.appendChild(menu);
+
+        if (auth.isAuthenticated) {
+            var logoutLink = menu.querySelector('#navLogoutLink');
+            logoutLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/Account/Logout';
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+
+        function positionMenu() {
+            var r = btn.getBoundingClientRect();
+            menu.style.top = (r.bottom + 8) + 'px';
+            menu.style.left = 'auto';
+            menu.style.right = (window.innerWidth - r.right) + 'px';
+        }
+
+        var closeTimer;
+        function openMenu() {
+            clearTimeout(closeTimer);
+            positionMenu();
+            menu.style.display = 'block';
+            wrap.classList.add('open');
+        }
+        function closeMenu() {
+            closeTimer = setTimeout(function () {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }, 150);
+        }
+
+        wrap.addEventListener('mouseenter', openMenu);
+        wrap.addEventListener('mouseleave', closeMenu);
+        menu.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        menu.addEventListener('mouseleave', closeMenu);
+
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            } else {
+                openMenu();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrap.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (menu.style.display === 'block') positionMenu();
+        }, true);
+        window.addEventListener('resize', function () {
+            if (menu.style.display === 'block') positionMenu();
+        });
+    }
+
+    function run() {
+        document.querySelectorAll('.apply-btn').forEach(enhance);
+    }
+
+    run();
+    var observer = new MutationObserver(run);
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+<script src="~/js/global-search.js" asp-append-version="true"></script>
+<script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+
+<partial name="_PublicModals" />
+<script src="~/js/public-modals.js" asp-append-version="true"></script>
+
+</body>
+</html>

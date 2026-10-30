@@ -1,0 +1,1115 @@
+@model NAU_Web.Models.Page
+@{
+    Layout = null;
+    var isSuperAdmin = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+    var isAdmin = User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Staff"));
+    var canEdit = ViewBag.CanEdit == true;
+    var editMode = ViewBag.EditMode == true;   // true only when reached via Admin Panel "Edit Homepage" link
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@Model.Title</title>
+<partial name="_Favicon" />
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/home.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/cms-icon-picker.css" asp-append-version="true">
+
+@if (editMode)
+{
+    <link rel="stylesheet" href="~/css/cms-editor.css" asp-append-version="true">
+}
+</head>
+<body>
+
+@if (editMode)
+{
+    <div class="cms-mode-banner">
+        <i class="fas fa-lock"></i> You are viewing this page in <strong>Admin Edit Mode</strong>.
+        <a href="/">Exit to normal view</a>
+        <a href="/Admin" style="margin-left:14px;"><i class="fas fa-user-shield"></i> Admin Panel</a>
+    </div>
+}
+
+@{
+    string homeContent = Model?.ContentHtml ?? "";
+    var heroIdx = homeContent.IndexOf("<div class=\"hero\"", StringComparison.OrdinalIgnoreCase);
+    if (heroIdx < 0) heroIdx = homeContent.IndexOf("<section class=\"hero\"", StringComparison.OrdinalIgnoreCase);
+    if (heroIdx < 0) heroIdx = homeContent.IndexOf("<div class=\"hero-slides\"", StringComparison.OrdinalIgnoreCase);
+
+    if (heroIdx >= 0)
+    {
+        // Everything before <div class="hero"> is the legacy announcement + navbar block
+        homeContent = homeContent.Substring(heroIdx);
+    }
+    else
+    {
+        var annIdx = homeContent.IndexOf("<div class=\"announcement\"", StringComparison.OrdinalIgnoreCase);
+        if (annIdx >= 0)
+        {
+            var navIdx = homeContent.IndexOf("<div class=\"navbar\"", annIdx, StringComparison.OrdinalIgnoreCase);
+            if (navIdx < 0) navIdx = homeContent.IndexOf("<nav", annIdx, StringComparison.OrdinalIgnoreCase);
+            if (navIdx >= 0)
+            {
+                var navEndIdx = homeContent.IndexOf("</nav>", navIdx, StringComparison.OrdinalIgnoreCase);
+                if (navEndIdx >= 0)
+                {
+                    navEndIdx += "</nav>".Length;
+                }
+                else
+                {
+                    // If navbar was a div, find closing </div> of .menu / .navbar
+                    var searchWrapIdx = homeContent.IndexOf("class=\"search-wrap\"", navIdx, StringComparison.OrdinalIgnoreCase);
+                    if (searchWrapIdx >= 0)
+                    {
+                        var divEnd = homeContent.IndexOf("</div>", searchWrapIdx, StringComparison.OrdinalIgnoreCase);
+                        if (divEnd >= 0)
+                        {
+                            divEnd = homeContent.IndexOf("</div>", divEnd + 6, StringComparison.OrdinalIgnoreCase);
+                            if (divEnd >= 0) navEndIdx = divEnd + 6;
+                        }
+                    }
+                }
+                var afterNavIdx = navEndIdx >= 0 ? navEndIdx : navIdx;
+                homeContent = homeContent.Substring(0, annIdx) + homeContent.Substring(afterNavIdx);
+            }
+        }
+    }
+
+    var footerIdx = homeContent.IndexOf("<footer", StringComparison.OrdinalIgnoreCase);
+    if (footerIdx >= 0)
+    {
+        homeContent = homeContent.Substring(0, footerIdx);
+    }
+
+    // Clean up quick bar from homeContent
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<div\s+class=""hero-quick-bar-wrap""[\s\S]*?</div>\s*</div>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    var latestNewsList = ViewBag.LatestNews as List<NAU_Web.Models.NewsPost> ?? new List<NAU_Web.Models.NewsPost>();
+    var upcomingEventsList = ViewBag.UpcomingEvents as List<NAU_Web.Models.Event> ?? new List<NAU_Web.Models.Event>();
+
+    // Build dynamic Latest News HTML
+    var newsItemsHtml = new System.Text.StringBuilder();
+    foreach (var n in latestNewsList)
+    {
+        var iconClass = !string.IsNullOrWhiteSpace(n.Icon) ? n.Icon : "fas fa-newspaper";
+        var imgOrIcon = !string.IsNullOrWhiteSpace(n.ImageUrl)
+            ? "<div class=\"news-img-placeholder\" style=\"background-image:url('" + n.ImageUrl + "');background-size:cover;background-position:center;\"></div>"
+            : "<div class=\"news-img-placeholder\"><i class=\"" + iconClass + "\"></i></div>";
+
+        var bodySnippet = !string.IsNullOrWhiteSpace(n.Body)
+            ? (n.Body.Length > 90 ? n.Body.Substring(0, 90) + "..." : n.Body)
+            : "";
+
+        newsItemsHtml.Append("<div class=\"news-item\" style=\"cursor:pointer;\" onclick=\"window.location.href='/NewsPosts/Public?id=" + n.NewsPostId + "';\">");
+        newsItemsHtml.Append(imgOrIcon);
+        newsItemsHtml.Append("<div class=\"news-body\">");
+        newsItemsHtml.Append("<h4>" + System.Net.WebUtility.HtmlEncode(n.Title) + "</h4>");
+        newsItemsHtml.Append("<div class=\"news-meta\"><i class=\"far fa-calendar\"></i> " + n.PublishDate.ToString("MMMM d, yyyy") + "</div>");
+        newsItemsHtml.Append("<p>" + System.Net.WebUtility.HtmlEncode(bodySnippet) + "</p>");
+        newsItemsHtml.Append("</div></div>");
+    }
+
+    var newsTickerHtml = new System.Text.StringBuilder();
+    newsTickerHtml.Append("<div class=\"ticker-container\" style=\"height:300px;overflow:hidden;position:relative;\">");
+    if (latestNewsList.Any())
+    {
+        var animDuration = Math.Max(12, latestNewsList.Count * 6);
+        newsTickerHtml.Append("<div class=\"ticker-scroll-wrapper\" style=\"animation: verticalTickerScroll " + animDuration + "s linear infinite;\">");
+        newsTickerHtml.Append(newsItemsHtml.ToString());
+        newsTickerHtml.Append(newsItemsHtml.ToString());
+        newsTickerHtml.Append("</div>");
+    }
+    else
+    {
+        newsTickerHtml.Append("<p style=\"padding:20px;color:#64748b;font-size:14px;\">No recent news announcements available.</p>");
+    }
+    newsTickerHtml.Append("</div>");
+
+    // Build dynamic Upcoming Events HTML
+    var eventsItemsHtml = new System.Text.StringBuilder();
+    foreach (var ev in upcomingEventsList)
+    {
+        var monthStr = ev.EventDate.ToString("MMM").ToUpper();
+        var dayStr = ev.EventDate.ToString("dd");
+        var timeStr = ev.StartTime.HasValue
+            ? (ev.EndTime.HasValue ? ev.StartTime.Value.ToString("hh:mm tt") + " – " + ev.EndTime.Value.ToString("hh:mm tt") : ev.StartTime.Value.ToString("hh:mm tt"))
+            : "TBA";
+        var locStr = !string.IsNullOrWhiteSpace(ev.Location) ? ev.Location : "NAU Main Campus";
+
+        eventsItemsHtml.Append("<div class=\"event-item\" style=\"cursor:pointer;\" onclick=\"openEvents(event);\">");
+        eventsItemsHtml.Append("<div class=\"event-date\"><div class=\"month\">" + monthStr + "</div><div class=\"day\">" + dayStr + "</div></div>");
+        eventsItemsHtml.Append("<div class=\"event-body\">");
+        eventsItemsHtml.Append("<h4>" + System.Net.WebUtility.HtmlEncode(ev.Title) + "</h4>");
+        eventsItemsHtml.Append("<div class=\"event-detail\"><i class=\"fas fa-map-marker-alt\"></i> " + System.Net.WebUtility.HtmlEncode(locStr) + "</div>");
+        eventsItemsHtml.Append("<div class=\"event-detail\"><i class=\"far fa-clock\"></i> " + System.Net.WebUtility.HtmlEncode(timeStr) + "</div>");
+        eventsItemsHtml.Append("</div></div>");
+    }
+
+    var eventsTickerHtml = new System.Text.StringBuilder();
+    eventsTickerHtml.Append("<div class=\"ticker-container\" style=\"height:300px;overflow:hidden;position:relative;\">");
+    if (upcomingEventsList.Any())
+    {
+        var animDurationEv = Math.Max(12, upcomingEventsList.Count * 6);
+        eventsTickerHtml.Append("<div class=\"ticker-scroll-wrapper\" style=\"animation: verticalTickerScroll " + animDurationEv + "s linear infinite;\">");
+        eventsTickerHtml.Append(eventsItemsHtml.ToString());
+        eventsTickerHtml.Append(eventsItemsHtml.ToString());
+        eventsTickerHtml.Append("</div>");
+    }
+    else
+    {
+        eventsTickerHtml.Append("<p style=\"padding:20px;color:#64748b;font-size:14px;\">No upcoming events scheduled.</p>");
+    }
+    eventsTickerHtml.Append("</div>");
+
+    // Construct full section.news-events replacement block
+    var sectionSb = new System.Text.StringBuilder();
+    sectionSb.Append("<section class=\"news-events\">");
+    sectionSb.Append("<div class=\"news-events-inner\">");
+    sectionSb.Append("<div class=\"news-col\">");
+    sectionSb.Append("<div class=\"section-head\">");
+    sectionSb.Append("<h3>LATEST NEWS</h3>");
+    sectionSb.Append("<a href=\"/NewsPosts/Public\" class=\"view-all\">View All News</a>");
+    sectionSb.Append("</div>");
+    sectionSb.Append(newsTickerHtml.ToString());
+    sectionSb.Append("</div>");
+    sectionSb.Append("<div class=\"news-col\">");
+    sectionSb.Append("<div class=\"section-head\">");
+    sectionSb.Append("<h3>UPCOMING EVENTS</h3>");
+    sectionSb.Append("<a href=\"#\" onclick=\"openEvents(event); return false;\" class=\"view-all\">View All Events</a>");
+    sectionSb.Append("</div>");
+    sectionSb.Append(eventsTickerHtml.ToString());
+    sectionSb.Append("</div>");
+    sectionSb.Append("</div>");
+    sectionSb.Append("</section>");
+
+    homeContent = System.Text.RegularExpressions.Regex.Replace(
+        homeContent,
+        @"<section\s+class=""news-events"">[\s\S]*?</section>",
+        sectionSb.ToString(),
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    // Thorough multi-pass cleanup of ALL faculty sections, grids, cards, and residual fragments from homeContent
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<section\s+class=""(faculties|programs|schools-section)""[\s\S]*?</section>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<div\s+class=""(faculty-grid|faculties-grid)""[\s\S]*?</div>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<a\s+[^>]*?(faculty-card|/Faculties/Detail)[^>]*>[\s\S]*?</a>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<a\s+[^>]*?>[\s\S]*?Faculty of (Engineering|IT|Aviation|Management)[\s\S]*?</a>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<div\s+class=""faculty-card""[^>]*?>[\s\S]*?</div>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"max-width:\s*1[13]80px", "max-width:1480px", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    // Ensure Facts & Figures section is present after section.news-events if missing in homeContent
+    if (!System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""facts2""", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+    {
+        var factsTemplate = @"<section class=""facts2"">
+  <div class=""facts-inner"">
+    <div class=""section-head"" style=""max-width:1480px;margin:0 auto 0;border-bottom:2px solid var(--green);padding-bottom:14px;margin-bottom:30px;justify-content:center;"">
+      <h3 style=""font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;"">FACTS &amp; FIGURES</h3>
+    </div>
+    <div class=""facts-grid"">
+      <div class=""fact-item"">
+        <div class=""fact-icon""><i class=""fas fa-university""></i></div>
+        <div class=""fact-number"">2026</div>
+        <div class=""fact-label"">Year of Establishment</div>
+      </div>
+      <div class=""fact-item"">
+        <div class=""fact-icon""><i class=""fas fa-user-graduate""></i></div>
+        <div class=""fact-number"">19935</div>
+        <div class=""fact-label"">Students Enrolled</div>
+      </div>
+      <div class=""fact-item"">
+        <div class=""fact-icon""><i class=""fas fa-book-open""></i></div>
+        <div class=""fact-number"">2474</div>
+        <div class=""fact-label"">Total Courses</div>
+      </div>
+      <div class=""fact-item"">
+        <div class=""fact-icon""><i class=""fas fa-chart-line""></i></div>
+        <div class=""fact-number"">23313</div>
+        <div class=""fact-label"">G. Total</div>
+      </div>
+      <div class=""fact-item"">
+        <div class=""fact-icon""><i class=""fas fa-briefcase""></i></div>
+        <div class=""fact-number"">2126</div>
+        <div class=""fact-label"">Govt/Corporate</div>
+      </div>
+      <div class=""fact-item"">
+        <div class=""fact-icon""><i class=""fas fa-globe""></i></div>
+        <div class=""fact-number"">49</div>
+        <div class=""fact-label"">Number of States which have sent trainees to CATI</div>
+      </div>
+    </div>
+  </div>
+</section>";
+
+        if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""news-events""[\s\S]*?</section>", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        {
+            homeContent = System.Text.RegularExpressions.Regex.Replace(
+                homeContent,
+                @"<section\s+class=""news-events""[\s\S]*?</section>",
+                "$0" + factsTemplate,
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        else
+        {
+            homeContent += factsTemplate;
+        }
+    }
+
+    // Build dynamic Our Faculties & Specialized Schools HTML
+    var facultiesList = ViewBag.Faculties as List<NAU_Web.Models.Faculty> ?? new List<NAU_Web.Models.Faculty>();
+    var schoolsList = ViewBag.Schools as List<NAU_Web.Models.School> ?? new List<NAU_Web.Models.School>();
+
+    var facultiesSb = new System.Text.StringBuilder();
+    var schoolsSb = new System.Text.StringBuilder();
+
+    if (facultiesList.Any())
+    {
+        facultiesSb.Append("<section class=\"programs\">");
+        facultiesSb.Append("<div class=\"programs-inner\">");
+        facultiesSb.Append("<div class=\"section-head\" style=\"max-width:1480px;margin:0 auto 0;border-bottom:2px solid var(--green);padding-bottom:14px;margin-bottom:30px;justify-content:center;\">");
+        facultiesSb.Append("<h3 style=\"font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;\">OUR FACULTIES</h3>");
+        facultiesSb.Append("</div>");
+        facultiesSb.Append("<div class=\"faculty-grid\">");
+
+        foreach (var f in facultiesList)
+        {
+            var iconClass = !string.IsNullOrWhiteSpace(f.Icon) ? f.Icon : "fas fa-graduation-cap";
+            var introText = !string.IsNullOrWhiteSpace(f.Description) ? f.Description : "";
+            var name = !string.IsNullOrWhiteSpace(f.Name) ? f.Name : "Faculty";
+
+            facultiesSb.Append("<a href=\"/Faculties/Detail/" + f.Slug + "\" class=\"faculty-card\">");
+            facultiesSb.Append("<div class=\"faculty-header\">");
+            facultiesSb.Append("<div class=\"faculty-header-icon\"><i class=\"" + iconClass + "\"></i></div>");
+            facultiesSb.Append("<div class=\"faculty-header-text\">");
+            facultiesSb.Append("<div class=\"faculty-name\">" + System.Net.WebUtility.HtmlEncode(name) + "</div>");
+            facultiesSb.Append("<div class=\"faculty-caption\">" + System.Net.WebUtility.HtmlEncode(introText) + "</div>");
+            facultiesSb.Append("</div></div>");
+            facultiesSb.Append("<div class=\"faculty-footer\">");
+            facultiesSb.Append("<span class=\"faculty-explore\">Explore Faculty <i class=\"fas fa-arrow-right\"></i></span>");
+            facultiesSb.Append("</div></a>");
+        }
+
+        facultiesSb.Append("</div></div></section>");
+    }
+
+    if (schoolsList.Any())
+    {
+        schoolsSb.Append("<section class=\"schools-section\">");
+        schoolsSb.Append("<div class=\"schools-inner\">");
+        schoolsSb.Append("<div class=\"section-head\" style=\"max-width:1480px;margin:0 auto 0;border-bottom:2px solid var(--green);padding-bottom:14px;margin-bottom:30px;justify-content:center;\">");
+        schoolsSb.Append("<h3 style=\"font-family:var(--font-head);font-size:18px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:0.5px;\"><i class=\"fas fa-school\" style=\"color:var(--green);margin-right:8px;\"></i> OUR SPECIALIZED SCHOOLS</h3>");
+        schoolsSb.Append("</div>");
+        schoolsSb.Append("<div class=\"schools-grid\">");
+
+        foreach (var s in schoolsList)
+        {
+            var iconClass = !string.IsNullOrWhiteSpace(s.Icon) ? s.Icon : "fas fa-school";
+            var descText = !string.IsNullOrWhiteSpace(s.Description) ? s.Description : "";
+            var sName = !string.IsNullOrWhiteSpace(s.Name) ? s.Name : "School";
+            var imgUrl = !string.IsNullOrWhiteSpace(s.ImageUrl) ? s.ImageUrl : "/images/schools/school_ans.jpg";
+            var targetSlug = !string.IsNullOrWhiteSpace(s.Slug) ? s.Slug : "navigation";
+            var colorHex = !string.IsNullOrWhiteSpace(s.ColorHex) ? s.ColorHex : "#0b2c4d";
+
+            schoolsSb.Append("<a href=\"/Courses/Public?school=" + targetSlug + "\" class=\"school-card\">");
+            schoolsSb.Append("<div class=\"school-img-wrapper\">");
+            schoolsSb.Append("<img src=\"" + System.Net.WebUtility.HtmlEncode(imgUrl) + "\" alt=\"" + System.Net.WebUtility.HtmlEncode(sName) + "\" class=\"school-card-img\" onerror=\"this.src='/images/schools/school_ans.jpg'\">");
+            schoolsSb.Append("<div class=\"school-icon-badge\" style=\"background:" + colorHex + ";\"><i class=\"" + iconClass + "\"></i></div>");
+            schoolsSb.Append("</div>");
+            schoolsSb.Append("<div class=\"school-card-body\">");
+            schoolsSb.Append("<h4 class=\"school-card-title\">" + System.Net.WebUtility.HtmlEncode(sName) + "</h4>");
+            schoolsSb.Append("<p class=\"school-card-desc\">" + System.Net.WebUtility.HtmlEncode(descText) + "</p>");
+            schoolsSb.Append("</div>");
+            schoolsSb.Append("<div class=\"school-card-footer\">");
+            schoolsSb.Append("<span class=\"school-explore\">Explore Courses <i class=\"fas fa-arrow-right\"></i></span>");
+            schoolsSb.Append("</div></a>");
+        }
+
+        schoolsSb.Append("</div></div></section>");
+    }
+
+    // 1.5) Build dynamic Vision, Mission, Core Values HTML
+    var vmvSb = new System.Text.StringBuilder();
+    vmvSb.Append("<section class=\"vmv-section\">");
+    vmvSb.Append("<div class=\"vmv-container\">");
+    
+    // Header
+    vmvSb.Append("<div class=\"section-head vmv-header\">");
+    vmvSb.Append("<div class=\"vmv-header-title-box\">");
+    vmvSb.Append("<span class=\"vmv-eyebrow\"><i class=\"fas fa-compass\"></i> PAA STANDARDS &amp; PRINCIPLES</span>");
+    vmvSb.Append("<h3 class=\"vmv-main-heading\">VISION, MISSION &amp; CORE VALUES</h3>");
+    vmvSb.Append("</div>");
+    if (editMode)
+    {
+        vmvSb.Append("<button type=\"button\" class=\"vmv-section-edit-btn\" id=\"openVmvEditModalBtn\"><i class=\"fas fa-pen-to-square\"></i> Edit Section</button>");
+    }
+    vmvSb.Append("</div>");
+
+    // Top Duo: Vision & Mission Hero Cards
+    vmvSb.Append("<div class=\"vmv-hero-grid\">");
+    
+    // Vision Card (Dark Navy Aviation Hero)
+    vmvSb.Append("<div class=\"vmv-hero-card vmv-vision-card\">");
+    vmvSb.Append("<div class=\"vmv-watermark-icon\"><i class=\"fas fa-compass\"></i></div>");
+    vmvSb.Append("<div class=\"vmv-card-top\">");
+    vmvSb.Append("<div class=\"vmv-icon-box vmv-icon-navy\"><i class=\"fas fa-eye\"></i></div>");
+    vmvSb.Append("<span class=\"vmv-pill-tag tag-gold\">PURPOSE &amp; FUTURE</span>");
+    vmvSb.Append("</div>");
+    vmvSb.Append("<h3 class=\"vmv-title-white\">Our Vision</h3>");
+    vmvSb.Append("<blockquote class=\"vmv-quote-dark\">&ldquo;To be a world-class service provider in the aviation industry&rdquo;</blockquote>");
+    vmvSb.Append("<div class=\"vmv-card-footer-accent\">");
+    vmvSb.Append("<span><i class=\"fas fa-globe-asia\"></i> Global Aviation Benchmark</span>");
+    vmvSb.Append("</div>");
+    vmvSb.Append("</div>");
+
+    // Mission Card (Emerald Accent White Hero Card)
+    vmvSb.Append("<div class=\"vmv-hero-card vmv-mission-card\">");
+    vmvSb.Append("<div class=\"vmv-watermark-icon\"><i class=\"fas fa-bullseye\"></i></div>");
+    vmvSb.Append("<div class=\"vmv-card-top\">");
+    vmvSb.Append("<div class=\"vmv-icon-box vmv-icon-emerald\"><i class=\"fas fa-crosshairs\"></i></div>");
+    vmvSb.Append("<span class=\"vmv-pill-tag tag-emerald\">COMMITMENT &amp; OBJECTIVE</span>");
+    vmvSb.Append("</div>");
+    vmvSb.Append("<h3 class=\"vmv-title-navy\">Our Mission</h3>");
+    vmvSb.Append("<blockquote class=\"vmv-quote-light\">&ldquo;Provide safe, secure and efficient best-in-class aviation services to the stakeholders&rdquo;</blockquote>");
+    vmvSb.Append("<div class=\"vmv-pillars-row\">");
+    vmvSb.Append("<span class=\"vmv-pillar\"><i class=\"fas fa-shield-check\"></i> Safe</span>");
+    vmvSb.Append("<span class=\"vmv-pillar\"><i class=\"fas fa-lock\"></i> Secure</span>");
+    vmvSb.Append("<span class=\"vmv-pillar\"><i class=\"fas fa-bolt\"></i> Efficient</span>");
+    vmvSb.Append("<span class=\"vmv-pillar\"><i class=\"fas fa-star\"></i> Best-in-Class</span>");
+    vmvSb.Append("</div>");
+    vmvSb.Append("</div>");
+
+    vmvSb.Append("</div>"); // end vmv-hero-grid
+
+    // Bottom Banner: Core Values Deck
+    vmvSb.Append("<div class=\"vmv-values-banner\">");
+    vmvSb.Append("<div class=\"vmv-values-banner-head\">");
+    vmvSb.Append("<div class=\"vmv-values-badge\"><i class=\"fas fa-layer-group\"></i> GUIDING PRINCIPLES</div>");
+    vmvSb.Append("<h4 class=\"vmv-values-title\">Core Values of NAU</h4>");
+    vmvSb.Append("</div>");
+    
+    vmvSb.Append("<div class=\"vmv-values-grid\">");
+    
+    // 1 Integrity
+    vmvSb.Append("<div class=\"vmv-value-item\">");
+    vmvSb.Append("<div class=\"vmv-val-icon\"><i class=\"fas fa-shield-halved\"></i></div>");
+    vmvSb.Append("<div class=\"vmv-val-info\">");
+    vmvSb.Append("<span class=\"vmv-val-name\">Integrity</span>");
+    vmvSb.Append("<span class=\"vmv-val-desc\">Uncompromising honesty &amp; standards</span>");
+    vmvSb.Append("</div></div>");
+
+    // 2 Professional Excellence
+    vmvSb.Append("<div class=\"vmv-value-item\">");
+    vmvSb.Append("<div class=\"vmv-val-icon\"><i class=\"fas fa-award\"></i></div>");
+    vmvSb.Append("<div class=\"vmv-val-info\">");
+    vmvSb.Append("<span class=\"vmv-val-name\">Professional Excellence</span>");
+    vmvSb.Append("<span class=\"vmv-val-desc\">Mastery, quality &amp; growth</span>");
+    vmvSb.Append("</div></div>");
+
+    // 3 Commitment
+    vmvSb.Append("<div class=\"vmv-value-item\">");
+    vmvSb.Append("<div class=\"vmv-val-icon\"><i class=\"fas fa-handshake\"></i></div>");
+    vmvSb.Append("<div class=\"vmv-val-info\">");
+    vmvSb.Append("<span class=\"vmv-val-name\">Commitment</span>");
+    vmvSb.Append("<span class=\"vmv-val-desc\">Dedicated to stakeholder success</span>");
+    vmvSb.Append("</div></div>");
+
+    // 4 Safety and Security
+    vmvSb.Append("<div class=\"vmv-value-item\">");
+    vmvSb.Append("<div class=\"vmv-val-icon\"><i class=\"fas fa-user-shield\"></i></div>");
+    vmvSb.Append("<div class=\"vmv-val-info\">");
+    vmvSb.Append("<span class=\"vmv-val-name\">Safety &amp; Security</span>");
+    vmvSb.Append("<span class=\"vmv-val-desc\">Top priority across all operations</span>");
+    vmvSb.Append("</div></div>");
+
+    // 5 Customer Focus
+    vmvSb.Append("<div class=\"vmv-value-item\">");
+    vmvSb.Append("<div class=\"vmv-val-icon\"><i class=\"fas fa-users-gear\"></i></div>");
+    vmvSb.Append("<div class=\"vmv-val-info\">");
+    vmvSb.Append("<span class=\"vmv-val-name\">Customer Focus</span>");
+    vmvSb.Append("<span class=\"vmv-val-desc\">Exceeding expectations consistently</span>");
+    vmvSb.Append("</div></div>");
+
+    vmvSb.Append("</div>"); // end vmv-values-grid
+    vmvSb.Append("</div>"); // end vmv-values-banner
+
+    vmvSb.Append("</div></section>");
+
+    // Clean up any old vmv-section or schools-section if saved in content
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<section\s+class=""vmv-section""[\s\S]*?</section>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<section\s+class=""schools-section""[\s\S]*?</section>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    // 1) Insert vmvSb AFTER Founder's Message (rector-section)
+    if (vmvSb.Length > 0)
+    {
+        if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""(rector-section|rector)""[\s\S]*?</section>", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        {
+            homeContent = System.Text.RegularExpressions.Regex.Replace(
+                homeContent,
+                @"<section\s+class=""(rector-section|rector)""[\s\S]*?</section>",
+                "$0" + vmvSb.ToString(),
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        else if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""news-events""", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        {
+            homeContent = System.Text.RegularExpressions.Regex.Replace(
+                homeContent,
+                @"<section\s+class=""news-events""",
+                vmvSb.ToString() + "$0",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        else
+        {
+            homeContent += vmvSb.ToString();
+        }
+    }
+
+    // 2) Insert schoolsSb AFTER Vision, Mission & Core Values (vmv-section)
+    if (schoolsSb.Length > 0)
+    {
+        if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""vmv-section""[\s\S]*?</section>", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        {
+            homeContent = System.Text.RegularExpressions.Regex.Replace(
+                homeContent,
+                @"<section\s+class=""vmv-section""[\s\S]*?</section>",
+                "$0" + schoolsSb.ToString(),
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        else if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""(rector-section|rector)""[\s\S]*?</section>", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        {
+            homeContent = System.Text.RegularExpressions.Regex.Replace(
+                homeContent,
+                @"<section\s+class=""(rector-section|rector)""[\s\S]*?</section>",
+                "$0" + schoolsSb.ToString(),
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        else if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""news-events""", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        {
+            homeContent = System.Text.RegularExpressions.Regex.Replace(
+                homeContent,
+                @"<section\s+class=""news-events""",
+                schoolsSb.ToString() + "$0",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        else
+        {
+            homeContent += schoolsSb.ToString();
+        }
+    }
+
+    // 2) Build dynamic Split-Layout Campus Facilities HTML
+    var harvardFacilitiesSb = new System.Text.StringBuilder();
+    harvardFacilitiesSb.Append("<section class=\"harvard-facilities-section\">");
+    harvardFacilitiesSb.Append("<div class=\"harvard-facilities-inner\">");
+    
+    // Left Column: Heading & Button
+    harvardFacilitiesSb.Append("<div class=\"facilities-left-col\">");
+    harvardFacilitiesSb.Append("<div class=\"facilities-eyebrow\"><i class=\"fas fa-building\"></i> INFRASTRUCTURE</div>");
+    harvardFacilitiesSb.Append("<h2 class=\"facilities-main-title\">Campus Facilities &amp; Infrastructure</h2>");
+    harvardFacilitiesSb.Append("<p class=\"facilities-main-desc\">State-of-the-art academic suites, smart technology labs, and premium residential spaces engineered for aviation excellence.</p>");
+    harvardFacilitiesSb.Append("<a href=\"/facilities.html\" class=\"facilities-all-btn\">Explore All Facilities <i class=\"fas fa-arrow-right\"></i></a>");
+    harvardFacilitiesSb.Append("</div>");
+
+    // Right Column: Cards Grid (Normal: Name Only -> Hover: Blur + Scroll Up Description)
+    harvardFacilitiesSb.Append("<div class=\"facilities-right-col\">");
+
+    // Facility 1: Library & Resource Center
+    harvardFacilitiesSb.Append("<a href=\"/facility-library.html\" class=\"hv-hover-card\">");
+    harvardFacilitiesSb.Append("<button type=\"button\" class=\"facility-card-edit-btn\" title=\"Edit Facility\"><i class=\"fas fa-pen-to-square\"></i> Edit Facility</button>");
+    harvardFacilitiesSb.Append("<img src=\"https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=900&q=80\" alt=\"Libraries & Resource Center\" class=\"hv-hover-img\">");
+    harvardFacilitiesSb.Append("<div class=\"hv-hover-default-title\">");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-badge\">ACADEMIC &amp; RESEARCH</span>");
+    harvardFacilitiesSb.Append("<h3>Libraries &amp; Resource Center</h3>");
+    harvardFacilitiesSb.Append("</div>");
+    harvardFacilitiesSb.Append("<div class=\"hv-hover-overlay\">");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-badge\">ACADEMIC &amp; RESEARCH</span>");
+    harvardFacilitiesSb.Append("<h3>Libraries &amp; Resource Center</h3>");
+    harvardFacilitiesSb.Append("<p>Extensive digital aviation databases, technical journals, quiet study suites, and 24/7 digital research access.</p>");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-link\"><span class=\"hv-card-link-text\">Explore Libraries</span> <i class=\"fas fa-arrow-right\"></i></span>");
+    harvardFacilitiesSb.Append("</div></a>");
+
+    // Facility 2: Avionics & Smart Tech Complex
+    harvardFacilitiesSb.Append("<a href=\"/facility-smart.html\" class=\"hv-hover-card\">");
+    harvardFacilitiesSb.Append("<button type=\"button\" class=\"facility-card-edit-btn\" title=\"Edit Facility\"><i class=\"fas fa-pen-to-square\"></i> Edit Facility</button>");
+    harvardFacilitiesSb.Append("<img src=\"https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80\" alt=\"Avionics & Smart Tech Complex\" class=\"hv-hover-img\">");
+    harvardFacilitiesSb.Append("<div class=\"hv-hover-default-title\">");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-badge theme-tech\">INNOVATION &amp; TECH</span>");
+    harvardFacilitiesSb.Append("<h3>Avionics &amp; Smart Tech Complex</h3>");
+    harvardFacilitiesSb.Append("</div>");
+    harvardFacilitiesSb.Append("<div class=\"hv-hover-overlay\">");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-badge theme-tech\">INNOVATION &amp; TECH</span>");
+    harvardFacilitiesSb.Append("<h3>Avionics &amp; Smart Tech Complex</h3>");
+    harvardFacilitiesSb.Append("<p>Next-generation IoT smart classrooms, advanced avionics electronics labs, and campus-wide AI computing suites.</p>");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-link\"><span class=\"hv-card-link-text\">Discover Smart Tech</span> <i class=\"fas fa-arrow-right\"></i></span>");
+    harvardFacilitiesSb.Append("</div></a>");
+
+    // Facility 3: Hostel & Student Residence
+    harvardFacilitiesSb.Append("<a href=\"/facility-hostel.html\" class=\"hv-hover-card\">");
+    harvardFacilitiesSb.Append("<button type=\"button\" class=\"facility-card-edit-btn\" title=\"Edit Facility\"><i class=\"fas fa-pen-to-square\"></i> Edit Facility</button>");
+    harvardFacilitiesSb.Append("<img src=\"https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=900&q=80\" alt=\"Hostel & Student Residence\" class=\"hv-hover-img\">");
+    harvardFacilitiesSb.Append("<div class=\"hv-hover-default-title\">");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-badge theme-life\">CAMPUS LIFE</span>");
+    harvardFacilitiesSb.Append("<h3>Hostel &amp; Student Residence</h3>");
+    harvardFacilitiesSb.Append("</div>");
+    harvardFacilitiesSb.Append("<div class=\"hv-hover-overlay\">");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-badge theme-life\">CAMPUS LIFE</span>");
+    harvardFacilitiesSb.Append("<h3>Hostel &amp; Student Residence</h3>");
+    harvardFacilitiesSb.Append("<p>Secure, fully-equipped residential accommodations, dining halls, and executive suites for aviation trainees.</p>");
+    harvardFacilitiesSb.Append("<span class=\"hv-hover-link\"><span class=\"hv-card-link-text\">View Residential Suites</span> <i class=\"fas fa-arrow-right\"></i></span>");
+    harvardFacilitiesSb.Append("</div></a>");
+
+    harvardFacilitiesSb.Append("</div></div></div></section>");
+
+    // Clean up any old harvard-facilities-section if saved in content
+    homeContent = System.Text.RegularExpressions.Regex.Replace(homeContent, @"<section\s+class=""harvard-facilities-section""[\s\S]*?</section>", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+    if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""news-events""[\s\S]*?</section>", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+    {
+        homeContent = System.Text.RegularExpressions.Regex.Replace(
+            homeContent,
+            @"<section\s+class=""news-events""[\s\S]*?</section>",
+            "$0" + harvardFacilitiesSb.ToString(),
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    }
+    else if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""schools-section""[\s\S]*?</section>", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+    {
+        homeContent = System.Text.RegularExpressions.Regex.Replace(
+            homeContent,
+            @"<section\s+class=""schools-section""[\s\S]*?</section>",
+            "$0" + harvardFacilitiesSb.ToString(),
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    }
+    else
+    {
+        homeContent += harvardFacilitiesSb.ToString();
+    }
+
+    // 3) Insert Faculties section AFTER Facts & Figures section
+    if (facultiesSb.Length > 0)
+    {
+        if (System.Text.RegularExpressions.Regex.IsMatch(homeContent, @"<section\s+class=""facts2""[\s\S]*?</section>", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+        {
+            homeContent = System.Text.RegularExpressions.Regex.Replace(
+                homeContent,
+                @"<section\s+class=""facts2""[\s\S]*?</section>",
+                "$0" + facultiesSb.ToString(),
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        }
+        else
+        {
+            homeContent += facultiesSb.ToString();
+        }
+    }
+}
+
+@* ===== The rest of the homepage content lives in the database (Pages table, slug = "home").
+   Announcement bar, navbar, and footer are NO LONGER part of static stored content — they always
+   render from Views/Shared/_AnnouncementBar.cshtml, Views/Shared/_SiteNavBar.cshtml, and Views/Shared/_SiteFooter.cshtml,
+   so editing them in Admin updates every single page across the site. ===== *@
+<div id="cms-editable-region">
+    <partial name="_AnnouncementBar" />
+    <partial name="_SiteNavBar" />
+    @Html.Raw(homeContent)
+    <partial name="_SiteFooter" />
+</div>
+
+@if (editMode)
+{
+    <form id="cmsAntiForgeryForm">@Html.AntiForgeryToken()</form>
+
+    <div id="cmsToolbar" class="cms-toolbar">
+        <button id="cmsEditBtn" type="button" class="cms-btn cms-btn-edit">
+            <i class="fas fa-pen"></i> Edit Page
+        </button>
+        <button id="cmsSaveBtn" type="button" class="cms-btn cms-btn-save" style="display:none;">
+            <i class="fas fa-check"></i> Save Changes
+        </button>
+        <button id="cmsCancelBtn" type="button" class="cms-btn cms-btn-cancel" style="display:none;">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+        <span id="cmsStatus" class="cms-status"></span>
+    </div>
+
+    <input type="file" id="cmsImageInput" accept="image/*" style="display:none;">
+    <input type="file" id="cmsVideoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v,video/*" style="display:none;">
+}
+
+
+
+<script>
+    // Tells the shared navbar script (home-scripts.js) whether someone is
+    // logged in, so the Account button can show the right state.
+    window.NAU_AUTH = {
+        isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+        isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+        userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.CurrentUserName ?? ""))
+    };
+
+    function initTickerAutoScroll() {
+      document.querySelectorAll('.ticker-container').forEach(function(container) {
+        var wrapper = container.querySelector('.ticker-scroll-wrapper');
+        if (!wrapper) return;
+        var isManual = false;
+        var timer;
+        container.addEventListener('scroll', function() {
+          isManual = true;
+          wrapper.style.animationPlayState = 'paused';
+          clearTimeout(timer);
+          timer = setTimeout(function() {
+            isManual = false;
+            if (!container.matches(':hover')) {
+              wrapper.style.animationPlayState = 'running';
+            }
+          }, 2000);
+        });
+        container.addEventListener('mouseenter', function() {
+          wrapper.style.animationPlayState = 'paused';
+        });
+        container.addEventListener('mouseleave', function() {
+          if (!isManual) {
+            wrapper.style.animationPlayState = 'running';
+          }
+        });
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTickerAutoScroll);
+    } else {
+      initTickerAutoScroll();
+    }
+</script>
+<script src="~/js/home-scripts.js" asp-append-version="true"></script>
+<script src="~/js/global-search.js" asp-append-version="true"></script>
+<script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+<script src="~/js/schools-submenu.js" asp-append-version="true"></script>
+
+@if (editMode)
+{
+    <script src="~/js/cms-editor.js" asp-append-version="true"></script>
+}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.body.addEventListener("click", function (e) {
+      var vmvBtn = e.target.closest("#openVmvEditModalBtn, .vmv-section-edit-btn");
+      if (vmvBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openVmvCRUDModal();
+        return;
+      }
+
+      var editBtn = e.target.closest(".facility-card-edit-btn");
+      if (!editBtn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      var card = editBtn.closest(".hv-hover-card");
+      if (!card) return;
+
+      var imgEl = card.querySelector(".hv-hover-img");
+      var badgeEls = card.querySelectorAll(".hv-hover-badge");
+      var titleEls = card.querySelectorAll("h3");
+      var descEl = card.querySelector("p");
+      var linkTextEl = card.querySelector(".hv-card-link-text") || card.querySelector(".hv-hover-link");
+
+      var currentImg = imgEl ? imgEl.src : "";
+      var currentBadge = badgeEls.length > 0 ? badgeEls[0].textContent.trim() : "";
+      var currentTitle = titleEls.length > 0 ? titleEls[0].textContent.trim() : "";
+      var currentDesc = descEl ? descEl.textContent.trim() : "";
+      var currentLinkText = linkTextEl ? linkTextEl.textContent.replace("→", "").trim() : "Explore";
+      var currentHref = card.getAttribute("href") || "#";
+
+      var backdrop = document.createElement("div");
+      backdrop.className = "cms-image-modal-backdrop";
+      backdrop.style.zIndex = "9999999";
+
+      function escapeAttr(str) {
+        if (!str) return "";
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      backdrop.innerHTML =
+        '<div class="cms-image-modal" style="max-width: 580px; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.5);">' +
+          '<div class="cms-image-modal-head" style="background: #0b2c4d; padding: 18px 24px; border-top-left-radius: 20px; border-top-right-radius: 20px; display:flex; justify-content:space-between; align-items:center;">' +
+            '<h3 style="color:#fff; font-size:17px; font-weight:700; margin:0; display:flex; align-items:center; gap:8px;">' +
+              '<i class="fas fa-pen-to-square" style="color:#4ed47a;"></i> Edit Facility Card' +
+            '</h3>' +
+            '<button type="button" class="cms-image-modal-close" id="closeFacModal" style="color:#fff; font-size:22px; cursor:pointer; background:none; border:none;">&times;</button>' +
+          '</div>' +
+
+          '<div class="cms-image-modal-body" style="padding: 24px; max-height: 75vh; overflow-y: auto;">' +
+            
+            '<div style="margin-bottom: 16px;">' +
+              '<label style="display:block; font-weight:700; font-size:13px; color:#0b2c4d; margin-bottom:6px;">Facility Title</label>' +
+              '<input type="text" id="facModalTitleInput" class="cms-url-input" value="' + escapeAttr(currentTitle) + '" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; font-weight:600;">' +
+            '</div>' +
+
+            '<div style="margin-bottom: 16px;">' +
+              '<label style="display:block; font-weight:700; font-size:13px; color:#0b2c4d; margin-bottom:6px;">Category Badge / Tag</label>' +
+              '<input type="text" id="facModalBadgeInput" class="cms-url-input" value="' + escapeAttr(currentBadge) + '" placeholder="e.g. ACADEMIC & RESEARCH" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px;">' +
+            '</div>' +
+
+            '<div style="margin-bottom: 16px;">' +
+              '<label style="display:block; font-weight:700; font-size:13px; color:#0b2c4d; margin-bottom:6px;">Facility Description</label>' +
+              '<textarea id="facModalDescInput" class="cms-url-input" rows="3" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px; font-family:inherit; line-height:1.5;">' + escapeAttr(currentDesc) + '</textarea>' +
+            '</div>' +
+
+            '<div style="margin-bottom: 18px; background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0;">' +
+              '<label style="display:block; font-weight:700; font-size:13px; color:#0b2c4d; margin-bottom:10px;"><i class="fas fa-image" style="color:#1e8e3e;"></i> Card Background Image</label>' +
+              
+              '<div style="display:flex; gap:10px; margin-bottom:12px;">' +
+                '<input type="text" id="facModalImgUrlInput" class="cms-url-input" value="' + escapeAttr(currentImg) + '" placeholder="Paste Image Web URL..." style="flex:1; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">' +
+                '<label for="facModalFileInput" style="background:#0b2c4d; color:#fff; padding:9px 16px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">' +
+                  '<i class="fas fa-upload"></i> Upload' +
+                '</label>' +
+                '<input type="file" id="facModalFileInput" accept="image/*" style="display:none;">' +
+              '</div>' +
+
+              '<div style="height: 140px; border-radius: 10px; overflow: hidden; position: relative; background: #000; border:1px solid #cbd5e1;">' +
+                '<img id="facModalImgPreview" src="' + escapeAttr(currentImg) + '" style="width:100%; height:100%; object-fit:cover;">' +
+              '</div>' +
+            '</div>' +
+
+            '<div style="display:flex; gap:12px; margin-bottom:10px;">' +
+              '<div style="flex:1;">' +
+                '<label style="display:block; font-weight:700; font-size:13px; color:#0b2c4d; margin-bottom:6px;">Button / Action Text</label>' +
+                '<input type="text" id="facModalBtnTextInput" class="cms-url-input" value="' + escapeAttr(currentLinkText) + '" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px;">' +
+              '</div>' +
+              '<div style="flex:1;">' +
+                '<label style="display:block; font-weight:700; font-size:13px; color:#0b2c4d; margin-bottom:6px;">Target Page Link</label>' +
+                '<input type="text" id="facModalLinkInput" class="cms-url-input" value="' + escapeAttr(currentHref) + '" style="width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px;">' +
+              '</div>' +
+            '</div>' +
+
+          '</div>' +
+
+          '<div style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #eef0f4; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; display: flex; justify-content: flex-end; gap: 10px;">' +
+            '<button type="button" class="cms-modal-btn" id="cancelFacModal" style="background:#e2e8f0; color:#334155; border:none; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;">Cancel</button>' +
+            '<button type="button" class="cms-modal-btn cms-modal-btn-primary" id="saveFacModal" style="background:#1e8e3e; color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:6px;"><i class="fas fa-check"></i> Apply &amp; Update Card</button>' +
+          '</div>' +
+        '</div>';
+
+      document.body.appendChild(backdrop);
+
+      var closeModal = function () {
+        if (backdrop && backdrop.parentNode) {
+          backdrop.parentNode.removeChild(backdrop);
+        }
+      };
+
+      backdrop.querySelector("#closeFacModal").addEventListener("click", closeModal);
+      backdrop.querySelector("#cancelFacModal").addEventListener("click", closeModal);
+
+      var urlInput = backdrop.querySelector("#facModalImgUrlInput");
+      var imgPreview = backdrop.querySelector("#facModalImgPreview");
+      urlInput.addEventListener("input", function () {
+        imgPreview.src = urlInput.value;
+      });
+
+      var fileInput = backdrop.querySelector("#facModalFileInput");
+      fileInput.addEventListener("change", function () {
+        if (fileInput.files && fileInput.files[0]) {
+          var file = fileInput.files[0];
+          var fd = new FormData();
+          fd.append("file", file);
+          urlInput.value = "Uploading file...";
+          fetch("/Cms/UploadImage", { method: "POST", body: fd })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+              if (data && data.url) {
+                urlInput.value = data.url;
+                imgPreview.src = data.url;
+              } else if (data && data.error) {
+                alert(data.error);
+                urlInput.value = currentImg;
+              }
+            })
+            .catch(function (err) {
+              alert("Error uploading image");
+              urlInput.value = currentImg;
+            });
+        }
+      });
+
+      backdrop.querySelector("#saveFacModal").addEventListener("click", function () {
+        var newTitle = backdrop.querySelector("#facModalTitleInput").value.trim();
+        var newBadge = backdrop.querySelector("#facModalBadgeInput").value.trim();
+        var newDesc = backdrop.querySelector("#facModalDescInput").value.trim();
+        var newImg = backdrop.querySelector("#facModalImgUrlInput").value.trim();
+        var newBtnText = backdrop.querySelector("#facModalBtnTextInput").value.trim();
+        var newLink = backdrop.querySelector("#facModalLinkInput").value.trim();
+
+        if (imgEl && newImg) imgEl.src = newImg;
+        if (newLink) card.setAttribute("href", newLink);
+
+        badgeEls.forEach(function (b) { b.textContent = newBadge; });
+        titleEls.forEach(function (t) { t.textContent = newTitle; });
+        if (descEl) descEl.textContent = newDesc;
+
+        var linkTextNode = card.querySelector(".hv-card-link-text");
+        if (linkTextNode) {
+          linkTextNode.textContent = newBtnText;
+        } else if (linkTextEl) {
+          linkTextEl.innerHTML = escapeAttr(newBtnText) + ' <i class="fas fa-arrow-right"></i>';
+        }
+
+        closeModal();
+
+        var statusEl = document.getElementById("cmsStatusText") || document.querySelector(".cms-status");
+        if (statusEl) {
+          statusEl.textContent = "Facility card updated! Click Save Changes at bottom to publish.";
+        }
+      });
+    });
+
+    function openVmvCRUDModal() {
+      var vmvSec = document.querySelector(".vmv-section");
+      if (!vmvSec) return;
+
+      var visionCard = vmvSec.querySelector(".vmv-vision-card");
+      var visionTag = visionCard ? (visionCard.querySelector(".vmv-pill-tag") ? visionCard.querySelector(".vmv-pill-tag").textContent.trim() : "PURPOSE & FUTURE") : "PURPOSE & FUTURE";
+      var visionQuote = visionCard ? (visionCard.querySelector(".vmv-quote-dark") ? visionCard.querySelector(".vmv-quote-dark").textContent.replace(/^["“\s]+|["”\s]+$/g, "").trim() : "") : "";
+      var visionFooter = visionCard ? (visionCard.querySelector(".vmv-card-footer-accent span") ? visionCard.querySelector(".vmv-card-footer-accent span").textContent.trim() : "Global Aviation Benchmark") : "";
+
+      var missionCard = vmvSec.querySelector(".vmv-mission-card");
+      var missionTag = missionCard ? (missionCard.querySelector(".vmv-pill-tag") ? missionCard.querySelector(".vmv-pill-tag").textContent.trim() : "COMMITMENT & OBJECTIVE") : "COMMITMENT & OBJECTIVE";
+      var missionQuote = missionCard ? (missionCard.querySelector(".vmv-quote-light") ? missionCard.querySelector(".vmv-quote-light").textContent.replace(/^["“\s]+|["”\s]+$/g, "").trim() : "") : "";
+
+      var pillarList = [];
+      if (missionCard) {
+        missionCard.querySelectorAll(".vmv-pillar").forEach(function (p) {
+          var t = p.textContent.trim();
+          if (t) pillarList.push(t);
+        });
+      }
+      var missionPillarsStr = pillarList.join(", ");
+
+      var valuesList = [];
+      vmvSec.querySelectorAll(".vmv-value-item").forEach(function (item) {
+        var name = item.querySelector(".vmv-val-name") ? item.querySelector(".vmv-val-name").textContent.trim() : "";
+        var desc = item.querySelector(".vmv-val-desc") ? item.querySelector(".vmv-val-desc").textContent.trim() : "";
+        var iconEl = item.querySelector(".vmv-val-icon i");
+        var icon = iconEl ? iconEl.className : "fas fa-star";
+        if (name) {
+          valuesList.push({ name: name, desc: desc, icon: icon });
+        }
+      });
+
+      var existingBackdrop = document.querySelector(".vmv-edit-modal-backdrop");
+      if (existingBackdrop) existingBackdrop.remove();
+
+      var backdrop = document.createElement("div");
+      backdrop.className = "cms-image-modal-backdrop vmv-edit-modal-backdrop";
+      backdrop.style.zIndex = "9999999";
+
+      function esc(str) {
+        if (!str) return "";
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+
+      var modalHtml = [
+        '<div class="cms-image-modal vmv-crud-modal" style="max-width: 780px; width:92%; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.5); background:#fff; overflow:hidden;">',
+          '<div style="background: #0b2c4d; padding: 20px 26px; display:flex; justify-content:space-between; align-items:center;">',
+            '<h3 style="color:#fff; font-size:18px; font-weight:700; margin:0; display:flex; align-items:center; gap:10px;">',
+              '<i class="fas fa-sliders" style="color:#4ed47a;"></i> Manage Vision, Mission &amp; Core Values',
+            '</h3>',
+            '<button type="button" class="vmv-close-btn" style="color:#fff; font-size:24px; cursor:pointer; background:none; border:none;">&times;</button>',
+          '</div>',
+
+          '<div style="padding: 24px; max-height: 72vh; overflow-y: auto;">',
+            
+            '<div class="vmv-modal-card-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:20px; margin-bottom:20px;">',
+              '<h4 style="margin:0 0 14px 0; color:#0b2c4d; font-size:15px; font-weight:800; display:flex; align-items:center; gap:8px;">',
+                '<i class="fas fa-eye" style="color:#1e8e3e;"></i> 1. Vision Card Settings',
+              '</h4>',
+              '<div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">',
+                '<div>',
+                  '<label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Category Tag</label>',
+                  '<input type="text" id="vmvInpVisionTag" class="cms-url-input" value="' + esc(visionTag) + '" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">',
+                '</div>',
+                '<div>',
+                  '<label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Footer Accent Text</label>',
+                  '<input type="text" id="vmvInpVisionFooter" class="cms-url-input" value="' + esc(visionFooter) + '" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">',
+                '</div>',
+              '</div>',
+              '<div>',
+                '<label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Vision Statement / Quote</label>',
+                '<textarea id="vmvInpVisionQuote" rows="2" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px; font-family:inherit; line-height:1.5;">' + esc(visionQuote) + '</textarea>',
+              '</div>',
+            '</div>',
+
+            '<div class="vmv-modal-card-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:20px; margin-bottom:20px;">',
+              '<h4 style="margin:0 0 14px 0; color:#0b2c4d; font-size:15px; font-weight:800; display:flex; align-items:center; gap:8px;">',
+                '<i class="fas fa-bullseye" style="color:#1e8e3e;"></i> 2. Mission Card Settings',
+              '</h4>',
+              '<div style="margin-bottom:14px;">',
+                '<label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Category Tag</label>',
+                '<input type="text" id="vmvInpMissionTag" class="cms-url-input" value="' + esc(missionTag) + '" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">',
+              '</div>',
+              '<div style="margin-bottom:14px;">',
+                '<label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Mission Statement / Quote</label>',
+                '<textarea id="vmvInpMissionQuote" rows="2" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px; font-family:inherit; line-height:1.5;">' + esc(missionQuote) + '</textarea>',
+              '</div>',
+              '<div>',
+                '<label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Mission Pillars (Comma-separated tags)</label>',
+                '<input type="text" id="vmvInpMissionPillars" class="cms-url-input" value="' + esc(missionPillarsStr) + '" placeholder="Safe, Secure, Efficient, Best-in-Class" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">',
+              '</div>',
+            '</div>',
+
+            '<div class="vmv-modal-card-box" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:16px; padding:20px;">',
+              '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">',
+                '<h4 style="margin:0; color:#0b2c4d; font-size:15px; font-weight:800; display:flex; align-items:center; gap:8px;">',
+                  '<i class="fas fa-layer-group" style="color:#1e8e3e;"></i> 3. Manage Core Values (CRUD)',
+                '</h4>',
+                '<button type="button" id="vmvAddNewValBtn" style="background:#1e8e3e; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">',
+                  '<i class="fas fa-plus"></i> Add New Value',
+                '</button>',
+              '</div>',
+              '<div id="vmvCoreValuesContainer" style="display:flex; flex-direction:column; gap:12px;"></div>',
+            '</div>',
+
+          '</div>',
+
+          '<div style="background:#f1f5f9; padding:16px 24px; display:flex; justify-content:flex-end; gap:12px; border-top:1px solid #e2e8f0;">',
+            '<button type="button" class="vmv-close-btn" style="background:#94a3b8; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-weight:600; cursor:pointer;">Cancel</button>',
+            '<button type="button" id="vmvApplyChangesBtn" style="background:linear-gradient(135deg,#0b2c4d 0%,#1e8e3e 100%); color:#fff; border:none; padding:10px 24px; border-radius:8px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px;">',
+              '<i class="fas fa-check"></i> Apply &amp; Save VMV Section',
+            '</button>',
+          '</div>',
+        '</div>'
+      ].join('');
+
+      backdrop.innerHTML = modalHtml;
+      document.body.appendChild(backdrop);
+
+      var container = backdrop.querySelector("#vmvCoreValuesContainer");
+
+      function renderValueRow(val) {
+        var row = document.createElement("div");
+        row.className = "vmv-val-edit-row";
+        row.style.cssText = "background:#ffffff; border:1px solid #cbd5e1; border-radius:12px; padding:14px; position:relative;";
+        row.innerHTML = [
+          '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">',
+            '<span style="font-size:12px; font-weight:800; color:#1e8e3e; text-transform:uppercase;">Core Value Item</span>',
+            '<button type="button" class="vmv-del-row-btn" style="background:rgba(220,38,38,0.1); color:#dc2626; border:none; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">',
+              '<i class="fas fa-trash-can"></i> Delete',
+            '</button>',
+          '</div>',
+          '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px;">',
+            '<div>',
+              '<label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Value Title</label>',
+              '<input type="text" class="vmv-row-name" value="' + esc(val.name) + '" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:700;">',
+            '</div>',
+            '<div>',
+              '<label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">FontAwesome Icon Class</label>',
+              '<input type="text" class="vmv-row-icon" value="' + esc(val.icon) + '" placeholder="fas fa-star" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">',
+            '</div>',
+          '</div>',
+          '<div>',
+            '<label style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:3px;">Description / Subtext</label>',
+            '<input type="text" class="vmv-row-desc" value="' + esc(val.desc) + '" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px;">',
+          '</div>'
+        ].join('');
+
+        row.querySelector(".vmv-del-row-btn").addEventListener("click", function () {
+          row.remove();
+        });
+
+        container.appendChild(row);
+      }
+
+      valuesList.forEach(function (v) { renderValueRow(v); });
+
+      backdrop.querySelector("#vmvAddNewValBtn").addEventListener("click", function () {
+        renderValueRow({ name: "New Core Value", desc: "Short description here", icon: "fas fa-star" });
+      });
+
+      backdrop.querySelectorAll(".vmv-close-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () { backdrop.remove(); });
+      });
+
+      backdrop.querySelector("#vmvApplyChangesBtn").addEventListener("click", function () {
+        var newVisionTag = backdrop.querySelector("#vmvInpVisionTag").value.trim();
+        var newVisionFooter = backdrop.querySelector("#vmvInpVisionFooter").value.trim();
+        var newVisionQuote = backdrop.querySelector("#vmvInpVisionQuote").value.trim();
+
+        var newMissionTag = backdrop.querySelector("#vmvInpMissionTag").value.trim();
+        var newMissionQuote = backdrop.querySelector("#vmvInpMissionQuote").value.trim();
+        var newMissionPillarsStr = backdrop.querySelector("#vmvInpMissionPillars").value.trim();
+
+        if (visionCard) {
+          var tagEl = visionCard.querySelector(".vmv-pill-tag");
+          if (tagEl) tagEl.textContent = newVisionTag;
+
+          var quoteEl = visionCard.querySelector(".vmv-quote-dark");
+          if (quoteEl) quoteEl.innerHTML = "&ldquo;" + esc(newVisionQuote) + "&rdquo;";
+
+          var footSpan = visionCard.querySelector(".vmv-card-footer-accent span");
+          if (footSpan) footSpan.innerHTML = '<i class="fas fa-globe-asia"></i> ' + esc(newVisionFooter);
+        }
+
+        if (missionCard) {
+          var mTagEl = missionCard.querySelector(".vmv-pill-tag");
+          if (mTagEl) mTagEl.textContent = newMissionTag;
+
+          var mQuoteEl = missionCard.querySelector(".vmv-quote-light");
+          if (mQuoteEl) mQuoteEl.innerHTML = "&ldquo;" + esc(newMissionQuote) + "&rdquo;";
+
+          var pillarsRow = missionCard.querySelector(".vmv-pillars-row");
+          if (pillarsRow) {
+            var parts = newMissionPillarsStr.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+            var pillarsHtml = parts.map(function (p) {
+              return '<span class="vmv-pillar"><i class="fas fa-check"></i> ' + esc(p) + '</span>';
+            }).join('');
+            pillarsRow.innerHTML = pillarsHtml;
+          }
+        }
+
+        var valuesGrid = vmvSec.querySelector(".vmv-values-grid");
+        if (valuesGrid) {
+          var newRows = container.querySelectorAll(".vmv-val-edit-row");
+          var gridHtml = "";
+          newRows.forEach(function (r) {
+            var name = r.querySelector(".vmv-row-name").value.trim();
+            var icon = r.querySelector(".vmv-row-icon").value.trim() || "fas fa-star";
+            var desc = r.querySelector(".vmv-row-desc").value.trim();
+
+            gridHtml += [
+              '<div class="vmv-value-item">',
+                '<div class="vmv-val-icon"><i class="' + esc(icon) + '"></i></div>',
+                '<div class="vmv-val-info">',
+                  '<span class="vmv-val-name">' + esc(name) + '</span>',
+                  '<span class="vmv-val-desc">' + esc(desc) + '</span>',
+                '</div>',
+              '</div>'
+            ].join('');
+          });
+          valuesGrid.innerHTML = gridHtml;
+        }
+
+        backdrop.remove();
+
+        var cmsStatus = document.getElementById("cmsStatus") || document.getElementById("cmsStatusText");
+        if (cmsStatus) {
+          cmsStatus.textContent = "VMV Section updated! Click Save Changes to publish.";
+          cmsStatus.style.color = "#4ed47a";
+        }
+      });
+    }
+  });
+</script>
+
+<partial name="_PublicModals" />
+<script src="~/js/public-modals.js" asp-append-version="true"></script>
+<script src="~/js/cms-icon-picker.js" asp-append-version="true"></script>
+<partial name="_AdminFloatingBar" />
+</body>
+</html>

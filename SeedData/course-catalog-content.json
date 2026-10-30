@@ -1,0 +1,1865 @@
+﻿{
+    "Hero":  {
+                 "Eyebrow":  "ATP 2026",
+                 "Title":  "NAU Course Catalog",
+                 "TitleEm":  "Course Catalog",
+                 "Description":  "Browse the complete Academic Training Plan 2026 - hundreds of certified courses across Air Navigation Services, Regulatory Services, Airport Services and Aviation Management."
+             },
+    "Schools":  [
+                    {
+                        "Id":  1,
+                        "Name":  "Air Navigation Services",
+                        "Slug":  "air-navigation-services",
+                        "Icon":  "fa-tower-cell",
+                        "Color":  "#0b2c4d",
+                        "Courses":  [
+                                        {
+                                            "Id":  1,
+                                            "Title":  "Basic ATC Course No. 46",
+                                            "Duration":  "40 Weeks",
+                                            "StartDate":  "07.12.2026",
+                                            "EndDate":  "03.09.2027",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  2,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.29",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "05.01.2026",
+                                            "EndDate":  "09.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  3,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.30",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "30.03.2026",
+                                            "EndDate":  "03.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  4,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.31",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.04.2026",
+                                            "EndDate":  "24.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  5,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.32",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "04.05.2026",
+                                            "EndDate":  "08.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  6,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.33",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "08.06.2026",
+                                            "EndDate":  "12.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  7,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.34",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "22.06.2026",
+                                            "EndDate":  "26.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  8,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.35",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "06.07.2026",
+                                            "EndDate":  "10.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  9,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.36",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "13.07.2026",
+                                            "EndDate":  "17.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  10,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.37",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "27.07.2026",
+                                            "EndDate":  "31.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  11,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.38",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "03.08.2026",
+                                            "EndDate":  "07.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  12,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.39",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "24.08.2026",
+                                            "EndDate":  "28.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  13,
+                                            "Title":  "ATC Refresher (Abridged) For Officers Course No.40",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "01.01.2027",
+                                            "EndDate":  "01.01.2027",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  14,
+                                            "Title":  "ATC Assistant Course No. 02",
+                                            "Duration":  "08 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  15,
+                                            "Title":  "ATC Assistant Course No. 03",
+                                            "Duration":  "08 Weeks",
+                                            "StartDate":  "07.09.2026",
+                                            "EndDate":  "30.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  16,
+                                            "Title":  "ATC Refresher (Abridged) For Staff Course No.09",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "26.01.2026",
+                                            "EndDate":  "30.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  17,
+                                            "Title":  "ATC Refresher (Abridged) For Staff Course No.10",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "27.04.2026",
+                                            "EndDate":  "01.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  18,
+                                            "Title":  "ATC Refresher (Abridged) For Staff Course No.11",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "23.11.2026",
+                                            "EndDate":  "27.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  19,
+                                            "Title":  "ATC Refresher (Abridged) For Staff Course No.12",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.12.2026",
+                                            "EndDate":  "18.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  20,
+                                            "Title":  "Approach Control Surveillance Course No. 06",
+                                            "Duration":  "05 Weeks",
+                                            "StartDate":  "09.02.2026",
+                                            "EndDate":  "13.03.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  21,
+                                            "Title":  "Area / Approach Control Surveillance Course No.60",
+                                            "Duration":  "12 Weeks",
+                                            "StartDate":  "13.04.2026",
+                                            "EndDate":  "03.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  22,
+                                            "Title":  "Area / Approach Control Surveillance Course No.61",
+                                            "Duration":  "12 Weeks",
+                                            "StartDate":  "19.10.2026",
+                                            "EndDate":  "16.01.2027",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  23,
+                                            "Title":  "Flight Procedure Design (Conventional) Course No.03",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "08.06.2026",
+                                            "EndDate":  "03.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  24,
+                                            "Title":  "Flight Procedure Design (PBN) Course No.01",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "12.10.2026",
+                                            "EndDate":  "30.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  25,
+                                            "Title":  "ELP Advanced Course No. 02",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "06.04.2026",
+                                            "EndDate":  "17.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  26,
+                                            "Title":  "ELP Course No. 05",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "10.08.2026",
+                                            "EndDate":  "04.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  27,
+                                            "Title":  "Basic SAR Course No. 22",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "02.03.2026",
+                                            "EndDate":  "13.03.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  28,
+                                            "Title":  "Basic SAR Course No. 23",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "31.08.2026",
+                                            "EndDate":  "11.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  29,
+                                            "Title":  "Basic SAR Course No. 24",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "16.11.2026",
+                                            "EndDate":  "27.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  30,
+                                            "Title":  "SAR Coordinator Course No. 02",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "30.11.2026",
+                                            "EndDate":  "11.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  31,
+                                            "Title":  "On Job Training Course No. 01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "12.01.2026",
+                                            "EndDate":  "16.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  32,
+                                            "Title":  "On Job Training Course No. 02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  33,
+                                            "Title":  "On Job Training Course No. 03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "30.11.2026",
+                                            "EndDate":  "04.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  34,
+                                            "Title":  "Managing Aeronautical Information Course No. 01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "24.08.2026",
+                                            "EndDate":  "28.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  35,
+                                            "Title":  "Managing Aeronautical Information Course No. 02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.12.2026",
+                                            "EndDate":  "18.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  36,
+                                            "Title":  "CAVRN (For Officer) Course No. 03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "19.01.2026",
+                                            "EndDate":  "23.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  37,
+                                            "Title":  "CAVRN (For Officer) Course No. 04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "01.06.2026",
+                                            "EndDate":  "05.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  38,
+                                            "Title":  "SWIM Course No. 02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.04.2026",
+                                            "EndDate":  "24.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  39,
+                                            "Title":  "SWIM Course No. 03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  40,
+                                            "Title":  "Aeronautical Radio Frequency Spectrum Management Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "09.02.2026",
+                                            "EndDate":  "13.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  41,
+                                            "Title":  "Aeronautical Radio Frequency Spectrum Management Course No.05",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "02.11.2026",
+                                            "EndDate":  "06.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  42,
+                                            "Title":  "COO Course No. 09",
+                                            "Duration":  "14 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  43,
+                                            "Title":  "Communication Operation Assistant Course No. 21",
+                                            "Duration":  "10 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  44,
+                                            "Title":  "IDS AirNav AMHS CRONOS DB Course No. 08",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "05.10.2026",
+                                            "EndDate":  "16.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  45,
+                                            "Title":  "IDS AirNav AMHS CRONOS DB Course No. 09",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "07.12.2026",
+                                            "EndDate":  "18.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  46,
+                                            "Title":  "SDCPS Software (IOU) Course No. 10",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "06.07.2026",
+                                            "EndDate":  "10.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  47,
+                                            "Title":  "SDCPS Software (IOU) Course No. 11",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "16.11.2026",
+                                            "EndDate":  "20.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  48,
+                                            "Title":  "Aeronautical Mobile Service Officers Course No. 04",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "27.04.2026",
+                                            "EndDate":  "22.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  49,
+                                            "Title":  "Aeronautical Mobile Service Staff Course No. 05",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "17.08.2026",
+                                            "EndDate":  "04.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  50,
+                                            "Title":  "INDRA MSSR Operation \u0026 Maintenance Course No.05",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "05.01.2026",
+                                            "EndDate":  "30.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  51,
+                                            "Title":  "ADSB Operation \u0026 Maintenance Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "02.03.2026",
+                                            "EndDate":  "06.03.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  52,
+                                            "Title":  "Selex (ILS) Operation \u0026 Maintenance Course No.03",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "30.03.2026",
+                                            "EndDate":  "24.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  53,
+                                            "Title":  "INDRA PSR Operation \u0026 Maintenance Course No.03",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "06.04.2026",
+                                            "EndDate":  "30.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  54,
+                                            "Title":  "ATM System Course No.03",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "04.05.2026",
+                                            "EndDate":  "15.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  55,
+                                            "Title":  "ELDS MSSR Operation \u0026 Maintenance Course No.04",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "20.07.2026",
+                                            "EndDate":  "14.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  56,
+                                            "Title":  "Selex DVOR / DME Operation \u0026 Maintenance Course No.04",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "23.11.2026",
+                                            "EndDate":  "18.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  57,
+                                            "Title":  "Indra Normarc ILS Operation and Maintenance Course No.01",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  58,
+                                            "Title":  "Basic ATSEP Refresher (For Officers) Course No.06",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "23.02.2026",
+                                            "EndDate":  "27.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  59,
+                                            "Title":  "ATSEP Data Processing \u0026 Networking For Technicians Course No.03",
+                                            "Duration":  "08 Weeks",
+                                            "StartDate":  "08.06.2026",
+                                            "EndDate":  "31.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  60,
+                                            "Title":  "ATSEP Radar For Technicians Course No.03",
+                                            "Duration":  "07 Weeks",
+                                            "StartDate":  "17.08.2026",
+                                            "EndDate":  "02.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  61,
+                                            "Title":  "ATSEP NAVAIDS For Technicians Course No.02",
+                                            "Duration":  "06 Weeks",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "23.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  62,
+                                            "Title":  "ATSEP Radio Communication For Technicians Course No.03",
+                                            "Duration":  "06 Weeks",
+                                            "StartDate":  "05.10.2026",
+                                            "EndDate":  "13.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  63,
+                                            "Title":  "ATSEP Qualification Communication Module Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  64,
+                                            "Title":  "ATSEP Qualification Navigation Module Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  65,
+                                            "Title":  "ATSEP Qualification Surveillance Module Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  66,
+                                            "Title":  "ATSEP Qualification Data Processing Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  67,
+                                            "Title":  "Basic ATSEP For CNS Technicians/Staff Course No.03",
+                                            "Duration":  "12 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  68,
+                                            "Title":  "Basic ATSEP For CNS Officers Course No.02",
+                                            "Duration":  "08 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  69,
+                                            "Title":  "INDRA VCCS SDC-2000 Operations \u0026 Maintenance Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  70,
+                                            "Title":  "HARRIS LIBERTY STAR VCCS Operations \u0026 Maintenance Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        }
+                                    ]
+                    },
+                    {
+                        "Id":  2,
+                        "Name":  "Regulatory Services",
+                        "Slug":  "regulatory-services",
+                        "Icon":  "fa-scale-balanced",
+                        "Color":  "#1e5f74",
+                        "Courses":  [
+                                        {
+                                            "Id":  71,
+                                            "Title":  "International Air Law Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "04.05.2026",
+                                            "EndDate":  "08.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  72,
+                                            "Title":  "Managing Compliance with ICAO SARPs Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "18.05.2026",
+                                            "EndDate":  "22.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  73,
+                                            "Title":  "Air Cargo Regulatory Framework \u0026 Compliance Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "01.06.2026",
+                                            "EndDate":  "05.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  74,
+                                            "Title":  "Annex 14 Application and Requirements Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "16.11.2026",
+                                            "EndDate":  "20.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  75,
+                                            "Title":  "Aerodrome Certification Course No.02",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "01.06.2026",
+                                            "EndDate":  "12.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  76,
+                                            "Title":  "Aerodrome Manual Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "29.06.2026",
+                                            "EndDate":  "03.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  77,
+                                            "Title":  "Aviation Economics Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "19.01.2026",
+                                            "EndDate":  "23.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  78,
+                                            "Title":  "Supply and Demand in Air Transport Industry Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "08.02.2026",
+                                            "EndDate":  "13.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  79,
+                                            "Title":  "Airport Economics Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "06.07.2026",
+                                            "EndDate":  "17.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  80,
+                                            "Title":  "Airport Marketing Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "17.08.2026",
+                                            "EndDate":  "21.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  81,
+                                            "Title":  "Audit Technique Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "05.01.2026",
+                                            "EndDate":  "09.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  82,
+                                            "Title":  "Aeronautical Study Safety Assessment Course No.03 (Jan)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "12.01.2026",
+                                            "EndDate":  "16.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  83,
+                                            "Title":  "Understanding ICAO Annex-19 Safety Management Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.04.2026",
+                                            "EndDate":  "24.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  84,
+                                            "Title":  "Fundamental of Air Cargo Operations \u0026 Safety (For Staff) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "13.07.2026",
+                                            "EndDate":  "17.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  85,
+                                            "Title":  "ANS Inspector Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "20.07.2026",
+                                            "EndDate":  "31.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  86,
+                                            "Title":  "Rules of the Air for Aviation Safety Professionals (ICAO Annex 02) Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "03.08.2026",
+                                            "EndDate":  "07.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  87,
+                                            "Title":  "Aeronautical Study Safety Assessment Course No.03 (Sep)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "07.09.2026",
+                                            "EndDate":  "11.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  88,
+                                            "Title":  "Audit Technique Course No.05",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "23.11.2026",
+                                            "EndDate":  "27.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  89,
+                                            "Title":  "Understanding ICAO Annex-19 Safety Management Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "07.12.2026",
+                                            "EndDate":  "11.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  90,
+                                            "Title":  "Aviation Climate Change Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "05.10.2026",
+                                            "EndDate":  "09.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  91,
+                                            "Title":  "Air Passenger Rights Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "30.03.2026",
+                                            "EndDate":  "04.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  92,
+                                            "Title":  "Aircraft Accident and Investigation Awareness (ICAO Annex-13) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "31.08.2026",
+                                            "EndDate":  "04.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  93,
+                                            "Title":  "Facilitation (ICAO Annex-9) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  94,
+                                            "Title":  "Disabled Aircraft Recovery Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "19.10.2026",
+                                            "EndDate":  "23.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        }
+                                    ]
+                    },
+                    {
+                        "Id":  3,
+                        "Name":  "Airport Services",
+                        "Slug":  "airport-services",
+                        "Icon":  "fa-fire-extinguisher",
+                        "Color":  "#c0392b",
+                        "Courses":  [
+                                        {
+                                            "Id":  95,
+                                            "Title":  "Basic Aerodrome Fire Fighter Course No.03",
+                                            "Duration":  "12 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  96,
+                                            "Title":  "Aerodrome Fire Fighter Refresher Course No.12",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.04.2026",
+                                            "EndDate":  "24.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  97,
+                                            "Title":  "Aerodrome Fire Fighter Refresher Course No.13",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "21.09.2026",
+                                            "EndDate":  "25.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  98,
+                                            "Title":  "Aerodrome Fire Fighter Refresher Course No.14",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.12.2026",
+                                            "EndDate":  "18.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  99,
+                                            "Title":  "Basic Aerodrome Fire Fighter Course No.61",
+                                            "Duration":  "12 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  100,
+                                            "Title":  "SVD (Refresher) Course No.10",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.04.2026",
+                                            "EndDate":  "24.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  101,
+                                            "Title":  "SVD (Refresher) Course No.11",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "21.09.2026",
+                                            "EndDate":  "25.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  102,
+                                            "Title":  "SVD (Refresher) Course No.12",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.12.2026",
+                                            "EndDate":  "18.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  103,
+                                            "Title":  "Basic SVD Course No.27",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  104,
+                                            "Title":  "Fire Fighting (For Corporate Sector) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "26.01.2026",
+                                            "EndDate":  "30.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  105,
+                                            "Title":  "Fire Fighting (For Corporate Sector) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "15.06.2026",
+                                            "EndDate":  "19.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  106,
+                                            "Title":  "Fire Fighting (For Corporate Sector) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "03.08.2026",
+                                            "EndDate":  "07.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  107,
+                                            "Title":  "Fire Fighting (For Corporate Sector) Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "31.08.2026",
+                                            "EndDate":  "04.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  108,
+                                            "Title":  "Fire Fighting (For Corporate Sector) Course No.05",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "07.09.2026",
+                                            "EndDate":  "11.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  109,
+                                            "Title":  "Fire Fighting (For Corporate Sector) Course No.06",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "19.10.2026",
+                                            "EndDate":  "23.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  110,
+                                            "Title":  "Fire Prevention Course No.69",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "23.02.2026",
+                                            "EndDate":  "13.03.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  111,
+                                            "Title":  "Fire Prevention Course No.70",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "01.06.2026",
+                                            "EndDate":  "19.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  112,
+                                            "Title":  "Fire Prevention Course No.71",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "29.06.2026",
+                                            "EndDate":  "17.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  113,
+                                            "Title":  "Senior Aerodrome Fire Fighter Course No.57",
+                                            "Duration":  "05 Weeks",
+                                            "StartDate":  "05.01.2026",
+                                            "EndDate":  "06.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  114,
+                                            "Title":  "Senior Aerodrome Fire Fighter Course No.58",
+                                            "Duration":  "05 Weeks",
+                                            "StartDate":  "17.08.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  115,
+                                            "Title":  "Senior Aerodrome Fire Fighter Course No.59",
+                                            "Duration":  "05 Weeks",
+                                            "StartDate":  "26.10.2026",
+                                            "EndDate":  "27.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  116,
+                                            "Title":  "Breathing Apparatus Course No.24",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "30.03.2026",
+                                            "EndDate":  "17.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  117,
+                                            "Title":  "Breathing Apparatus Course No.25",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "27.04.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  118,
+                                            "Title":  "Breathing Apparatus Course No.26",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "20.07.2026",
+                                            "EndDate":  "07.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  119,
+                                            "Title":  "Junior Fire Officer Course No.15",
+                                            "Duration":  "05 Weeks",
+                                            "StartDate":  "28.09.2026",
+                                            "EndDate":  "30.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  120,
+                                            "Title":  "Fire Investigation (For Officers) Course No.01",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "30.11.2026",
+                                            "EndDate":  "11.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  121,
+                                            "Title":  "Aircraft Familiarization (For Officers) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "28.12.2026",
+                                            "EndDate":  "01.01.2027",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  122,
+                                            "Title":  "Fire Officer (Refresher) Course No.14",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "03.08.2026",
+                                            "EndDate":  "07.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  123,
+                                            "Title":  "Aerodrome Operations (For Officers) Course No.06",
+                                            "Duration":  "04 Weeks",
+                                            "StartDate":  "19.01.2026",
+                                            "EndDate":  "13.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  124,
+                                            "Title":  "Facilitation \u0026 Hospitality Management (For Officer) Course No.03",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "25.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  125,
+                                            "Title":  "Facilitation \u0026 Hospitality Management (For Staff) Course No.07",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "10.03.2026",
+                                            "EndDate":  "30.03.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  126,
+                                            "Title":  "Facilitation \u0026 Hospitality Management (For Officer) Course No.08",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "02.11.2026",
+                                            "EndDate":  "13.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  127,
+                                            "Title":  "Airside Safety Awareness Course No.07 (JIAP)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "05.01.2026",
+                                            "EndDate":  "09.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  128,
+                                            "Title":  "Airside Safety Awareness Course No.08 (IIAP)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "19.01.2026",
+                                            "EndDate":  "23.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  129,
+                                            "Title":  "Airside Safety Awareness Course No.09 (QIAP)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "06.07.2026",
+                                            "EndDate":  "10.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  130,
+                                            "Title":  "Airside Safety Awareness Course No.10 (BKIAP)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "03.08.2026",
+                                            "EndDate":  "07.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  131,
+                                            "Title":  "Airside Safety Awareness Course No.11 (FIAP)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  132,
+                                            "Title":  "Airside Safety Awareness Course No.12 (AIAP)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "05.10.2026",
+                                            "EndDate":  "09.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  133,
+                                            "Title":  "Airside Safety Awareness Course No.13 (MIAP)",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "16.11.2026",
+                                            "EndDate":  "20.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  134,
+                                            "Title":  "Basic Bird Shooter Course No.03",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  135,
+                                            "Title":  "Marshaller Refresher Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "16.02.2026",
+                                            "EndDate":  "20.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  136,
+                                            "Title":  "Marshaller Refresher Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.07.2026",
+                                            "EndDate":  "27.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  137,
+                                            "Title":  "Aircraft Marshaller Course No.53",
+                                            "Duration":  "08 Weeks",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  138,
+                                            "Title":  "Wildlife Hazard Management Course No.01",
+                                            "Duration":  "TBD",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  139,
+                                            "Title":  "Airport Slot Management Course No.01",
+                                            "Duration":  "TBD",
+                                            "StartDate":  "TBD",
+                                            "EndDate":  "TBD",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  140,
+                                            "Title":  "Standard \u0026 Recommended Practices For Aerodromes (Annex-14) For Engineers Course No.03",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "05.01.2026",
+                                            "EndDate":  "16.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  141,
+                                            "Title":  "Airfield Pavement Maintenance \u0026 Surface Evaluation (For Engineers) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "06.04.2026",
+                                            "EndDate":  "10.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  142,
+                                            "Title":  "PBB Maintenance (STP) Course No.08",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "02.02.2026",
+                                            "EndDate":  "13.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  143,
+                                            "Title":  "PBB Maintenance (STP) Course No.09",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "02.11.2026",
+                                            "EndDate":  "13.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  144,
+                                            "Title":  "Underground Cable Fault Repairs (For Technicians) Course No.03",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "04.05.2026",
+                                            "EndDate":  "15.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  145,
+                                            "Title":  "Engineering Estimation (For Staff) Course No.02",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "08.06.2026",
+                                            "EndDate":  "19.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  146,
+                                            "Title":  "FIDIC Contract (For Officers) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "17.08.2026",
+                                            "EndDate":  "21.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        }
+                                    ]
+                    },
+                    {
+                        "Id":  4,
+                        "Name":  "Aviation Management",
+                        "Slug":  "aviation-management",
+                        "Icon":  "fa-chart-line",
+                        "Color":  "#1e8e3e",
+                        "Courses":  [
+                                        {
+                                            "Id":  147,
+                                            "Title":  "Personal Effectiveness (For Staff) Course No.06",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "04.05.2026",
+                                            "EndDate":  "08.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  148,
+                                            "Title":  "Personal Effectiveness (For Staff) Course No.07",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "07.09.2026",
+                                            "EndDate":  "11.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  149,
+                                            "Title":  "Personal Effectiveness (For Staff) Course No.08",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "07.12.2026",
+                                            "EndDate":  "11.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  150,
+                                            "Title":  "Basic Logistics (For Staff) Course No.05",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "19.01.2026",
+                                            "EndDate":  "06.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  151,
+                                            "Title":  "Basic Logistics (For Staff) Course No.06",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "20.04.2026",
+                                            "EndDate":  "08.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  152,
+                                            "Title":  "Basic Logistics (For Staff) Course No.07",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "13.07.2026",
+                                            "EndDate":  "31.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  153,
+                                            "Title":  "Basic Logistics (For Staff) Course No.08",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "09.11.2026",
+                                            "EndDate":  "27.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  154,
+                                            "Title":  "Logistics and Supply Chain Operations (For Officers) Course No.01",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "18.05.2026",
+                                            "EndDate":  "05.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  155,
+                                            "Title":  "Logistics and Supply Chain Operations (For Officers) Course No.02",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "07.09.2026",
+                                            "EndDate":  "25.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  156,
+                                            "Title":  "Aviation Management Course No.09",
+                                            "Duration":  "05 Weeks",
+                                            "StartDate":  "12.01.2026",
+                                            "EndDate":  "13.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  157,
+                                            "Title":  "Aviation Management Course No.10",
+                                            "Duration":  "05 Weeks",
+                                            "StartDate":  "19.10.2026",
+                                            "EndDate":  "20.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  158,
+                                            "Title":  "Human Factor in Aviation (For Officers) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "04.05.2026",
+                                            "EndDate":  "08.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  159,
+                                            "Title":  "Human Factor in Aviation (For Officers) Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "26.10.2026",
+                                            "EndDate":  "30.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  160,
+                                            "Title":  "Introduction to Aviation IT System (For Staff) Course No.05",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "22.06.2026",
+                                            "EndDate":  "26.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  161,
+                                            "Title":  "Introduction to Aviation IT System (For Staff) Course No.06",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "23.11.2026",
+                                            "EndDate":  "27.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  162,
+                                            "Title":  "IT / Cyber Security, Audit and Compliance Management (For Officers) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  163,
+                                            "Title":  "IT / Cyber Security, Audit and Compliance Management (For Officers) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "07.12.2026",
+                                            "EndDate":  "11.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  164,
+                                            "Title":  "MS Excel - Basic (For Staff) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "13.04.2026",
+                                            "EndDate":  "17.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  165,
+                                            "Title":  "MS Excel - Basic (For Staff) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "19.10.2026",
+                                            "EndDate":  "23.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  166,
+                                            "Title":  "Introduction to ERP (For Staff) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "16.11.2026",
+                                            "EndDate":  "20.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  167,
+                                            "Title":  "Introduction to ERP (For Staff) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.12.2026",
+                                            "EndDate":  "18.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  168,
+                                            "Title":  "E-Procurement through E-PADS (For Officers) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "05.10.2026",
+                                            "EndDate":  "09.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  169,
+                                            "Title":  "E-Procurement through E-PADS (For Officers) Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "02.11.2026",
+                                            "EndDate":  "06.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  170,
+                                            "Title":  "Basic Office Organization For Asst/Supervisor Course No.21",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "05.01.2026",
+                                            "EndDate":  "16.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  171,
+                                            "Title":  "Basic Office Organization For Asst/Supervisor Course No.22",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "31.08.2026",
+                                            "EndDate":  "11.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  172,
+                                            "Title":  "Legal Proficiency (For Officers) Course No.01",
+                                            "Duration":  "03 Weeks",
+                                            "StartDate":  "26.01.2026",
+                                            "EndDate":  "31.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  173,
+                                            "Title":  "Legal Proficiency (For Staff) Course No.02",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "17.08.2026",
+                                            "EndDate":  "28.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  174,
+                                            "Title":  "Legal Proficiency (For Staff) Course No.03",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "12.10.2026",
+                                            "EndDate":  "23.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  175,
+                                            "Title":  "ITC Refresher Course No.02",
+                                            "Duration":  "03 Days",
+                                            "StartDate":  "04.02.2026",
+                                            "EndDate":  "06.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  176,
+                                            "Title":  "ITC Course No.33",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "06.04.2026",
+                                            "EndDate":  "17.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  177,
+                                            "Title":  "ITC Course No.34",
+                                            "Duration":  "02 Weeks",
+                                            "StartDate":  "12.10.2026",
+                                            "EndDate":  "23.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  178,
+                                            "Title":  "ETC (Examination Technique Course) Course No.14",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "08.06.2026",
+                                            "EndDate":  "12.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  179,
+                                            "Title":  "ETC (Examination Technique Course) Course No.15",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "17.08.2026",
+                                            "EndDate":  "21.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  180,
+                                            "Title":  "Basic Management System Standards (ISO/SMS) For PAA Officers Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "06.04.2026",
+                                            "EndDate":  "10.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  181,
+                                            "Title":  "Basic Management System Standards (ISO/SMS) For PAA Officers Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "30.11.2026",
+                                            "EndDate":  "04.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  182,
+                                            "Title":  "Basic Management System Standards (ISO/SMS) For PAA Staff Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "13.04.2026",
+                                            "EndDate":  "17.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  183,
+                                            "Title":  "Basic Management System Standards (ISO/SMS) For PAA Staff Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "26.10.2026",
+                                            "EndDate":  "30.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  184,
+                                            "Title":  "Finance For Non-Financial Managers (For Officers) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "21.09.2026",
+                                            "EndDate":  "25.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  185,
+                                            "Title":  "Finance For Non-Financial Managers (For Officers) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "02.11.2026",
+                                            "EndDate":  "06.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  186,
+                                            "Title":  "PPRA Rules (For Officers) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "27.07.2026",
+                                            "EndDate":  "31.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  187,
+                                            "Title":  "PPRA Rules (For Officers) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "05.10.2026",
+                                            "EndDate":  "09.10.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  188,
+                                            "Title":  "Superintendent Development Course No.05",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "09.02.2026",
+                                            "EndDate":  "13.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  189,
+                                            "Title":  "Superintendent Development Course No.06",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "23.11.2026",
+                                            "EndDate":  "27.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  190,
+                                            "Title":  "Emotional Intelligence (For Officers) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "26.01.2026",
+                                            "EndDate":  "30.01.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  191,
+                                            "Title":  "Emotional Intelligence (For Officers) Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "09.02.2026",
+                                            "EndDate":  "13.02.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  192,
+                                            "Title":  "Emotional Intelligence (For Staff) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.04.2026",
+                                            "EndDate":  "24.04.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  193,
+                                            "Title":  "Emotional Intelligence (For Staff) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "04.05.2026",
+                                            "EndDate":  "08.05.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  194,
+                                            "Title":  "Leadership Development (For Officers) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "08.06.2026",
+                                            "EndDate":  "12.06.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  195,
+                                            "Title":  "Leadership Development (For Officers) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "20.07.2026",
+                                            "EndDate":  "24.07.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  196,
+                                            "Title":  "Foundations of Ethics in Aviation (For Officers) Course No.01",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "03.08.2026",
+                                            "EndDate":  "07.08.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  197,
+                                            "Title":  "Foundations of Ethics in Aviation (For Officers) Course No.02",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "14.09.2026",
+                                            "EndDate":  "18.09.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  198,
+                                            "Title":  "Foundations of Ethics in Aviation (For Officers) Course No.03",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "02.11.2026",
+                                            "EndDate":  "06.11.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        },
+                                        {
+                                            "Id":  199,
+                                            "Title":  "Foundations of Ethics in Aviation (For Officers) Course No.04",
+                                            "Duration":  "01 Week",
+                                            "StartDate":  "30.11.2026",
+                                            "EndDate":  "04.12.2026",
+                                            "StatusOverride":  null,
+                                            "Note":  "Part of NAU - ATP 2026 Academic Training Plan, Hyderabad"
+                                        }
+                                    ]
+                    }
+                ],
+    "Stats":  [
+                  {
+                      "Number":  "199+",
+                      "Label":  "Total Courses"
+                  },
+                  {
+                      "Number":  "4",
+                      "Label":  "Schools"
+                  },
+                  {
+                      "Number":  "ICAO",
+                      "Label":  "Aligned Standards"
+                  },
+                  {
+                      "Number":  "2026",
+                      "Label":  "ATP Training Plan"
+                  },
+                  {
+                      "Number":  "100%",
+                      "Label":  "Certified"
+                  }
+              ],
+    "Cta":  {
+                "Heading":  "Ready to Advance Your Aviation Career?",
+                "Subheading":  "Enroll in a certified course and earn a recognized qualification from National Aviation University.",
+                "ButtonText":  "Register Now",
+                "ButtonUrl":  "/Account/Register"
+            }
+}

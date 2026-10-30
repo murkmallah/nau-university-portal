@@ -1,0 +1,7 @@
+@inject NAU_Web.Services.INavMenuService NavService
+@* =========================================================================
+   SINGLE SOURCE OF TRUTH - MAIN NAVIGATION BAR
+   Dynamically rendered from SQL Server Database (NavMenuSettings table).
+   Admin can Hide / Unhide menus & sub-menus at /Admin/Navigation.
+   ========================================================================= *@
+@Html.Raw(await NavService.GetRenderedNavBarHtmlAsync())

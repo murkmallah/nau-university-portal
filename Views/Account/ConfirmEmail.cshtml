@@ -1,0 +1,268 @@
+@{
+    Layout = null;
+    var status = ViewBag.Status as string ?? "Failed";
+    var userEmail = ViewBag.UserEmail as string ?? "";
+    var isSuccess = status == "Success" || status == "AlreadyConfirmed";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification – National Aviation University</title>
+    <partial name="_Favicon" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --green: #1e8e3e;
+            --green-light: #10b981;
+            --blue: #1a5fa6;
+            --red: #ef4444;
+            --bg: #f8fafc;
+            --font-head: "Montserrat", sans-serif;
+            --font-body: "Poppins", sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #1e293b;
+        }
+
+        .topbar {
+            background: var(--primary);
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+
+        .topbar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .topbar-logo img {
+            height: 40px;
+            width: auto;
+            display: block;
+            filter: brightness(0) invert(1);
+        }
+
+        .topbar-back {
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color .2s;
+        }
+        .topbar-back:hover { color: #fff; }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .confirm-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 540px;
+            border-radius: 20px;
+            box-shadow: 0 15px 45px rgba(11, 44, 77, 0.12), 0 0 0 1px rgba(11, 44, 77, 0.05);
+            padding: 48px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .confirm-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: @(isSuccess ? "linear-gradient(90deg, #10b981 0%, #1e8e3e 100%)" : "linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)");
+        }
+
+        .status-icon-wrap {
+            width: 86px;
+            height: 86px;
+            border-radius: 50%;
+            background: @(isSuccess ? "rgba(16, 185, 129, 0.12)" : "rgba(239, 68, 68, 0.12)");
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: @(isSuccess ? "var(--green-light)" : "var(--red)");
+            font-size: 40px;
+            border: 2px solid @(isSuccess ? "rgba(16, 185, 129, 0.25)" : "rgba(239, 68, 68, 0.25)");
+        }
+
+        .tagline {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: @(isSuccess ? "var(--green)" : "var(--red)");
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-family: var(--font-head);
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 14px;
+            line-height: 1.3;
+        }
+
+        .card-desc {
+            color: #64748b;
+            font-size: 14.5px;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--blue) 100%);
+            color: #ffffff;
+            border-radius: 10px;
+            text-decoration: none;
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(11, 44, 77, 0.2);
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(11, 44, 77, 0.3);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            background: #f1f5f9;
+            color: var(--primary);
+            border-radius: 10px;
+            text-decoration: none;
+            font-family: var(--font-head);
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 10px;
+            border: 1px solid #e2e8f0;
+            transition: background .2s;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @@media (max-width: 600px) {
+            .topbar { padding: 12px 20px; }
+            .confirm-card { padding: 36px 20px; }
+            .card-title { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <a href="~/" class="topbar-logo">
+            <img src="~/images/logo.png" alt="NAU Logo" onerror="this.style.display='none'">
+            <span>National Aviation University</span>
+        </a>
+        <a href="~/" class="topbar-back"><i class="fas fa-home"></i> Home</a>
+    </div>
+
+    <div class="main-container">
+        <div class="confirm-card">
+            @if (status == "Success")
+            {
+                <div class="status-icon-wrap">
+                    <i class="fas fa-circle-check"></i>
+                </div>
+                <div class="tagline">Verification Complete</div>
+                <h1 class="card-title">Email Verified!</h1>
+                <p class="card-desc">
+                    Thank you! Your email address <strong>@userEmail</strong> has been successfully verified. Your student account is now fully active.
+                </p>
+                <a href="~/Account/Login" class="btn-action">
+                    <i class="fas fa-arrow-right-to-bracket"></i> Log In to Your Account
+                </a>
+            }
+            else if (status == "AlreadyConfirmed")
+            {
+                <div class="status-icon-wrap">
+                    <i class="fas fa-circle-check"></i>
+                </div>
+                <div class="tagline">Account Active</div>
+                <h1 class="card-title">Already Verified</h1>
+                <p class="card-desc">
+                    Your email address <strong>@userEmail</strong> is already verified and active. You can log in directly.
+                </p>
+                <a href="~/Account/Login" class="btn-action">
+                    <i class="fas fa-arrow-right-to-bracket"></i> Proceed to Login
+                </a>
+            }
+            else
+            {
+                <div class="status-icon-wrap">
+                    <i class="fas fa-triangle-exclamation"></i>
+                </div>
+                <div class="tagline">Verification Error</div>
+                <h1 class="card-title">Invalid or Expired Link</h1>
+                <p class="card-desc">
+                    The email verification link you clicked is invalid or has already expired. You can request a fresh verification link below.
+                </p>
+                <a href="~/Account/ResendConfirmationEmail" class="btn-action">
+                    <i class="fas fa-paper-plane"></i> Request New Verification Link
+                </a>
+                <a href="~/Account/Login" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Return to Login
+                </a>
+            }
+        </div>
+    </div>
+
+</body>
+</html>

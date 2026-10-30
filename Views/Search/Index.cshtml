@@ -1,0 +1,310 @@
+@model NAU_Web.Models.SearchResultViewModel
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(Model.Query) ? "Search NAU" : $"Search: {Model.Query}";
+    Layout = null; // Independent standalone page matching website design system
+    bool isAdmin  = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - National Aviation University</title>
+    <partial name="_Favicon" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/courses-page.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+
+    <script>
+        window.NAU_AUTH = {
+            isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+            isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+            userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)ViewBag.CurrentUserName ?? ""))
+        };
+    </script>
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071e36;
+            --green: #1e8e3e;
+            --gold: #d4a017;
+            --light-bg: #f4f7fa;
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            --radius: 12px;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Poppins", sans-serif;
+            background: var(--light-bg);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-hero {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: #fff;
+            padding: 50px 20px 70px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .search-hero-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .search-hero-title {
+            font-family: "Montserrat", sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .search-form-wrap {
+            position: relative;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .search-input-box {
+            width: 100%;
+            padding: 16px 60px 16px 24px;
+            font-size: 16px;
+            font-family: "Poppins", sans-serif;
+            border: 2px solid transparent;
+            border-radius: 40px;
+            outline: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: all .2s;
+        }
+
+        .search-input-box:focus {
+            border-color: var(--green);
+            box-shadow: 0 10px 30px rgba(30,142,62,0.3);
+        }
+
+        .search-submit-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: var(--green);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: background .2s;
+        }
+
+        .search-submit-btn:hover {
+            background: #176f30;
+        }
+
+        main.container {
+            max-width: 1100px;
+            margin: -25px auto 60px;
+            padding: 0 20px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .results-meta {
+            background: #fff;
+            padding: 16px 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--card-shadow);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-count {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .result-card {
+            background: #fff;
+            border-radius: var(--radius);
+            padding: 22px;
+            box-shadow: var(--card-shadow);
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            transition: transform .2s, box-shadow .2s;
+            border-left: 4px solid var(--primary);
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 14px 35px rgba(0,0,0,0.1);
+        }
+
+        .result-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(11,44,77,0.08);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .result-body {
+            flex: 1;
+        }
+
+        .result-badge {
+            display: inline-block;
+            background: #eef4f9;
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+        }
+
+        .result-title {
+            font-family: "Montserrat", sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .result-desc {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .no-results {
+            background: #fff;
+            padding: 60px 20px;
+            text-align: center;
+            border-radius: var(--radius);
+            box-shadow: var(--card-shadow);
+        }
+
+        .no-results i {
+            font-size: 54px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        .no-results h3 {
+            font-family: "Montserrat", sans-serif;
+            font-size: 22px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        footer {
+            background: var(--primary-dark);
+            color: rgba(255,255,255,0.7);
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <partial name="_SiteHeader" />
+
+    <section class="search-hero">
+        <div class="search-hero-content">
+            <h1 class="search-hero-title">Search NAU Website</h1>
+            <form action="/Search" method="get" class="search-form-wrap">
+                <input type="text" name="q" value="@Model.Query" class="search-input-box" placeholder="Search courses, faculties, news, facilities..." autofocus autocomplete="off" />
+                <button type="submit" class="search-submit-btn" title="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <main class="container">
+        @if (!string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <div class="results-meta">
+                <div class="results-count">
+                    Found <strong>@Model.TotalCount</strong> result@(Model.TotalCount == 1 ? "" : "s") for "<em>@Model.Query</em>"
+                </div>
+            </div>
+
+            @if (Model.Results.Any())
+            {
+                <div class="results-grid">
+                    @foreach (var item in Model.Results)
+                    {
+                        <a href="@item.Url" class="result-card">
+                            <div class="result-icon">
+                                <i class="@item.IconClass"></i>
+                            </div>
+                            <div class="result-body">
+                                <span class="result-badge">@item.Badge</span>
+                                <h3 class="result-title">@item.Title</h3>
+                                <p class="result-desc">@item.Description</p>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="no-results">
+                    <i class="fas fa-search-minus"></i>
+                    <h3>No results found</h3>
+                    <p>We couldn't find anything matching "@Model.Query". Try checking for spelling errors or searching for broader terms like "Courses", "Faculty", "ATC", or "Labs".</p>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>Type to Search</h3>
+                <p>Enter keywords above to search across NAU short courses, faculties, facilities, simulation labs, news posts, and resources.</p>
+            </div>
+        }
+    </main>
+
+<partial name="_SiteFooter" />
+
+    <partial name="_PublicModals" />
+    <script src="~/js/public-modals.js" asp-append-version="true"></script>
+    <script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+</body>
+</html>

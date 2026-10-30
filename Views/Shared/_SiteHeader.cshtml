@@ -1,0 +1,31 @@
+@* ===== UNIFIED NAU SITE HEADER =====
+   Announcement Bar, Logo with Tagline, Account Button, and Navigation Bar.
+   Rendered identically across all pages of National Aviation University.
+   The actual announcement text lives in _AnnouncementBar.cshtml and the
+   actual nav markup lives in _SiteNavBar.cshtml — edit those two files to
+   change the header everywhere at once. *@
+@{
+    var isAuth = User.Identity != null && User.Identity.IsAuthenticated;
+    var isAdminOrStaff = isAuth && (User.IsInRole("Admin") || User.IsInRole("Staff"));
+    var userName = isAuth ? (ViewBag.CurrentUserName as string ?? User.Identity?.Name ?? "User") : "";
+}
+
+<!-- ===== ANNOUNCEMENT BAR ===== -->
+<partial name="_AnnouncementBar" />
+
+<!-- ===== MAIN NAVBAR ===== -->
+<partial name="_SiteNavBar" />
+
+<!-- ===== FLOATING ADMIN TOOLBAR ===== -->
+<partial name="_AdminFloatingBar" />
+
+<script>
+  window.NAU_AUTH = {
+    isAuthenticated: @Html.Raw(isAuth ? "true" : "false"),
+    isAdmin: @Html.Raw(isAdminOrStaff ? "true" : "false"),
+    userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(userName))
+  };
+  if (window.NAU_AUTH.isAuthenticated) {
+    document.documentElement.classList.add('nau-logged-in');
+  }
+</script>

@@ -1,0 +1,129 @@
+@model NAU_Web.Models.Page
+@inject NAU_Web.Services.INavMenuService NavService
+@inject NAU_Web.Services.IAnnouncementService AnnouncementService
+@inject NAU_Web.Services.ISiteBrandingService BrandingService
+@{
+    Layout = null;
+    bool isAdmin = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+    bool editMode = ViewBag.EditMode == true;
+    string pageSlug = Model?.Slug ?? (string)(ViewBag.PageSlug ?? "facility");
+}
+@if (editMode)
+{
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Edit @(Model?.Title ?? "Facility Details") – National Aviation University</title>
+        <partial name="_Favicon" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+        <link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+        <link rel="stylesheet" href="~/css/courses-page.css" asp-append-version="true">
+        <link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+        <link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+        <link rel="stylesheet" href="~/css/cms-editor.css" asp-append-version="true">
+    </head>
+    <body>
+        <div class="cms-mode-banner">
+            <i class="fas fa-lock"></i> You are viewing this page in <strong>Admin Edit Mode</strong>.
+            <a href="/@(pageSlug).html">Exit to normal view</a>
+            <a href="/Admin" style="margin-left:14px;"><i class="fas fa-user-shield"></i> Admin Panel</a>
+        </div>
+
+        <form id="cmsAntiForgeryForm">@Html.AntiForgeryToken()</form>
+
+        <div id="cmsToolbar" class="cms-toolbar">
+            <span class="cms-toolbar-label">@(Model?.Title ?? "Facility")</span>
+            <button id="cmsEditBtn" type="button" class="cms-btn cms-btn-edit">
+                <i class="fas fa-pen"></i> Edit Page
+            </button>
+            <button id="cmsSaveBtn" type="button" class="cms-btn cms-btn-save" style="display:none;">
+                <i class="fas fa-check"></i> Save Changes
+            </button>
+            <button id="cmsCancelBtn" type="button" class="cms-btn cms-btn-cancel" style="display:none;">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <a href="/@(pageSlug).html" class="cms-btn" style="background:#4b5563;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-eye"></i> View Live
+            </a>
+            <span id="cmsStatus" class="cms-status"></span>
+        </div>
+
+        <input type="file" id="cmsImageInput" accept="image/*" style="display:none;">
+        <input type="file" id="cmsVideoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v,video/*" style="display:none;">
+
+        <div id="cms-editable-region" data-save-url="/Cms/SavePageContent" data-page-slug="@pageSlug">
+            @Html.Raw(Model?.ContentHtml ?? "")
+        </div>
+
+        <script src="~/js/cms-editor.js" asp-append-version="true"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                initCmsEditor({
+                    region: "cms-editable-region",
+                    editBtn: "cmsEditBtn",
+                    saveBtn: "cmsSaveBtn",
+                    cancelBtn: "cmsCancelBtn",
+                    status: "cmsStatus",
+                    fileInput: "cmsImageInput",
+                    videoInput: "cmsVideoInput",
+                    antiForgeryForm: "cmsAntiForgeryForm",
+                    slug: "@pageSlug"
+                });
+            });
+        </script>
+        <partial name="_PublicModals" />
+        <script src="~/js/public-modals.js" asp-append-version="true"></script>
+    </body>
+    </html>
+}
+else
+{
+    bool isAuthenticated = User.Identity != null && User.Identity.IsAuthenticated;
+    bool isAdminViewer = ViewBag.IsAdminViewer == true;
+    string currentUserName = (string)(ViewBag.CurrentUserName ?? "");
+
+    string authScript = "<script>window.NAU_AUTH = { isAuthenticated: " + (isAuthenticated ? "true" : "false")
+        + ", isAdmin: " + (isAdminViewer ? "true" : "false")
+        + ", userName: " + System.Text.Json.JsonSerializer.Serialize(currentUserName)
+        + " };</script>";
+
+    string contentHtml = Model?.ContentHtml ?? "";
+
+    var liveNavBar = await NavService.GetRenderedNavBarHtmlAsync();
+    var liveAnnBar = await AnnouncementService.GetRenderedAnnouncementBarHtmlAsync();
+
+    if (!string.IsNullOrWhiteSpace(liveNavBar))
+    {
+        var annStart = contentHtml.IndexOf("<div class=\"announcement\"", StringComparison.OrdinalIgnoreCase);
+        if (annStart >= 0)
+        {
+            var navStart = contentHtml.IndexOf("<nav", annStart, StringComparison.OrdinalIgnoreCase);
+            if (navStart < 0) navStart = contentHtml.IndexOf("<div class=\"navbar\"", annStart, StringComparison.OrdinalIgnoreCase);
+            if (navStart >= 0)
+            {
+                var navEnd = contentHtml.IndexOf("</nav>", navStart, StringComparison.OrdinalIgnoreCase);
+                var afterNav = navEnd >= 0 ? navEnd + "</nav>".Length : navStart;
+                contentHtml = contentHtml.Substring(0, annStart) + liveAnnBar + "\n\n" + liveNavBar + "\n\n" + contentHtml.Substring(afterNav);
+            }
+        }
+    }
+
+    var branding = await BrandingService.GetSettingAsync();
+    var faviconUrl = !string.IsNullOrEmpty(branding?.LogoUrl) ? branding.LogoUrl : "/images/logo.png";
+    string faviconTag = "<link rel=\"icon\" type=\"image/png\" href=\"" + faviconUrl + "\" />\n<link rel=\"shortcut icon\" type=\"image/png\" href=\"" + faviconUrl + "\" />\n<link rel=\"apple-touch-icon\" href=\"" + faviconUrl + "\" />\n";
+
+    int insertPoint = contentHtml.IndexOf("</head>", StringComparison.OrdinalIgnoreCase);
+    contentHtml = insertPoint >= 0
+        ? contentHtml.Insert(insertPoint, faviconTag + authScript)
+        : faviconTag + authScript + contentHtml;
+
+    @Html.Raw(contentHtml)
+
+    <partial name="_PublicModals" />
+    <script src="~/js/public-modals.js" asp-append-version="true"></script>
+}
+

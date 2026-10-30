@@ -1,0 +1,884 @@
+@model IEnumerable<NAU_Web.Models.Faculty>
+@{
+    Layout = null;
+    bool canEdit = ViewBag.CanEdit == true;
+    bool editMode = ViewBag.EditMode == true;   // true only when reached via Admin Panel "View All Faculties" link
+    var userPerms = (ViewBag.UserPermissions as List<string>) ?? new List<string>();
+    bool isSuperAdmin = ViewBag.IsSuperAdmin == true || (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"));
+    bool isAdmin = User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Staff"));
+    var facultyList = Model.ToList();
+    int totalPrograms = facultyList.Sum(f => f.Programs.Count);
+    int totalDepartments = facultyList
+        .SelectMany(f => f.Programs.Select(p => (f.FacultyId, string.IsNullOrWhiteSpace(p.Department) ? f.Name : p.Department)))
+        .Distinct()
+        .Count();
+    if (totalDepartments == 0) { totalDepartments = facultyList.Count; }
+
+    // Turns a faculty's ColorHex into a two-stop gradient (same colour,
+    // slightly darkened second stop) so admins only ever pick one colour.
+    string DarkenHex(string? hex, double amount)
+    {
+        hex = string.IsNullOrWhiteSpace(hex) ? "#0b3a5c" : hex.Trim();
+        if (hex.StartsWith("#")) hex = hex.Substring(1);
+        if (hex.Length != 6) return "#0f7490";
+        int r = Convert.ToInt32(hex.Substring(0, 2), 16);
+        int g = Convert.ToInt32(hex.Substring(2, 2), 16);
+        int b = Convert.ToInt32(hex.Substring(4, 2), 16);
+        r = (int)(r * (1 - amount));
+        g = (int)(g * (1 - amount));
+        b = (int)(b * (1 - amount));
+        return $"#{r:X2}{g:X2}{b:X2}";
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Faculties - National Aviation University</title>
+<partial name="_Favicon" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/courses-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/faculties-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/cms-icon-picker.css" asp-append-version="true">
+<style>
+  /* ===== Account dropdown (Sign Up / Log In) — same canonical pattern as the Homepage =====
+     NOTE: the menu itself is appended to document.body by the script below (position:fixed,
+     inline styles), NOT rendered here via :hover/absolute — .announcement below has
+     overflow:hidden and would silently clip an absolutely-positioned menu nested inside
+     it. Don't re-add `position:absolute`/`:hover{display:block}` for .account-dropdown-menu;
+     that's what caused the dropdown to be invisible on this page before. ===== */
+  .account-dropdown{ position:relative; display:inline-block; }
+  .account-dropdown > .apply-btn::after{
+    content:"\f078";
+    font-family:"Font Awesome 6 Free"; font-weight:900;
+    font-size:10px; margin-left:8px; opacity:.85; display:inline-block;
+    transition:transform .2s;
+  }
+  .account-dropdown.open > .apply-btn::after,
+  .account-dropdown:hover > .apply-btn::after{ transform:rotate(180deg); }
+  .account-dropdown-menu a{
+    display:block;
+    padding:11px 16px;
+    color:#0b2c4d;
+    text-decoration:none;
+    font-size:13.5px;
+    font-weight:600;
+    border-bottom:1px solid #f0f2f5;
+  }
+  .account-dropdown-menu a:last-child{ border-bottom:none; }
+  .account-dropdown-menu a:hover{ background:#f5f7fb; color:#1e8e3e; }
+</style>
+</head>
+<body>
+
+@if (editMode)
+{
+    <div style="background:#0b2c4d;color:#fff;text-align:center;padding:12px 20px;font-family:'Poppins',sans-serif;font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:14px;position:sticky;top:0;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,0.25);">
+        <span><i class="fas fa-shield-halved" style="color:#38bdf8;"></i> You are viewing faculties in <strong>Admin Edit Mode</strong>.</span>
+        <a href="/Faculties/Public" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;padding:5px 12px;border-radius:6px;font-size:12px;"><i class="fas fa-eye"></i> View Live</a>
+        <a href="/Admin" style="background:#0284c7;color:#fff;text-decoration:none;padding:5px 12px;border-radius:6px;font-size:12px;"><i class="fas fa-arrow-left"></i> Staff Control Panel</a>
+    </div>
+}
+
+<partial name="_SiteHeader" />
+
+<section class="hero">
+  <div class="hero-bg-pattern"></div>
+  <div class="hero-deco"></div>
+  <div class="hero-content">
+    <div class="hero-breadcrumb">
+      <a href="/">Home</a>
+      <i class="fas fa-chevron-right"></i>
+      <span style="color:rgba(255,255,255,0.85)">All Faculties</span>
+    </div>
+    <div class="hero-eyebrow">Academics</div>
+    <h1>Our Academic <em>Faculties</em></h1>
+    <p>Explore NAU's specialized faculties &mdash; each dedicated to a distinct domain of aviation education, combining world-class academia with real-world industry experience.</p>
+  </div>
+</section>
+
+<div class="filter-bar">
+  <span class="filter-label">Filter by:</span>
+  <button class="filter-btn active" onclick="filterCards('all',this)">All Faculties</button>
+  @foreach (var cat in facultyList.Select(f => FacultiesController.DeriveCategory(f.Name)).Distinct())
+  {
+      var catSlugForFilter = cat.ToLower().Replace(" ", "-");
+      <button class="filter-btn" data-cat-label="@cat" onclick="filterCards('@catSlugForFilter',this)">@cat</button>
+  }
+</div>
+
+<section class="faculties-section">
+  <div class="faculties-inner">
+    <div class="section-head">
+      <p class="results-count">Showing <strong id="countLabel">@facultyList.Count</strong> faculties</p>
+    </div>
+
+    <div class="faculties-grid" id="facultiesGrid">
+    @foreach (var f in facultyList)
+    {
+        var color1 = string.IsNullOrWhiteSpace(f.ColorHex) ? "#0b3a5c" : f.ColorHex;
+        var color2 = DarkenHex(f.ColorHex, 0.35);
+        var category = FacultiesController.DeriveCategory(f.Name);
+        var catSlug = category.ToLower().Replace(" ", "-");
+        var deptCount = f.Programs.Select(p => string.IsNullOrWhiteSpace(p.Department) ? f.Name : p.Department).Distinct().Count();
+        if (deptCount == 0) { deptCount = 1; }
+        var fSlug = (f.Slug ?? "").ToLowerInvariant();
+        bool canEditThisFaculty = editMode && (isSuperAdmin || userPerms.Contains("Faculty.All") ||
+            (fSlug.Contains("engineering") && userPerms.Contains("Faculty.Engineering")) ||
+            ((fSlug.Contains("it") || fSlug.Contains("cyber")) && userPerms.Contains("Faculty.IT")) ||
+            (fSlug.Contains("operation") && userPerms.Contains("Faculty.Operations")) ||
+            (fSlug.Contains("management") && userPerms.Contains("Faculty.Management")));
+
+        <div class="faculty-card" data-cat="@catSlug" data-faculty-id="@f.FacultyId" id="fc-card-@f.FacultyId">
+            @if (canEditThisFaculty)
+            {
+                <button type="button" class="fc-card-edit-btn" title="Edit this faculty"
+                        data-faculty-id="@f.FacultyId" data-name="@f.Name" data-icon="@f.Icon" data-color="@color1" data-description="@f.Description"
+                        onclick="event.stopPropagation(); editFacultyCard(this)">
+                    <i class="fas fa-pen"></i>
+                </button>
+                <button type="button" class="fc-card-delete-btn" title="Delete this faculty"
+                        data-faculty-id="@f.FacultyId" data-name="@f.Name"
+                        onclick="event.stopPropagation(); deleteFacultyCard(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            }
+            <a href="/Faculties/Detail/@f.Slug@(editMode ? "?edit=true" : "")" class="faculty-card-visual" style="--fc-color1:@color1; --fc-color2:@color2;">
+                <i class="@(string.IsNullOrEmpty(f.Icon) ? "fas fa-graduation-cap" : f.Icon) faculty-card-icon-large"></i>
+                <div class="faculty-card-icon-center"><i class="@(string.IsNullOrEmpty(f.Icon) ? "fas fa-graduation-cap" : f.Icon)"></i></div>
+            </a>
+            <div class="faculty-card-body">
+                <span class="faculty-category">@category</span>
+                <a href="/Faculties/Detail/@f.Slug@(editMode ? "?edit=true" : "")" style="text-decoration:none;"><div class="faculty-name">@f.Name</div></a>
+                <div class="faculty-desc">@f.Description</div>
+                <div class="faculty-programs">
+                    <span class="faculty-programs-title">
+                        <span>Degree Programs Offered</span>
+                        @if (editMode)
+                        {
+                            <button type="button" class="fp-add-btn" onclick="addProgramRow(@f.FacultyId)"><i class="fas fa-plus"></i> Add</button>
+                        }
+                    </span>
+                    <div class="faculty-prog-list" id="fc-prog-list-@f.FacultyId">
+                    @foreach (var p in f.Programs)
+                    {
+                        <div class="faculty-prog-item" data-program-id="@p.ProgramId">
+                            <span class="fp-left"><i class="@(string.IsNullOrEmpty(p.Icon) ? "fas fa-graduation-cap" : p.Icon) fp-icon"></i> @p.Name</span>
+                            @if (editMode)
+                            {
+                                <button type="button" class="fp-delete-btn" title="Delete this program" onclick="deleteProgramItem(this, @p.ProgramId, @f.FacultyId)"><i class="fas fa-trash"></i></button>
+                            }
+                        </div>
+                    }
+                    </div>
+                </div>
+                <div class="faculty-tags">
+                    <span class="faculty-tag"><i class="fas fa-university"></i> <span id="fc-dept-count-@f.FacultyId">@deptCount</span> Department@(deptCount == 1 ? "" : "s")</span>
+                    <span class="faculty-tag"><i class="fas fa-graduation-cap"></i> <span id="fc-prog-count-@f.FacultyId">@f.Programs.Count</span> Program@(f.Programs.Count == 1 ? "" : "s")</span>
+                </div>
+            </div>
+            <div class="faculty-card-footer">
+                <span class="faculty-meta"><i class="fas fa-clock"></i> Est. 2026</span>
+                <a href="/Faculties/Detail/@f.Slug@(editMode ? "?edit=true" : "")" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    }
+    </div>
+
+    <div id="noResults" style="display:none;text-align:center;padding:60px 20px;color:var(--text-light);">
+      <i class="fas fa-search" style="font-size:40px;opacity:0.3;display:block;margin-bottom:16px;"></i>
+      <p style="font-size:15px;">No faculties match this filter.</p>
+    </div>
+
+    @if (editMode)
+    {
+        <div id="addFacultyBtnWrap" style="text-align:center;padding:34px 0 6px;">
+            <button type="button" id="addFacultyBtn" class="acc-add-btn" style="background:var(--green);border-color:var(--green);color:#fff;display:inline-flex;" onclick="addFacultyBlock()">
+                <i class="fas fa-plus"></i> Add Faculty
+            </button>
+        </div>
+    }
+  </div>
+</section>
+
+<section class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num" id="statFaculties">@facultyList.Count</div><div class="stat-label">Faculties</div></div>
+    <div class="stat-item"><div class="stat-num" id="statDepartments">@totalDepartments</div><div class="stat-label">Departments</div></div>
+    <div class="stat-item"><div class="stat-num" id="statPrograms">@totalPrograms</div><div class="stat-label">Degree Programs</div></div>
+    <div class="stat-item"><div class="stat-num">3</div><div class="stat-label">Study Levels</div></div>
+    <div class="stat-item"><div class="stat-num">2026</div><div class="stat-label">Established</div></div>
+  </div>
+</section>
+
+<script>
+  /* ===== Mega-menu nav search icon/box ===== */
+  function toggleSearch() {
+    const box = document.getElementById("searchBox");
+    box.classList.toggle("open");
+    if (box.classList.contains("open")) box.focus();
+  }
+  function closeSearch() {
+    setTimeout(() => { document.getElementById("searchBox").classList.remove("open"); }, 150);
+  }
+
+  // Full detail data for every faculty, keyed by FacultyId, so the modal
+  // and the filter bar can work instantly without extra round-trips.
+  var facultyData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+      facultyList.Select(f => new
+      {
+          id = f.FacultyId,
+          name = f.Name,
+          category = FacultiesController.DeriveCategory(f.Name),
+          colorHex = string.IsNullOrEmpty(f.ColorHex) ? "#0b3a5c" : f.ColorHex,
+          icon = string.IsNullOrEmpty(f.Icon) ? "fas fa-graduation-cap" : f.Icon,
+          description = f.Description ?? "",
+          programs = f.Programs.Select(p => new { id = p.ProgramId, name = p.Name, department = p.Department, icon = string.IsNullOrEmpty(p.Icon) ? "fas fa-graduation-cap" : p.Icon })
+      }).ToDictionary(x => x.id.ToString(), x => x)
+  ).Replace("</", "<\\/"));
+</script>
+
+<section class="cta-strip">
+  @if (editMode)
+  {
+      <div style="max-width:640px;margin:0 auto 18px;text-align:left;background:rgba(255,255,255,0.12);border:1px dashed rgba(255,255,255,0.5);border-radius:10px;padding:16px 18px;">
+          <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">HEADING</label>
+          <input id="ctaTitleInput" type="text" value="@ViewBag.CtaTitle" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:15px;margin-bottom:10px;">
+          <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">TEXT</label>
+          <textarea id="ctaTextInput" rows="2" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:13.5px;resize:vertical;">@ViewBag.CtaText</textarea>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+              <button type="button" class="qa-save" onclick="saveCtaText(this)">Save</button>
+              <span id="ctaSaveMsg" style="font-size:12px;color:#fff;"></span>
+          </div>
+      </div>
+  }
+  <h2 id="ctaTitleDisplay">@ViewBag.CtaTitle</h2>
+  <p id="ctaTextDisplay">@ViewBag.CtaText</p>
+  <a href="/Account/Register" class="cta-btn"><i class="fas fa-user-plus"></i> Apply Now</a>
+</section>
+
+<partial name="_SiteFooter" />
+
+<!-- ===== Faculty detail modal ===== -->
+<div class="fac-modal-backdrop" id="facultyModal" onclick="if(event.target===this) closeFacultyModal()">
+  <div class="fac-modal">
+    <div class="fac-modal-hero" id="facModalHero">
+      <button type="button" class="fac-modal-close" onclick="closeFacultyModal()"><i class="fas fa-times"></i></button>
+      <div class="fac-modal-category" id="facModalCategory"></div>
+      <div class="fac-modal-title" id="facModalTitle"></div>
+    </div>
+    <div class="fac-modal-body">
+      <div class="fac-modal-desc" id="facModalDesc"></div>
+      <div class="fac-modal-section-title">Degree Programs Offered</div>
+      <ul class="fac-modal-programs" id="facModalPrograms"></ul>
+    </div>
+  </div>
+</div>
+
+@if (editMode)
+{
+    <form id="cmsAntiForgeryForm">@Html.AntiForgeryToken()</form>
+}
+
+<div id="qaToast"></div>
+
+<script>
+    var editMode = @Html.Raw(editMode ? "true" : "false");
+
+    function getAntiForgeryToken(){
+      var el = document.querySelector('input[name="__RequestVerificationToken"]');
+      return el ? el.value : '';
+    }
+
+    var qaToastTimer;
+    function showQaToast(message, isError){
+      var toast = document.getElementById('qaToast');
+      if (!toast) return;
+      toast.textContent = message;
+      toast.className = isError ? 'show error' : 'show';
+      clearTimeout(qaToastTimer);
+      qaToastTimer = setTimeout(function(){ toast.className = ''; }, 3500);
+    }
+
+    /* ===== Filter ===== */
+    function filterCards(cat, btn){
+      document.querySelectorAll('.filter-btn').forEach(function(b){ b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+      var cards = document.querySelectorAll('.faculty-card');
+      var count = 0;
+      cards.forEach(function(card){
+        if (cat === 'all' || card.dataset.cat === cat) { card.style.display = ''; count++; }
+        else { card.style.display = 'none'; }
+      });
+      document.getElementById('countLabel').textContent = count;
+      document.getElementById('noResults').style.display = count === 0 ? 'block' : 'none';
+    }
+
+    /* ===== Faculty detail modal ===== */
+    function openFacultyModal(facultyId){
+      var data = facultyData[facultyId];
+      if (!data) return;
+      document.getElementById('facModalHero').style.background = 'linear-gradient(135deg, ' + data.colorHex + ', ' + data.colorHex + ')';
+      document.getElementById('facModalCategory').textContent = data.category;
+      document.getElementById('facModalTitle').textContent = data.name;
+      document.getElementById('facModalDesc').textContent = data.description;
+      document.getElementById('facModalPrograms').innerHTML = (data.programs || []).map(function(p){
+        return '<li><i class="' + p.icon + '"></i> ' + p.name + (p.department ? ' <span style="opacity:.6;">(' + p.department + ')</span>' : '') + '</li>';
+      }).join('') || '<li style="color:#999;">No programs listed yet.</li>';
+      document.getElementById('facultyModal').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFacultyModal(){
+      document.getElementById('facultyModal').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeFacultyModal(); });
+
+    @if (editMode)
+    {
+        <text>
+    /* ===== Add Faculty ===== */
+    function addFacultyBlock(){
+      if (document.getElementById('addFacultyWrap')) return;
+      var addBtn = document.getElementById('addFacultyBtn');
+      var wrap = document.createElement('div');
+      wrap.id = 'addFacultyWrap';
+      wrap.className = 'fc-form-wrap';
+      wrap.innerHTML =
+        '<label>FACULTY NAME</label><input type="text" id="newFacultyName" placeholder="e.g. Faculty of Aviation Safety">' +
+        '<label>ICON (Font Awesome class, optional)</label><input type="text" id="newFacultyIcon" placeholder="e.g. fas fa-shield-halved">' +
+        '<label>COLOR (hex, optional)</label><input type="text" id="newFacultyColor" placeholder="e.g. #0b3a5c">' +
+        '<label>DESCRIPTION (optional)</label><textarea id="newFacultyDesc" rows="2" placeholder="Short description shown on the card"></textarea>' +
+        '<div class="qa-actions">' +
+          '<button type="button" class="qa-save" onclick="saveFacultyBlock(this)">Save</button>' +
+          '<button type="button" class="qa-cancel" onclick="cancelFacultyBlock()">Cancel</button>' +
+        '</div>' +
+        '<div class="qa-error" id="newFacultyError" style="display:none;"></div>';
+      addBtn.parentNode.insertBefore(wrap, addBtn);
+      addBtn.style.display = 'none';
+      document.getElementById('newFacultyName').focus();
+    }
+
+    function cancelFacultyBlock(){
+      var wrap = document.getElementById('addFacultyWrap');
+      if (wrap) wrap.remove();
+      var addBtn = document.getElementById('addFacultyBtn');
+      if (addBtn) addBtn.style.display = '';
+    }
+
+    async function saveFacultyBlock(btn){
+      var name = document.getElementById('newFacultyName').value.trim();
+      var icon = document.getElementById('newFacultyIcon').value.trim();
+      var color = document.getElementById('newFacultyColor').value.trim();
+      var desc = document.getElementById('newFacultyDesc').value.trim();
+      var errorBox = document.getElementById('newFacultyError');
+      errorBox.style.display = 'none';
+
+      if (!name){
+        errorBox.textContent = 'Faculty name is required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch('@Url.Action("QuickAddFaculty", "Faculties")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ Name: name, Icon: icon, ColorHex: color, Description: desc })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save the faculty.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+
+        facultyData[data.facultyId] = {
+          id: data.facultyId, name: data.name, category: data.category,
+          colorHex: data.colorHex, icon: data.icon, description: data.description, programs: []
+        };
+
+        var catSlug = data.category.toLowerCase().replace(/ /g, '-');
+        if (!document.querySelector('.filter-btn[data-cat-label="' + data.category + '"]')){
+          var fbtn = document.createElement('button');
+          fbtn.className = 'filter-btn';
+          fbtn.setAttribute('data-cat-label', data.category);
+          fbtn.textContent = data.category;
+          fbtn.onclick = function(){ filterCards(catSlug, fbtn); };
+          document.querySelector('.filter-bar').appendChild(fbtn);
+        }
+
+        var card = document.createElement('div');
+        card.className = 'faculty-card';
+        card.dataset.cat = catSlug;
+        card.id = 'fc-card-' + data.facultyId;
+        card.setAttribute('data-faculty-id', data.facultyId);
+        card.innerHTML =
+          '<button type="button" class="fc-card-edit-btn" title="Edit this faculty" data-faculty-id="' + data.facultyId + '" data-name="' + data.name + '" data-icon="' + data.icon + '" data-color="' + data.colorHex + '" data-description="' + (data.description || '') + '" onclick="event.stopPropagation(); editFacultyCard(this)"><i class="fas fa-pen"></i></button>' +
+          '<button type="button" class="fc-card-delete-btn" title="Delete this faculty" data-faculty-id="' + data.facultyId + '" data-name="' + data.name + '" onclick="event.stopPropagation(); deleteFacultyCard(this)"><i class="fas fa-trash"></i></button>' +
+          '<a href="javascript:void(0)" class="faculty-card-visual" style="--fc-color1:' + data.colorHex + '; --fc-color2:' + data.colorHex + ';" onclick="openFacultyModal(' + data.facultyId + ')">' +
+            '<i class="' + data.icon + ' faculty-card-icon-large"></i>' +
+            '<div class="faculty-card-icon-center"><i class="' + data.icon + '"></i></div>' +
+          '</a>' +
+          '<div class="faculty-card-body">' +
+            '<span class="faculty-category">' + data.category + '</span>' +
+            '<div class="faculty-name">' + data.name + '</div>' +
+            '<div class="faculty-desc">' + (data.description || '') + '</div>' +
+            '<div class="faculty-programs"><span class="faculty-programs-title"><span>Degree Programs Offered</span><button type="button" class="fp-add-btn" onclick="addProgramRow(' + data.facultyId + ')"><i class="fas fa-plus"></i> Add</button></span>' +
+              '<div class="faculty-prog-list" id="fc-prog-list-' + data.facultyId + '"></div>' +
+            '</div>' +
+            '<div class="faculty-tags">' +
+              '<span class="faculty-tag"><i class="fas fa-university"></i> <span id="fc-dept-count-' + data.facultyId + '">0</span> Departments</span>' +
+              '<span class="faculty-tag"><i class="fas fa-graduation-cap"></i> <span id="fc-prog-count-' + data.facultyId + '">0</span> Programs</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="faculty-card-footer"><span class="faculty-meta"><i class="fas fa-clock"></i> Est. 2026</span><a href="/Faculties/Detail/' + data.slug + (editMode ? '?edit=true' : '') + '" class="read-more-btn">Read More <i class="fas fa-arrow-right"></i></a></div>';
+
+        cancelFacultyBlock();
+        document.getElementById('facultiesGrid').appendChild(card);
+        var countLabel = document.getElementById('countLabel');
+        countLabel.textContent = (parseInt(countLabel.textContent, 10) || 0) + 1;
+        var statF = document.getElementById('statFaculties');
+        if (statF) statF.textContent = (parseInt(statF.textContent, 10) || 0) + 1;
+        showQaToast('✅ "' + data.name + '" added to the database as a new faculty.');
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    /* ===== Edit Faculty ===== */
+    function editFacultyCard(btn){
+      var facultyId = btn.getAttribute('data-faculty-id');
+      var card = document.getElementById('fc-card-' + facultyId);
+      if (!card || card.querySelector('.fc-form-wrap')) return;
+
+      var wrap = document.createElement('div');
+      wrap.className = 'fc-form-wrap';
+      wrap.style.margin = '16px';
+      wrap.innerHTML =
+        '<label>FACULTY NAME</label><input type="text" class="fce-name" value="' + btn.getAttribute('data-name') + '">' +
+        '<label>ICON (Font Awesome class)</label><input type="text" class="fce-icon" value="' + btn.getAttribute('data-icon') + '">' +
+        '<label>COLOR (hex)</label><input type="text" class="fce-color" value="' + btn.getAttribute('data-color') + '">' +
+        '<label>DESCRIPTION</label><textarea class="fce-desc" rows="3">' + (btn.getAttribute('data-description') || '') + '</textarea>' +
+        '<div class="qa-actions">' +
+          '<button type="button" class="qa-save" onclick="saveFacultyEdit(this, ' + facultyId + ')">Save</button>' +
+          '<button type="button" class="qa-cancel" onclick="this.closest(\'.fc-form-wrap\').remove()">Cancel</button>' +
+        '</div>' +
+        '<div class="qa-error" style="display:none;"></div>';
+      card.querySelector('.faculty-card-body').appendChild(wrap);
+    }
+
+    async function saveFacultyEdit(btn, facultyId){
+      var wrap = btn.closest('.fc-form-wrap');
+      var name = wrap.querySelector('.fce-name').value.trim();
+      var icon = wrap.querySelector('.fce-icon').value.trim();
+      var color = wrap.querySelector('.fce-color').value.trim();
+      var desc = wrap.querySelector('.fce-desc').value.trim();
+      var errorBox = wrap.querySelector('.qa-error');
+      errorBox.style.display = 'none';
+
+      if (!name){
+        errorBox.textContent = 'Faculty name is required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch('@Url.Action("QuickUpdateFaculty", "Faculties")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ FacultyId: facultyId, Name: name, Icon: icon, ColorHex: color, Description: desc })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save changes.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+
+        facultyData[facultyId].name = data.name;
+        facultyData[facultyId].category = data.category;
+        facultyData[facultyId].colorHex = data.colorHex;
+        facultyData[facultyId].icon = data.icon;
+        facultyData[facultyId].description = data.description;
+
+        var card = document.getElementById('fc-card-' + facultyId);
+        card.querySelector('.faculty-category').textContent = data.category;
+        card.querySelector('.faculty-name').textContent = data.name;
+        card.querySelector('.faculty-desc').textContent = data.description || '';
+        var visual = card.querySelector('.faculty-card-visual');
+        visual.style.setProperty('--fc-color1', data.colorHex);
+        visual.style.setProperty('--fc-color2', data.colorHex);
+        card.querySelectorAll('.faculty-card-icon-large, .faculty-card-icon-center i').forEach(function(el){
+          el.className = el.className.replace(/fas fa-[\w-]+/, data.icon);
+        });
+        var editBtn = card.querySelector('.fc-card-edit-btn');
+        editBtn.setAttribute('data-name', data.name);
+        editBtn.setAttribute('data-icon', data.icon);
+        editBtn.setAttribute('data-color', data.colorHex);
+        editBtn.setAttribute('data-description', data.description || '');
+        card.querySelector('.fc-card-delete-btn').setAttribute('data-name', data.name);
+
+        wrap.remove();
+        showQaToast('✅ "' + data.name + '" updated.');
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    async function deleteFacultyCard(btn){
+      var facultyId = btn.getAttribute('data-faculty-id');
+      var name = btn.getAttribute('data-name');
+      if (!confirm('Delete "' + name + '" permanently from the database?')) return;
+
+      btn.disabled = true;
+      try {
+        var res = await fetch('@Url.Action("QuickDeleteFaculty", "Faculties")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ FacultyId: facultyId })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          showQaToast(data.message || 'Could not delete the faculty.', true);
+          btn.disabled = false;
+          return;
+        }
+        document.getElementById('fc-card-' + facultyId).remove();
+        var countLabel = document.getElementById('countLabel');
+        countLabel.textContent = Math.max(0, (parseInt(countLabel.textContent, 10) || 0) - 1);
+        var statF = document.getElementById('statFaculties');
+        if (statF) statF.textContent = Math.max(0, (parseInt(statF.textContent, 10) || 0) - 1);
+        showQaToast('🗑️ "' + name + '" removed from the database.');
+      } catch (err){
+        showQaToast('Network error, please try again.', true);
+        btn.disabled = false;
+      }
+    }
+
+    /* ===== Add / Delete Program ===== */
+    function addProgramRow(facultyId){
+      var list = document.getElementById('fc-prog-list-' + facultyId);
+      if (!list || list.querySelector('.fp-new-row')) return;
+
+      var row = document.createElement('div');
+      row.className = 'faculty-prog-item fp-new-row';
+      row.style.cssText = 'flex-direction:column; align-items:stretch; gap:6px; background:#f0faf4; border-radius:8px; padding:8px;';
+      row.innerHTML =
+        '<input type="text" placeholder="Program name" class="fp-new-name" style="width:100%;padding:6px 8px;border-radius:6px;border:1px solid #cfe8d8;font-size:12.5px;">' +
+        '<div class="qa-actions" style="margin-top:0;">' +
+          '<button type="button" class="qa-save" onclick="saveProgramRow(this, ' + facultyId + ')">Save</button>' +
+          '<button type="button" class="qa-cancel" onclick="this.closest(\'.fp-new-row\').remove()">Cancel</button>' +
+        '</div>' +
+        '<div class="qa-error" style="display:none;"></div>';
+      list.appendChild(row);
+      row.querySelector('.fp-new-name').focus();
+    }
+
+    async function saveProgramRow(btn, facultyId){
+      var row = btn.closest('.fp-new-row');
+      var name = row.querySelector('.fp-new-name').value.trim();
+      var errorBox = row.querySelector('.qa-error');
+      errorBox.style.display = 'none';
+
+      if (!name){
+        errorBox.textContent = 'Program name is required.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        var res = await fetch('@Url.Action("QuickAddProgram", "Faculties")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ FacultyId: facultyId, Name: name })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          errorBox.textContent = data.message || 'Could not save the program.';
+          errorBox.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+
+        facultyData[facultyId].programs.push({ id: data.programId, name: data.name, department: data.department, icon: data.icon });
+
+        var newRow = document.createElement('div');
+        newRow.className = 'faculty-prog-item';
+        newRow.setAttribute('data-program-id', data.programId);
+        newRow.innerHTML =
+          '<span class="fp-left"><i class="' + data.icon + ' fp-icon"></i> ' + data.name + '</span>' +
+          '<button type="button" class="fp-delete-btn" title="Delete this program" onclick="deleteProgramItem(this, ' + data.programId + ', ' + facultyId + ')"><i class="fas fa-trash"></i></button>';
+        row.replaceWith(newRow);
+
+        var progCount = document.getElementById('fc-prog-count-' + facultyId);
+        if (progCount) progCount.textContent = (parseInt(progCount.textContent, 10) || 0) + 1;
+        var statP = document.getElementById('statPrograms');
+        if (statP) statP.textContent = (parseInt(statP.textContent, 10) || 0) + 1;
+        var deptCount = document.getElementById('fc-dept-count-' + facultyId);
+        if (deptCount && (parseInt(deptCount.textContent, 10) || 0) === 0) deptCount.textContent = 1;
+
+        showQaToast('✅ "' + data.name + '" added to the database.');
+      } catch (err){
+        errorBox.textContent = 'Network error, please try again.';
+        errorBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+
+    async function deleteProgramItem(btn, programId, facultyId){
+      if (!confirm('Delete this program permanently from the database?')) return;
+      btn.disabled = true;
+      try {
+        var res = await fetch('@Url.Action("QuickDeleteProgram", "Faculties")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ ProgramId: programId })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          showQaToast(data.message || 'Could not delete the program.', true);
+          btn.disabled = false;
+          return;
+        }
+        btn.closest('.faculty-prog-item').remove();
+        var progCount = document.getElementById('fc-prog-count-' + facultyId);
+        if (progCount) progCount.textContent = Math.max(0, (parseInt(progCount.textContent, 10) || 0) - 1);
+        var statP = document.getElementById('statPrograms');
+        if (statP) statP.textContent = Math.max(0, (parseInt(statP.textContent, 10) || 0) - 1);
+        showQaToast('🗑️ Program removed from the database.');
+      } catch (err){
+        showQaToast('Network error, please try again.', true);
+        btn.disabled = false;
+      }
+    }
+
+    /* ===== Save CTA heading/paragraph ===== */
+    async function saveCtaText(btn){
+      var title = document.getElementById('ctaTitleInput').value.trim();
+      var text = document.getElementById('ctaTextInput').value.trim();
+      var msg = document.getElementById('ctaSaveMsg');
+
+      if (!title){ msg.textContent = 'Heading is required.'; return; }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+      msg.textContent = '';
+
+      try {
+        var res = await fetch('@Url.Action("QuickUpdateCta", "Faculties")', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': getAntiForgeryToken() },
+          body: JSON.stringify({ Title: title, Text: text })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success){
+          msg.textContent = data.message || 'Could not save.';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+          return;
+        }
+        document.getElementById('ctaTitleDisplay').textContent = data.title;
+        document.getElementById('ctaTextDisplay').textContent = data.text;
+        showQaToast('✅ Section text saved to the database.');
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      } catch (err){
+        msg.textContent = 'Network error, please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Save';
+      }
+    }
+        </text>
+    }
+</script>
+
+<!-- ===== ACCOUNT DROPDOWN (Log In / Sign Up, or user name + Log Out) =====
+     Same canonical implementation as home-scripts.js (the Homepage).
+     IMPORTANT: the menu is appended directly to document.body with position:fixed,
+     computed from the button's on-screen location -- NOT left nested inside
+     .announcement. .announcement has overflow:hidden (see courses-page.css /
+     faculties-page.css), so a menu nested inside it gets silently clipped
+     and never becomes visible on hover, even though the JS logic runs fine.
+     That was the bug on this page. Keep this "append to body" pattern on
+     any future account-dropdown so this issue can't come back. ===== -->
+<script>
+window.NAU_AUTH = {
+    isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+    isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+    userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewBag.CurrentUserName ?? "")))
+};
+
+(function setupAccountDropdown() {
+    var enhancedButtons = new WeakSet();
+    var auth = window.NAU_AUTH || { isAuthenticated: false, isAdmin: false, userName: '' };
+
+    function enhance(btn) {
+        if (enhancedButtons.has(btn)) return;
+
+        var alreadyWrapped = !!btn.closest('.account-dropdown');
+        var isPristineAccountBtn = btn.textContent.trim().toLowerCase() === 'account';
+        var looksAlreadyEnhanced = btn.innerHTML.indexOf('fa-circle-user') !== -1;
+        if (!alreadyWrapped && !isPristineAccountBtn && !looksAlreadyEnhanced) return;
+
+        enhancedButtons.add(btn);
+
+        var wrap = btn.closest('.account-dropdown');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'account-dropdown';
+            btn.parentNode.insertBefore(wrap, btn);
+            wrap.appendChild(btn);
+        }
+
+        btn.removeAttribute('href');
+        btn.setAttribute('role', 'button');
+
+        if (auth.isAuthenticated) {
+            btn.innerHTML = '<i class="fas fa-circle-user" style="margin-right:6px;"></i>' + (auth.userName || 'My Account');
+        } else {
+            btn.innerHTML = 'Account';
+        }
+
+        // Appended to document.body, not to `wrap` -- see note above.
+        var menu = document.createElement('div');
+        menu.className = 'account-dropdown-menu';
+        if (auth.isAuthenticated) {
+            menu.innerHTML =
+                '<a href="#" id="navLogoutLink"><i class="fas fa-right-from-bracket" style="margin-right:8px;"></i>Log Out</a>';
+        } else {
+            menu.innerHTML =
+                '<a href="/Account/Login"><i class="fas fa-right-to-bracket" style="margin-right:8px;"></i>Log In</a>';
+        }
+        menu.style.position = 'fixed';
+        menu.style.display = 'none';
+        menu.style.zIndex = '2147483647';
+        menu.style.background = '#fff';
+        menu.style.minWidth = '150px';
+        menu.style.borderRadius = '8px';
+        menu.style.boxShadow = '0 10px 28px rgba(0,0,0,0.2)';
+        menu.style.overflow = 'hidden';
+        document.body.appendChild(menu);
+
+        if (auth.isAuthenticated) {
+            var logoutLink = menu.querySelector('#navLogoutLink');
+            logoutLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/Account/Logout';
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+
+        function positionMenu() {
+            var r = btn.getBoundingClientRect();
+            menu.style.top = (r.bottom + 8) + 'px';
+            menu.style.left = 'auto';
+            menu.style.right = (window.innerWidth - r.right) + 'px';
+        }
+
+        var closeTimer;
+        function openMenu() {
+            clearTimeout(closeTimer);
+            positionMenu();
+            menu.style.display = 'block';
+            wrap.classList.add('open');
+        }
+        function closeMenu() {
+            closeTimer = setTimeout(function () {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }, 150);
+        }
+
+        // Hover for mouse users.
+        wrap.addEventListener('mouseenter', openMenu);
+        wrap.addEventListener('mouseleave', closeMenu);
+        menu.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        menu.addEventListener('mouseleave', closeMenu);
+
+        // Click/tap for touch users (also acts as a toggle).
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            } else {
+                openMenu();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrap.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (menu.style.display === 'block') positionMenu();
+        }, true);
+        window.addEventListener('resize', function () {
+            if (menu.style.display === 'block') positionMenu();
+        });
+    }
+
+    function run() {
+        document.querySelectorAll('.apply-btn').forEach(enhance);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+    } else {
+        run();
+    }
+
+    // Re-run if admin content edits change the DOM later (e.g. saving a
+    // section via the CMS editor on this page). Without this, the dropdown
+    // and its listeners can disappear after an edit is saved.
+    var observer = new MutationObserver(run);
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+
+
+<script src="~/js/global-search.js" asp-append-version="true"></script>
+<script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+<script src="~/js/schools-submenu.js" asp-append-version="true"></script>
+
+<partial name="_PublicModals" />
+<script src="~/js/public-modals.js" asp-append-version="true"></script>
+<script src="~/js/cms-icon-picker.js" asp-append-version="true"></script>
+</body>
+</html>

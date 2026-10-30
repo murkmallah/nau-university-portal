@@ -1,0 +1,810 @@
+@model NAU_Web.Models.VisitorAnalyticsDashboardViewModel
+@inject NAU_Web.Services.ISiteBrandingService BrandingService
+@{
+    ViewData["Title"] = "Real-Time Visitor Analytics & Traffic Intelligence";
+    Layout = null;
+    var branding = await BrandingService.GetSettingAsync();
+    var siteTitle = branding?.SiteTitle ?? "National Aviation University";
+    var darkLogoUrl = !string.IsNullOrWhiteSpace(branding?.DarkModeLogoUrl) ? branding.DarkModeLogoUrl : (!string.IsNullOrWhiteSpace(branding?.LogoUrl) ? branding.LogoUrl : "/images/logo.png");
+    var filterStyle = string.IsNullOrWhiteSpace(branding?.DarkModeLogoUrl) ? "filter: brightness(0) invert(1);" : "";
+
+    var topCountry = Model.Countries.FirstOrDefault();
+    var topDevice = Model.Devices.FirstOrDefault();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Analytics &amp; Country Telemetry &ndash; @siteTitle</title>
+    <partial name="_Favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071f36;
+            --green: #16a34a;
+            --green-light: #dcfce7;
+            --blue: #0284c7;
+            --blue-light: #e0f2fe;
+            --purple: #7c3aed;
+            --purple-light: #f3e8ff;
+            --amber: #d97706;
+            --amber-light: #fef3c7;
+            --red: #dc2626;
+            --red-light: #fee2e2;
+            --gray-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Admin Navbar */
+        .admin-nav {
+            background: linear-gradient(135deg, #0b2c4d 0%, #071f36 100%);
+            padding: 16px 36px;
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .admin-nav-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+            color: #fff;
+        }
+        .admin-brand img {
+            height: 44px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+        }
+        .admin-brand-text h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+        }
+        .admin-brand-text .admin-brand-tagline {
+            font-size: 10.5px;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .admin-nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-nav-outline {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+        }
+        .btn-nav-outline:hover {
+            background: rgba(255,255,255,0.22);
+            transform: translateY(-1px);
+        }
+
+        /* Pulse Radar Dot */
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            background: #22c55e;
+            animation: pulseRadar 1.6s infinite;
+        }
+        @@keyframes pulseRadar {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* Main Container */
+        .admin-main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px 24px 60px;
+            width: 100%;
+            flex: 1;
+        }
+
+        /* Module Sub-Navbar / Tabs */
+        .module-tabs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            background: #ffffff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all .2s;
+        }
+        .tab-btn:hover {
+            color: var(--primary);
+            background: #f1f5f9;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(11,44,77,0.25);
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .page-header-title h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .page-header-title p {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Filter Pills */
+        .range-pills {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            padding: 4px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+        }
+        .range-pill {
+            padding: 7px 14px;
+            border-radius: 7px;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all .2s;
+        }
+        .range-pill:hover { color: var(--primary); }
+        .range-pill.active {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        /* Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+        .metric-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px 22px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform .2s, box-shadow .2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        }
+        .metric-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .metric-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+        }
+        .metric-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .metric-val {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-dark);
+            line-height: 1.15;
+        }
+        .metric-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Grid Sections */
+        .analytics-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        @@media (max-width: 1024px) {
+            .analytics-split { grid-template-columns: 1fr; }
+        }
+
+        .panel-card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .panel-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .panel-header h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-body {
+            padding: 22px;
+        }
+
+        /* Country & Progress List */
+        .stat-item {
+            margin-bottom: 16px;
+        }
+        .stat-item:last-child { margin-bottom: 0; }
+        .stat-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .stat-item-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .stat-item-val {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .progress-track {
+            height: 7px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #0284c7, #06b6d4);
+            transition: width .4s ease;
+        }
+
+        /* Live Table */
+        .table-wrap {
+            overflow-x: auto;
+            width: 100%;
+        }
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+        .analytics-table th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 11px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .analytics-table td {
+            padding: 13px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .analytics-table tr:hover { background: #f8fafc; }
+        .analytics-table tr:last-child td { border-bottom: none; }
+
+        .badge-live {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .badge-recent {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <header class="admin-nav">
+        <div class="admin-nav-inner">
+            <a href="/Admin" class="admin-brand" title="Back to Admin Dashboard">
+                <img src="@darkLogoUrl" alt="@siteTitle Logo" style="@filterStyle" onerror="this.src='/images/logo.png'">
+                <div class="admin-brand-text">
+                    <h1>@siteTitle</h1>
+                    <span class="admin-brand-tagline">Real-Time Visitor Analytics &amp; Intelligence</span>
+                </div>
+            </a>
+            <div class="admin-nav-actions">
+                <div style="background:rgba(255,255,255,0.12); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; display:flex; align-items:center;">
+                    <span class="live-dot"></span>
+                    <span id="navLiveCount">@Model.LiveOnlineVisitorsCount Online Now</span>
+                </div>
+                <a href="/Admin" class="btn-nav btn-nav-outline"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                <a href="/" target="_blank" class="btn-nav btn-nav-outline"><i class="fas fa-globe"></i> View Site</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+
+        <!-- Module Tabs / Sub-Navbar -->
+        <div class="module-tabs">
+            <a href="/Admin/Users" class="tab-btn">
+                <i class="fas fa-users-gear"></i> Registered Users &amp; Accounts
+            </a>
+            <a href="/Admin/Analytics" class="tab-btn active">
+                <i class="fas fa-chart-line"></i> Real-Time Visitor Analytics
+            </a>
+            <a href="/Admin/Health" class="tab-btn">
+                <i class="fas fa-heart-pulse"></i> Uptime &amp; Health Monitor
+            </a>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-title">
+                <h2><i class="fas fa-globe-americas" style="color:var(--blue);"></i> Website Visitor &amp; Country Analytics</h2>
+                <p>100% Real-time visitor activity, country-wise traffic distribution, devices, and page engagement.</p>
+            </div>
+            
+            <!-- Time Range Filters -->
+            <div class="range-pills">
+                <a href="/Admin/Analytics?timeRange=today" class="range-pill @(Model.TimeRange == "today" ? "active" : "")">Today</a>
+                <a href="/Admin/Analytics?timeRange=7days" class="range-pill @(Model.TimeRange == "7days" ? "active" : "")">7 Days</a>
+                <a href="/Admin/Analytics?timeRange=30days" class="range-pill @(Model.TimeRange == "30days" ? "active" : "")">30 Days</a>
+                <a href="/Admin/Analytics?timeRange=all" class="range-pill @(Model.TimeRange == "all" ? "active" : "")">All Time</a>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="metrics-grid">
+            
+            <!-- Live Online Right Now -->
+            <div class="metric-card">
+                <div class="metric-head">
+                    <span class="metric-title">Live Online Right Now</span>
+                    <div class="metric-icon" style="background:#dcfce7; color:#16a34a;">
+                        <i class="fas fa-signal"></i>
+                    </div>
+                </div>
+                <div class="metric-val" style="color:#16a34a;" id="cardLiveCount">
+                    @Model.LiveOnlineVisitorsCount
+                </div>
+                <div class="metric-sub">
+                    <span class="live-dot"></span>
+                    <span>Active in last 5 minutes</span>
+                </div>
+            </div>
+
+            <!-- Total Page Views -->
+            <div class="metric-card">
+                <div class="metric-head">
+                    <span class="metric-title">Total Page Views (@(Model.TimeRange == "today" ? "Today" : Model.TimeRange))</span>
+                    <div class="metric-icon" style="background:#e0f2fe; color:#0284c7;">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                </div>
+                <div class="metric-val" id="cardTotalViews">
+                    @Model.TotalPageViews.ToString("N0")
+                </div>
+                <div class="metric-sub">
+                    <i class="fas fa-user-group" style="color:#0284c7;"></i>
+                    <span>@Model.UniqueVisitorsCount.ToString("N0") Unique Visitors</span>
+                </div>
+            </div>
+
+            <!-- Top Country -->
+            <div class="metric-card">
+                <div class="metric-head">
+                    <span class="metric-title">Top Country</span>
+                    <div class="metric-icon" style="background:#f3e8ff; color:#7c3aed;">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                </div>
+                <div class="metric-val" style="font-size:22px;">
+                    @(topCountry != null ? $"{topCountry.FlagEmoji} {topCountry.CountryName}" : "None Yet")
+                </div>
+                <div class="metric-sub">
+                    <i class="fas fa-chart-pie" style="color:#7c3aed;"></i>
+                    <span>@(topCountry != null ? $"{topCountry.Percentage}% of total visits" : "No external traffic yet")</span>
+                </div>
+            </div>
+
+            <!-- Primary Device -->
+            <div class="metric-card">
+                <div class="metric-head">
+                    <span class="metric-title">Primary Device</span>
+                    <div class="metric-icon" style="background:#fef3c7; color:#d97706;">
+                        <i class="fas fa-mobile-screen-button"></i>
+                    </div>
+                </div>
+                <div class="metric-val" style="font-size:22px;">
+                    @(topDevice != null ? $"{topDevice.DeviceType} ({topDevice.Percentage}%)" : "None Yet")
+                </div>
+                <div class="metric-sub">
+                    <i class="fas fa-laptop" style="color:#d97706;"></i>
+                    <span>@(topDevice != null ? "Desktop, Mobile & Tablet" : "No device visits logged")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 Column Analytics -->
+        <div class="analytics-split">
+            
+            <!-- Left: Country Breakdown -->
+            <div class="panel-card" style="margin-bottom:0;">
+                <div class="panel-header">
+                    <h3><i class="fas fa-earth-asia" style="color:#0284c7;"></i> Visitor Countries Breakdown</h3>
+                    <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Top Locations</span>
+                </div>
+                <div class="panel-body">
+                    @if (!Model.Countries.Any())
+                    {
+                        <div style="text-align:center; padding:30px; color:var(--text-muted);">
+                            <i class="fas fa-globe" style="font-size:32px; color:#cbd5e1; margin-bottom:8px; display:block;"></i>
+                            No country data recorded yet for this period.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var c in Model.Countries)
+                        {
+                            <div class="stat-item">
+                                <div class="stat-item-header">
+                                    <div class="stat-item-title">
+                                        <span style="font-size:16px;">@c.FlagEmoji</span>
+                                        <span>@c.CountryName</span>
+                                    </div>
+                                    <div class="stat-item-val">
+                                        @c.VisitCount.ToString("N0") visits <span style="color:var(--text-muted); font-size:11.5px; font-weight:500;">(@c.Percentage%)</span>
+                                    </div>
+                                </div>
+                                <div class="progress-track">
+                                    <div class="progress-bar" style="width:@c.Percentage%;"></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Right: Devices, Browsers & Operating Systems -->
+            <div class="panel-card" style="margin-bottom:0;">
+                <div class="panel-header">
+                    <h3><i class="fas fa-laptop-code" style="color:#7c3aed;"></i> Devices &amp; Technology</h3>
+                    <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Hardware &amp; Software</span>
+                </div>
+                <div class="panel-body">
+                    
+                    <!-- Device Types -->
+                    <div style="font-weight:700; font-size:12px; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; letter-spacing:0.5px;">
+                        Device Categories
+                    </div>
+                    @foreach (var d in Model.Devices)
+                    {
+                        <div class="stat-item">
+                            <div class="stat-item-header">
+                                <div class="stat-item-title">
+                                    <i class="fas @d.Icon" style="color:@d.Color;"></i>
+                                    <span>@d.DeviceType</span>
+                                </div>
+                                <div class="stat-item-val">
+                                    @d.Count <span style="color:var(--text-muted); font-size:11.5px; font-weight:500;">(@d.Percentage%)</span>
+                                </div>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-bar" style="width:@d.Percentage%; background:linear-gradient(90deg, #8b5cf6, #a855f7);"></div>
+                            </div>
+                        </div>
+                    }
+
+                    <div style="height:1px; background:#f1f5f9; margin:20px 0;"></div>
+
+                    <!-- Top Browsers -->
+                    <div style="font-weight:700; font-size:12px; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; letter-spacing:0.5px;">
+                        Web Browsers &amp; Operating Systems
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        @foreach (var b in Model.Browsers)
+                        {
+                            <div style="background:#f8fafc; border:1px solid var(--border); padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                                <i class="@b.Icon" style="color:#0284c7;"></i>
+                                <span>@b.BrowserName: @b.Count</span>
+                            </div>
+                        }
+                        @foreach (var o in Model.OperatingSystems)
+                        {
+                            <div style="background:#f8fafc; border:1px solid var(--border); padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                                <i class="@o.Icon" style="color:#16a34a;"></i>
+                                <span>@o.OsName</span>
+                            </div>
+                        }
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Top Pages Visited -->
+        <div class="panel-card">
+            <div class="panel-header">
+                <h3><i class="fas fa-file-lines" style="color:#16a34a;"></i> Most Visited University Pages</h3>
+                <span style="font-size:12px; color:var(--text-muted); font-weight:600;">Popular Content</span>
+            </div>
+            <div class="panel-body" style="padding:0;">
+                <div class="table-wrap">
+                    <table class="analytics-table">
+                        <thead>
+                            <tr>
+                                <th>Page Title &amp; URL</th>
+                                <th>Page Views</th>
+                                <th>Unique Visitors</th>
+                                <th style="width:25%;">Traffic Share</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!Model.TopPages.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" style="text-align:center; padding:24px; color:var(--text-muted);">
+                                        No page visits logged yet.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var p in Model.TopPages)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:600; color:var(--primary);">@p.PageTitle</div>
+                                            <div style="font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--text-muted);">@p.PageUrl</div>
+                                        </td>
+                                        <td style="font-weight:700; color:var(--primary);">
+                                            @p.ViewsCount.ToString("N0")
+                                        </td>
+                                        <td>
+                                            @p.UniqueVisitorsCount.ToString("N0")
+                                        </td>
+                                        <td>
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <div class="progress-track" style="flex:1;">
+                                                    <div class="progress-bar" style="width:@p.Percentage%;"></div>
+                                                </div>
+                                                <span style="font-weight:600; font-size:11.5px; min-width:35px;">@p.Percentage%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Real-Time Visitor Feed -->
+        <div class="panel-card">
+            <div class="panel-header">
+                <h3><i class="fas fa-tower-broadcast" style="color:#dc2626;"></i> Real-Time Live Visitor Feed</h3>
+                <span style="font-size:12px; color:#16a34a; font-weight:600; display:flex; align-items:center;">
+                    <span class="live-dot"></span> Auto-Refreshing Every 5s
+                </span>
+            </div>
+            <div class="panel-body" style="padding:0;">
+                <div class="table-wrap">
+                    <table class="analytics-table" id="liveVisitorTable">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Country &amp; City</th>
+                                <th>IP Address</th>
+                                <th>Device &amp; Browser</th>
+                                <th>Visited Page</th>
+                                <th>Active Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liveVisitorBody">
+                            @if (!Model.RecentVisitors.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">
+                                        No active visitor sessions recorded.
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var v in Model.RecentVisitors)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (v.IsOnline)
+                                            {
+                                                <span class="badge-live"><i class="fas fa-circle" style="font-size:7px;"></i> Online</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge-recent">Recent</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div style="font-weight:600; display:flex; align-items:center; gap:6px;">
+                                                <span style="font-size:15px;">@v.FlagEmoji</span>
+                                                <span>@v.Country</span>
+                                            </div>
+                                            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">@v.City</div>
+                                        </td>
+                                        <td style="font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#475569;">
+                                            @v.IpAddress
+                                            @if (v.IpAddress == "127.0.0.1" || v.IpAddress == "::1")
+                                            {
+                                                <span style="font-size:10px; font-family:'Poppins', sans-serif; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; margin-left:4px; font-weight:600;">This PC / Local</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div style="font-weight:500;">@v.DeviceType (@v.OperatingSystem)</div>
+                                            <div style="font-size:11px; color:var(--text-muted);">@v.Browser</div>
+                                        </td>
+                                        <td>
+                                            <div style="font-weight:600; color:var(--primary);">@v.PageTitle</div>
+                                            <div style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-muted);">@v.CurrentPage</div>
+                                        </td>
+                                        <td style="font-size:12px; color:var(--text-muted);">
+                                            @v.LastActivityAt.ToString("HH:mm:ss") UTC
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Real-Time 5s Polling for live active visitors
+        async function pollLiveTelemetry() {
+            try {
+                const res = await fetch('/Admin/LiveAnalyticsFeed');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.liveOnline !== undefined) {
+                        const countText = (data.liveOnline || 0) + ' Online Now';
+                        const navBadge = document.getElementById('navLiveCount');
+                        const cardCount = document.getElementById('cardLiveCount');
+                        if (navBadge) navBadge.innerText = countText;
+                        if (cardCount) cardCount.innerText = data.liveOnline || 0;
+                    }
+                }
+            } catch (e) { }
+        }
+
+        setInterval(pollLiveTelemetry, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="jcRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d81e05"/>
+      <stop offset="100%" stop-color="#990000"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="20" fill="url(#jcRed)"/>
+  
+  <!-- Jazz Signature Flame / Swirl Mark -->
+  <g transform="translate(60, 48)">
+    <!-- Yellow dynamic outer flame -->
+    <path d="M -18,-18 C -6,-28 16,-22 22,-8 C 26,0 22,14 12,20 C 4,25 -8,22 -14,14 C -20,6 -24,-10 -18,-18 Z" fill="#ffcc00"/>
+    <!-- Red internal swirl petal -->
+    <path d="M -10,-12 C -2,-18 12,-14 16,-4 C 18,2 14,10 8,14 C 2,17 -6,14 -10,8 C -13,3 -15,-7 -10,-12 Z" fill="#d81e05"/>
+    <!-- Yellow central core spark -->
+    <circle cx="2" cy="0" r="4.5" fill="#ffffff"/>
+  </g>
+
+  <!-- JazzCash Text -->
+  <text x="60" y="96" text-anchor="middle" fill="#ffffff" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="14" letter-spacing="0.5">Jazz<tspan fill="#ffcc00">Cash</tspan></text>
+  <text x="60" y="108" text-anchor="middle" fill="#fecaca" font-family="'Montserrat', sans-serif" font-weight="600" font-size="8.5" letter-spacing="1">MOBILE</text>
+</svg>

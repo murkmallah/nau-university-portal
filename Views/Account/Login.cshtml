@@ -1,0 +1,485 @@
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login – Aviation University</title>
+    <partial name="_Favicon" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <link rel="stylesheet" href="~/css/site.css">
+    <style>
+            :root {
+                --primary: #0b2c4d;
+                --green: #1e8e3e;
+                --green-light: #34a050;
+                --gold: #f5a623;
+                --bg: #f5f7fb;
+                --white: #fff;
+                --shadow: 0 8px 32px rgba(11,44,77,0.13);
+                --font-head: "Montserrat", sans-serif;
+                --font-body: "Poppins", sans-serif;
+              }
+
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+
+            body {
+                font-family: var(--font-body);
+                background: var(--bg);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+              }
+
+            .topbar {
+                background: var(--primary);
+                padding: 10px 40px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              }
+
+            .topbar-logo {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                text-decoration: none;
+              }
+
+            .topbar-logo img {
+                height: 40px;
+                width: auto;
+                display: block;
+                filter: brightness(0) invert(1);
+              }
+
+            .topbar-logo span {
+                font-family: var(--font-head);
+                font-size: 18px;
+                font-weight: 700;
+                color: #fff;
+                white-space: nowrap;
+              }
+
+            .topbar-back {
+                color: rgba(255,255,255,0.75);
+                font-size: 13px;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                transition: color .2s;
+              }
+
+            .topbar-back:hover { color: #fff; }
+
+            .main {
+                flex: 1;
+                display: flex;
+                min-height: calc(100vh - 60px);
+              }
+
+            .left-panel {
+                flex: 1;
+                background: linear-gradient(135deg, #0b2c4d 0%, #0d3a6e 60%, #1a5fa6 100%);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 60px 48px;
+                position: relative;
+                overflow: hidden;
+              }
+
+            .left-panel::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background:
+                  radial-gradient(ellipse at 20% 80%, rgba(30,142,62,0.18) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(245,166,35,0.08) 0%, transparent 50%);
+              }
+
+            .plane-deco {
+                position: absolute;
+                bottom: 60px;
+                right: -20px;
+                opacity: 0.06;
+                font-size: 220px;
+                color: #fff;
+                transform: rotate(-15deg);
+                pointer-events: none;
+              }
+
+            .circle-deco {
+                position: absolute;
+                border-radius: 50%;
+                border: 1px solid rgba(255,255,255,0.07);
+              }
+
+            .c1 { width: 320px; height: 320px; top: -80px; left: -80px; }
+            .c2 { width: 200px; height: 200px; bottom: 100px; left: 40px; }
+            .c3 { width: 120px; height: 120px; top: 40%; right: 30px; }
+
+            .left-content { position: relative; z-index: 1; text-align: center; }
+
+            .left-content .tagline {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 3px;
+                color: var(--gold);
+                text-transform: uppercase;
+                margin-bottom: 16px;
+              }
+
+            .left-content h2 {
+                font-family: var(--font-head);
+                font-size: 34px;
+                font-weight: 800;
+                color: #fff;
+                line-height: 1.25;
+                margin-bottom: 20px;
+              }
+
+            .left-content p {
+                color: rgba(255,255,255,0.7);
+                font-size: 14px;
+                line-height: 1.8;
+                max-width: 340px;
+                margin: 0 auto 32px;
+              }
+
+            .highlights {
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+                text-align: left;
+                max-width: 320px;
+              }
+
+            .hl-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                color: rgba(255,255,255,0.85);
+                font-size: 13px;
+              }
+
+            .hl-icon {
+                width: 36px;
+                height: 36px;
+                background: rgba(30,142,62,0.25);
+                border: 1px solid rgba(30,142,62,0.4);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #4ed47a;
+                font-size: 14px;
+                flex-shrink: 0;
+              }
+
+            .right-panel {
+                flex: 0 0 480px;
+                background: #fff;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: 60px 48px;
+                box-shadow: -8px 0 40px rgba(11,44,77,0.06);
+              }
+
+            .form-header { margin-bottom: 36px; }
+
+            .form-header .label {
+                font-size: 11px;
+                font-weight: 700;
+                letter-spacing: 2px;
+                color: var(--green);
+                text-transform: uppercase;
+                margin-bottom: 6px;
+              }
+
+            .form-header h1 {
+                font-family: var(--font-head);
+                font-size: 30px;
+                font-weight: 800;
+                color: var(--primary);
+                margin-bottom: 6px;
+              }
+
+            .form-header p { color: #888; font-size: 13px; }
+
+            .form-group { margin-bottom: 20px; position: relative; }
+
+            .form-group label {
+                display: block;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--primary);
+                margin-bottom: 8px;
+                letter-spacing: 0.3px;
+              }
+
+            .input-wrap { position: relative; }
+
+            .input-wrap i.prefix {
+                position: absolute;
+                left: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #aaa;
+                font-size: 14px;
+                pointer-events: none;
+              }
+
+            .input-wrap input {
+                width: 100%;
+                padding: 12px 14px 12px 40px;
+                border: 1.5px solid #e0e4ea;
+                border-radius: 8px;
+                font-family: var(--font-body);
+                font-size: 14px;
+                color: #333;
+                background: #fafbfc;
+                transition: border-color .2s, box-shadow .2s;
+                outline: none;
+              }
+
+            .input-wrap input:focus {
+                border-color: var(--green);
+                box-shadow: 0 0 0 3px rgba(30,142,62,0.1);
+                background: #fff;
+              }
+
+            .toggle-pass {
+                position: absolute;
+                right: 14px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #aaa;
+                cursor: pointer;
+                font-size: 14px;
+                transition: color .2s;
+              }
+
+            .toggle-pass:hover { color: var(--primary); }
+
+            .form-options {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+                font-size: 13px;
+              }
+
+            .remember { display: flex; align-items: center; gap: 7px; color: #555; cursor: pointer; }
+
+            .remember input[type=checkbox] {
+                accent-color: var(--green);
+                width: 15px;
+                height: 15px;
+                cursor: pointer;
+              }
+
+            .forgot { color: var(--green); text-decoration: none; font-weight: 600; }
+            .forgot:hover { text-decoration: underline; }
+
+            .btn-submit {
+                width: 100%;
+                padding: 14px;
+                background: var(--primary);
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                font-family: var(--font-head);
+                font-size: 15px;
+                font-weight: 700;
+                cursor: pointer;
+                letter-spacing: 0.5px;
+                transition: background .2s, transform .1s, box-shadow .2s;
+                position: relative;
+                overflow: hidden;
+              }
+
+            .btn-submit::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+                transform: translateX(-100%);
+                transition: transform .5s;
+              }
+
+            .btn-submit:hover { background: #0d3a6e; box-shadow: 0 6px 20px rgba(11,44,77,0.25); }
+            .btn-submit:hover::after { transform: translateX(100%); }
+            .btn-submit:active { transform: scale(0.99); }
+
+            .divider {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin: 24px 0;
+                color: #ccc;
+                font-size: 12px;
+              }
+
+            .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #e8e8e8; }
+
+            .switch-link { text-align: center; font-size: 13px; color: #777; }
+            .switch-link a { color: var(--green); font-weight: 700; text-decoration: none; }
+            .switch-link a:hover { text-decoration: underline; }
+
+            .page-footer {
+                background: var(--primary);
+                color: rgba(255,255,255,0.5);
+                text-align: center;
+                padding: 14px;
+                font-size: 12px;
+              }
+
+            .login-error {
+                background: #fdecea;
+                border: 1px solid #f5c2c0;
+                color: #b3261e;
+                padding: 12px 14px;
+                border-radius: 8px;
+                font-size: 13px;
+                margin-bottom: 20px;
+                list-style: none;
+              }
+
+            @@media(max-width: 900px) {
+                .left-panel { display: none; }
+                .right-panel { flex: 1; padding: 40px 28px; }
+              }
+
+            @@media(max-width: 480px) {
+                .right-panel { padding: 32px 20px; }
+              }
+
+            .right-panel { animation: slideIn .4s ease; }
+
+            @@keyframes slideIn { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <a href="~/" class="topbar-logo">
+            <img src="~/images/logo.png" alt="NAU Logo" onerror="this.style.display='none'">
+            <span>National Aviation University</span>
+        </a>
+        <a href="javascript:history.back()" class="topbar-back"><i class="fas fa-arrow-left"></i> Back to Previous Page</a>
+    </div>
+
+    <div class="main">
+
+        <div class="left-panel">
+            <div class="circle-deco c1"></div>
+            <div class="circle-deco c2"></div>
+            <div class="circle-deco c3"></div>
+            <div class="plane-deco"><i class="fas fa-plane"></i></div>
+            <div class="left-content">
+                <div class="tagline">National Aviation University</div>
+                <h2>Shaping the Future of Aviation</h2>
+                <p>Welcome! Log in to access your student portal and continue your journey toward an aviation career.</p>
+                <div class="highlights">
+                    <div class="hl-item"><div class="hl-icon"><i class="fas fa-university"></i></div><span>Established in 2026</span></div>
+                    <div class="hl-item"><div class="hl-icon"><i class="fas fa-book-open"></i></div><span>7 Degree Programs</span></div>
+                    <div class="hl-item"><div class="hl-icon"><i class="fas fa-user-graduate"></i></div><span>19935 Students Enrolled</span></div>
+                    <div class="hl-item"><div class="hl-icon"><i class="fas fa-globe"></i></div><span>40+ States</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="form-header">
+                <div class="label">Student Portal</div>
+                <h1>Welcome</h1>
+                <p>Sign in to your National Aviation University account</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ViewBag.UnconfirmedEmail as string))
+            {
+                <div style="background:#fffbeb; border:1px solid #fde68a; border-left:4px solid #f59e0b; padding:14px 16px; border-radius:8px; margin-bottom:20px; font-size:13px; color:#92400e;">
+                    <div style="font-weight:700; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                        <i class="fas fa-envelope-open-text" style="color:#d97706;"></i> Email Verification Required
+                    </div>
+                    <p style="margin:0 0 10px 0; color:#78350f; font-size:12.5px; line-height:1.5;">
+                        Your account has not been verified yet. Please check your inbox at <strong>@ViewBag.UnconfirmedEmail</strong> or request a new verification link below.
+                    </p>
+                    <a href="~/Account/ResendConfirmationEmail?email=@System.Net.WebUtility.UrlEncode(ViewBag.UnconfirmedEmail as string)" style="display:inline-flex; align-items:center; gap:6px; background:#0b2c4d; color:#ffffff; font-size:12px; font-weight:600; padding:6px 12px; border-radius:6px; text-decoration:none;">
+                        <i class="fas fa-paper-plane"></i> Resend Verification Email
+                    </a>
+                </div>
+            }
+            else if (!ViewData.ModelState.IsValid)
+            {
+                <ul class="login-error">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            }
+
+            <form asp-controller="Account" asp-action="Login" method="post">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-envelope prefix"></i>
+                        <input type="text" name="email" placeholder="Enter your email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock prefix"></i>
+                        <input type="password" id="loginPass" name="password" placeholder="Enter your password">
+                        <i class="fas fa-eye toggle-pass" onclick="togglePass('loginPass', this)"></i>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember">
+                        <input type="checkbox" name="rememberMe" value="true"> Remember me
+                    </label>
+                    <a href="#" class="forgot">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i> Sign In
+                </button>
+            </form>
+
+            <div class="divider">or</div>
+
+            <div class="switch-link">
+                New to National Aviation University? <a asp-controller="Account" asp-action="Register">Create an Account</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-footer" style="white-space:nowrap;">© 2026 National Aviation University. All Rights Reserved.</div>
+
+    <script>
+            function togglePass(id, icon) {
+              const input = document.getElementById(id);
+              if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+              } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+              }
+            }
+    </script>
+</body>
+</html>

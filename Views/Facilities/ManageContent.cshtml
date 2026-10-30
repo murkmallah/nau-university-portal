@@ -1,0 +1,109 @@
+@model NAU_Web.Models.Facility
+@{
+    ViewData["Title"] = "Manage Content — " + Model.Name;
+}
+
+<h1>Manage Content: @Model.Name</h1>
+<a asp-action="Index">&larr; Back to Facilities</a>
+
+<h3 class="mt-4">Stats</h3>
+<table class="table">
+    <tr><th>Number</th><th>Label</th><th></th></tr>
+    @foreach (var s in Model.FacilityStats)
+    {
+        <tr>
+            <td>@s.StatNumber</td>
+            <td>@s.StatLabel</td>
+            <td>
+                <form asp-action="DeleteStat" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@s.FacilityStatId" />
+                    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddStat" method="post" class="d-flex gap-2 mb-4">
+    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+    <input name="statNumber" placeholder="e.g. 15,000+" class="form-control" />
+    <input name="statLabel" placeholder="e.g. Books & Journals" class="form-control" />
+    <button type="submit" class="btn btn-primary">Add Stat</button>
+</form>
+
+<h3>Services</h3>
+<table class="table">
+    <tr><th>Icon</th><th>Title</th><th>Description</th><th></th></tr>
+    @foreach (var s in Model.FacilityServices)
+    {
+        <tr>
+            <td>@s.Icon</td>
+            <td>@s.Title</td>
+            <td>@s.Description</td>
+            <td>
+                <form asp-action="DeleteService" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@s.FacilityServiceId" />
+                    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddService" method="post" class="d-flex gap-2 mb-4">
+    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+    <input name="icon" placeholder="fa-book" class="form-control" />
+    <input name="title" placeholder="Service title" class="form-control" />
+    <input name="description" placeholder="Description" class="form-control" />
+    <button type="submit" class="btn btn-primary">Add Service</button>
+</form>
+
+<h3>Hours</h3>
+<table class="table">
+    <tr><th>Day / Label</th><th>Time</th><th></th></tr>
+    @foreach (var h in Model.FacilityHours)
+    {
+        <tr>
+            <td>@h.DayOrLabel</td>
+            <td>@h.TimeValue</td>
+            <td>
+                <form asp-action="DeleteHour" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@h.FacilityHourId" />
+                    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddHour" method="post" class="d-flex gap-2">
+    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+    <input name="dayOrLabel" placeholder="Monday - Friday" class="form-control" />
+    <input name="timeValue" placeholder="8:00 AM - 8:00 PM" class="form-control" />
+    <button type="submit" class="btn btn-primary">Add Hour</button>
+</form>
+
+<h3 class="mt-4">Card Tags <small class="text-muted">(shown as chips on the facilities grid card)</small></h3>
+<table class="table">
+    <tr><th>Icon</th><th>Label</th><th></th></tr>
+    @foreach (var t in Model.FacilityCardTags)
+    {
+        <tr>
+            <td>@t.Icon</td>
+            <td>@t.Label</td>
+            <td>
+                <form asp-action="DeleteCardTag" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@t.FacilityCardTagId" />
+                    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
+<form asp-action="AddCardTag" method="post" class="d-flex gap-2 mb-4">
+    <input type="hidden" name="facilityId" value="@Model.FacilityId" />
+    <input name="icon" placeholder="fas fa-wifi" class="form-control" />
+    <input name="label" placeholder="Wi-Fi" class="form-control" />
+    <button type="submit" class="btn btn-primary">Add Tag</button>
+</form>

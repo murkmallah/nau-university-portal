@@ -1,0 +1,1175 @@
+@model NAU_Web.Models.Faculty
+@{
+    Layout = null;
+    var programs = Model.Programs.OrderBy(p => p.ProgramId).ToList();
+    var deptGroups = programs
+        .GroupBy(p => string.IsNullOrWhiteSpace(p.Department) ? Model.Name : p.Department)
+        .ToList();
+    string color = string.IsNullOrWhiteSpace(Model.ColorHex) ? "#0b3a5c" : Model.ColorHex.Trim();
+    string icon = string.IsNullOrWhiteSpace(Model.Icon) ? "fas fa-graduation-cap" : Model.Icon.Trim();
+    bool isSuperAdmin = User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin");
+    bool isAdmin = User.Identity != null && User.Identity.IsAuthenticated && (User.IsInRole("Admin") || User.IsInRole("Staff"));
+    bool canEdit = ViewBag.CanEdit == true;
+    bool editMode = ViewBag.EditMode == true;   // true only when reached via Read More in Admin Edit Mode (?edit=true)
+
+    string DarkenHex(string hex, double amount)
+    {
+        hex = hex.StartsWith("#") ? hex.Substring(1) : hex;
+        if (hex.Length != 6) return "#0f7490";
+        int r = Convert.ToInt32(hex.Substring(0, 2), 16);
+        int g = Convert.ToInt32(hex.Substring(2, 2), 16);
+        int b = Convert.ToInt32(hex.Substring(4, 2), 16);
+        r = (int)(r * (1 - amount));
+        g = (int)(g * (1 - amount));
+        b = (int)(b * (1 - amount));
+        return $"#{r:X2}{g:X2}{b:X2}";
+    }
+    string color2 = DarkenHex(color, 0.35);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@Model.Name - National Aviation University</title>
+<partial name="_Favicon" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="~/css/public-site.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/courses-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/faculties-page.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/mobile-nav.css" asp-append-version="true">
+<link rel="stylesheet" href="~/css/public-modals.css" asp-append-version="true">
+<style>
+  .account-dropdown{ position:relative; display:inline-block; }
+  .account-dropdown > .apply-btn::after{
+    content:"\f078"; font-family:"Font Awesome 6 Free"; font-weight:900;
+    font-size:10px; margin-left:8px; opacity:.85; display:inline-block; transition:transform .2s;
+  }
+  .account-dropdown.open > .apply-btn::after,
+  .account-dropdown:hover > .apply-btn::after{ transform:rotate(180deg); }
+  .account-dropdown-menu a{ display:block; padding:11px 16px; color:#0b2c4d; text-decoration:none; font-size:13.5px; font-weight:600; border-bottom:1px solid #f0f2f5; }
+  .account-dropdown-menu a:last-child{ border-bottom:none; }
+  .account-dropdown-menu a:hover{ background:#f5f7fb; color:#1e8e3e; }
+
+  /* ===== This faculty's own page (self-contained styles) ===== */
+  .fd-hero{
+    background:linear-gradient(135deg, @color 0%, @color2 100%);
+    padding:64px 48px 56px; position:relative; overflow:hidden;
+  }
+  .fd-hero-inner{ max-width:1480px; margin:0 auto; display:flex; gap:28px; align-items:flex-start; padding:0 24px; }
+  .fd-hero-icon{ width:78px; height:78px; border-radius:18px; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-size:34px; color:#fff; flex:none; }
+  .fd-hero-crumb{ color:rgba(255,255,255,0.7); font-size:13px; margin-bottom:10px; display:flex; align-items:center; gap:6px; font-family:'Poppins',sans-serif; }
+  .fd-hero-crumb a{ color:rgba(255,255,255,0.75); text-decoration:none; font-weight:500; }
+  .fd-hero-crumb a:hover{ color:#fff; text-decoration:underline; }
+  .fd-hero-crumb i{ font-size:10px; opacity:0.6; color:#fff; }
+  .fd-hero-crumb span{ color:#ffffff; font-weight:700; }
+
+  .fd-hero-label{ display:block; color:rgba(255,255,255,0.65); font-size:11px; font-weight:700; letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; font-family:'Montserrat',sans-serif; }
+  .fd-hero h1{ color:#fff; font-family:'Montserrat',sans-serif; font-weight:800; font-size:34px; margin:4px 0 12px; }
+  .fd-hero p{ color:rgba(255,255,255,0.85); font-size:15px; max-width:680px; line-height:1.7; margin:0 0 20px; }
+  .fd-hero-stats{ display:flex; gap:34px; flex-wrap:wrap; }
+  .fd-stat strong{ display:block; color:#fff; font-size:22px; font-family:'Montserrat',sans-serif; font-weight:800; }
+  .fd-stat span{ color:rgba(255,255,255,0.7); font-size:12.5px; }
+
+  .fd-main{ max-width:1480px; margin:0 auto; padding:48px 24px 70px; }
+  .fd-intro{ display:flex; gap:40px; flex-wrap:wrap; margin-bottom:44px; }
+  .fd-intro-text{ flex:1 1 480px; }
+  .fd-intro-text h2{ font-family:'Montserrat',sans-serif; font-weight:800; color:var(--primary); font-size:24px; margin-bottom:14px; }
+  .fd-intro-text p{ color:var(--text-light); line-height:1.8; font-size:14.5px; }
+  .fd-intro-feats{ flex:1 1 320px; display:grid; gap:12px; align-content:start; }
+  .fd-feat{ display:flex; align-items:center; gap:10px; background:var(--bg-light); border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:13.5px; color:var(--text); }
+  .fd-feat i{ color:@color; font-size:16px; width:20px; text-align:center; }
+  .fd-section-title-wrap { display:flex; align-items:center; justify-content:space-between; margin:40px 0 24px; }
+  .fd-section-title-heading { display:flex; align-items:center; flex:1; }
+  .fd-section-title-heading h2 { font-family:'Montserrat',sans-serif; font-weight:800; color:#0b2c4d; font-size:22px; margin:0; white-space:nowrap; }
+  .fd-section-title-heading .fd-title-line { flex:1; height:1.5px; background:#cbd5e1; margin-left:20px; margin-right:20px; }
+
+  .fd-dept-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(420px, 1fr)); gap:28px; }
+  .fd-dept-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(11,44,77,0.06); display:flex; flex-direction:column; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+  .fd-dept-card:hover { box-shadow:0 14px 38px rgba(11,44,77,0.1); }
+  .fd-dept-header { background:#1e3a5f; color:#ffffff; padding:22px 24px; display:flex; align-items:center; gap:16px; border-radius:16px 16px 0 0; }
+  .fd-dept-icon { width:44px; height:44px; border-radius:10px; background:rgba(255,255,255,0.16); display:flex; align-items:center; justify-content:center; font-size:18px; color:#ffffff; flex:none; }
+  .fd-dept-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,0.7); margin-bottom:3px; font-family:'Montserrat',sans-serif; }
+  .fd-dept-name { font-family:'Montserrat',sans-serif; font-weight:800; font-size:15.5px; color:#ffffff; margin:0; line-height:1.3; }
+  .fd-dept-body { padding:24px 26px; display:flex; flex-direction:column; flex:1; }
+  .fd-dept-desc { font-size:13.5px; color:#64748b; line-height:1.68; margin:0 0 22px; font-family:'Open Sans',sans-serif; }
+  .fd-programs-title { font-size:10.5px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#94a3b8; margin-bottom:14px; font-family:'Montserrat',sans-serif; }
+  .fd-prog-item { display:flex; align-items:center; gap:14px; background:#f8fafc; border:1px solid #f1f5f9; border-radius:12px; padding:13px 16px; margin-bottom:11px; text-decoration:none; color:inherit; transition:all .2s ease; cursor:pointer; }
+  .fd-prog-item:hover { background:#f1f5f9; border-color:#cbd5e1; transform:translateY(-2px); box-shadow:0 4px 14px rgba(11,44,77,0.06); }
+  .fd-prog-icon { width:36px; height:36px; border-radius:8px; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#1e3a5f; font-size:15px; flex:none; }
+  .fd-prog-name { font-family:'Poppins',sans-serif; font-weight:700; font-size:13.5px; color:#0b2c4d; margin-bottom:3px; }
+  .fd-prog-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .fd-prog-meta span { font-size:11px; color:#64748b; display:inline-flex; align-items:center; gap:5px; font-weight:500; }
+  .fd-prog-meta span i { font-size:10px; color:#94a3b8; }
+  .fd-prog-arrow { margin-left:auto; color:#cbd5e1; font-size:12px; transition:transform .2s ease; }
+  .fd-prog-item:hover .fd-prog-arrow { color:#0b2c4d; transform:translateX(3px); }
+  .fd-no-programs { color:var(--text-light); font-size:13.5px; font-style:italic; }
+
+  /* ===== Admin edit controls: dept/program add/edit/delete ===== */
+  .fd-admin-btn{ display:inline-flex; align-items:center; gap:6px; background:var(--primary); color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:'Poppins',sans-serif; white-space:nowrap; }
+  .fd-admin-btn:hover{ opacity:.9; }
+  .fd-admin-btn-danger{ background:#c0392b; }
+  .fd-admin-btn-secondary{ background:var(--bg-light); color:var(--primary); border:1px solid var(--border); }
+  .fd-prog-item{ position:relative; padding-right:14px; }
+  .fd-prog-icon-btn{ flex:none; width:30px; height:30px; border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--primary); cursor:pointer; font-size:12px; margin-left:4px; }
+  .fd-prog-icon-btn:first-of-type{ margin-left:auto; }
+  .fd-prog-icon-btn:hover{ background:var(--bg-light); }
+  .fd-prog-icon-btn-danger{ color:#c0392b; }
+  .fd-dept-delete-btn{
+    margin-left:auto;
+    width:32px; height:32px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.18);
+    color:#fff;
+    cursor:pointer;
+    font-size:13px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    transition:background .2s, transform .15s;
+    flex:none;
+  }
+  .fd-dept-delete-btn:hover{
+    background:#c0392b;
+    border-color:#c0392b;
+    color:#fff;
+    transform:scale(1.08);
+  }
+  .fd-feat-item{ position:relative; display:flex; align-items:center; gap:10px; background:var(--bg-light); border:1px solid var(--border); border-radius:10px; padding:12px 14px; font-size:13.5px; color:var(--text); }
+  .fd-feat-item i.fd-feat-icon{ color:@color; font-size:16px; width:20px; text-align:center; flex:none; }
+  .fd-feat-item .fd-feat-text{ flex:1; line-height:1.4; }
+  .fd-feat-actions{ display:flex; gap:4px; align-items:center; flex:none; margin-left:auto; }
+  .fd-feat-act-btn{ width:26px; height:26px; border-radius:50%; border:1px solid var(--border); background:#fff; color:var(--primary); cursor:pointer; font-size:11px; display:inline-flex; align-items:center; justify-content:center; }
+  .fd-feat-act-btn:hover{ background:var(--bg-light); }
+  .fd-feat-act-btn-danger{ color:#c0392b; }
+  .fd-feat-act-btn-danger:hover{ background:#fdecea; }
+
+  /* Add/Edit Program modal (separate from the read-only Program modal) */
+  .fd-form-modal-backdrop{ display:none; position:fixed; inset:0; background:rgba(11,44,77,0.55); z-index:2100; align-items:center; justify-content:center; padding:20px; overflow-y:auto; }
+  .fd-form-modal-backdrop.open{ display:flex; }
+  .fd-form-modal{ background:#fff; border-radius:14px; max-width:520px; width:100%; max-height:90vh; overflow-y:auto; font-family:'Poppins',sans-serif; }
+  .fd-form-modal-header{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid #eef1f6; }
+  .fd-form-modal-header h3{ font-family:'Montserrat',sans-serif; font-size:16px; font-weight:800; color:var(--primary); }
+  .fd-form-modal-close{ background:none; border:none; font-size:15px; cursor:pointer; color:#667; }
+  .fd-form-modal-body{ padding:20px 22px; }
+  .fd-form-row{ margin-bottom:13px; }
+  .fd-form-row label{ display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; color:var(--primary); margin-bottom:5px; }
+  .fd-form-row input, .fd-form-row textarea{ width:100%; border:1.5px solid var(--border); border-radius:7px; padding:9px 12px; font-size:13.5px; font-family:'Poppins',sans-serif; color:var(--text); }
+  .fd-form-row textarea{ min-height:70px; resize:vertical; }
+  .fd-form-grid3{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+  .fd-form-error{ color:#c0392b; font-size:12px; margin-top:2px; display:none; }
+  .fd-form-actions{ display:flex; gap:10px; margin-top:8px; }
+  .fd-form-actions button{ flex:1; padding:11px; border-radius:8px; border:none; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Poppins',sans-serif; }
+  .fd-form-btn-primary{ background:var(--green); color:#fff; }
+  .fd-form-btn-secondary{ background:var(--bg-light); color:var(--primary); border:1px solid var(--border); }
+
+  /* Career/Highlight chip edit controls inside the read-only program modal */
+  .fd-career-pill{ position:relative; padding-right:26px; }
+  .fd-career-pill .fd-chip-x{ position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:none; color:#c0392b; cursor:pointer; font-size:11px; padding:2px; }
+  .fd-highlights li{ align-items:flex-start; justify-content:space-between; }
+  .fd-highlights li .fd-hl-text{ flex:1; display:flex; gap:10px; }
+  .fd-highlights li .fd-chip-x{ background:none; border:none; color:#c0392b; cursor:pointer; font-size:12px; padding:2px 6px; flex:none; }
+  .fd-inline-add-row{ display:flex; gap:8px; margin-top:8px; margin-bottom:18px; }
+  .fd-inline-add-row input{ flex:1; border:1.5px solid var(--border); border-radius:7px; padding:8px 10px; font-size:13px; font-family:'Poppins',sans-serif; }
+  .fd-inline-add-row button{ background:var(--primary); color:#fff; border:none; border-radius:7px; padding:8px 14px; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .fd-modal-edit-btn{ position:absolute; top:16px; right:56px; background:rgba(255,255,255,0.2); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:13px; }
+  .fd-modal-delete-btn{ position:absolute; top:16px; right:96px; background:rgba(255,255,255,0.2); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:13px; }
+
+  /* ===== Program modal ===== */
+  .fd-modal-backdrop{ display:none; position:fixed; inset:0; background:rgba(11,44,77,0.55); z-index:2000; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto; }
+  .fd-modal-backdrop.open{ display:flex; }
+  .fd-modal{ background:#fff; border-radius:16px; max-width:620px; width:100%; overflow:hidden; }
+  .fd-modal-hero{ padding:26px 28px; position:relative; }
+  .fd-modal-close{ position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.2); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px; }
+  .fd-modal-dept{ color:rgba(255,255,255,0.75); font-size:12px; font-weight:700; letter-spacing:0.5px; margin-bottom:6px; }
+  .fd-modal-title{ color:#fff; font-family:'Montserrat',sans-serif; font-weight:800; font-size:23px; }
+  .fd-modal-body{ padding:24px 28px 28px; }
+  .fd-modal-desc{ color:var(--text-light); font-size:14px; line-height:1.75; margin-bottom:20px; }
+  .fd-dur-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; }
+  .fd-dur-item{ background:var(--bg-light); border-radius:10px; padding:12px; text-align:center; }
+  .fd-dur-item label{ display:block; font-size:10.5px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:#9aa4b2; margin-bottom:4px; }
+  .fd-dur-item span{ font-weight:700; color:var(--primary); font-size:14px; }
+  .fd-section-label{ font-size:12px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--primary); margin:0 0 10px; }
+  .fd-careers{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+  .fd-career-pill{ background:var(--bg-light); border:1px solid var(--border); border-radius:20px; padding:6px 14px; font-size:12.5px; color:var(--text); }
+  .fd-highlights{ list-style:none; padding:0; margin:0 0 24px; display:grid; gap:9px; }
+  .fd-highlights li{ display:flex; gap:10px; font-size:13.5px; color:var(--text); line-height:1.6; }
+  .fd-highlights li i{ color:var(--green); margin-top:3px; }
+  .fd-modal-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+  .fd-action-btn{ flex:1; text-align:center; padding:12px 16px; border-radius:10px; font-weight:700; font-size:13.5px; text-decoration:none; }
+  .fd-action-btn.enroll{ background:var(--green); color:#fff; }
+  .fd-action-btn.catalog{ background:var(--bg-light); color:var(--primary); border:1px solid var(--border); }
+
+  .fd-page-footer{ text-align:center; padding:24px; color:var(--text-light); font-size:13px; background:var(--bg-light); }
+</style>
+</head>
+<body>
+
+@if (editMode)
+{
+    <div style="background:#0b2c4d;color:#fff;text-align:center;padding:12px 20px;font-family:'Poppins',sans-serif;font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:14px;position:sticky;top:0;z-index:9999;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+        <span><i class="fas fa-shield-halved" style="color:#38bdf8;"></i> You are viewing <strong>@Model.Name</strong> in <strong>Admin Edit Mode</strong>.</span>
+        <a href="/Faculties/Detail/@Model.Slug" style="background:rgba(255,255,255,0.15);color:#fff;text-decoration:none;padding:5px 12px;border-radius:6px;font-size:12.5px;"><i class="fas fa-eye"></i> View Live</a>
+        <a href="/Admin" style="background:#0284c7;color:#fff;text-decoration:none;padding:5px 12px;border-radius:6px;font-size:12.5px;"><i class="fas fa-arrow-left"></i> Staff Control Panel</a>
+    </div>
+}
+
+<partial name="_SiteHeader" />
+
+<!-- HERO -->
+<div class="fd-hero">
+  @if (editMode)
+  {
+      <button type="button" id="fdEditHeroBtn" title="Edit this faculty" onclick="fdOpenHeroEdit()"
+              style="position:absolute; top:20px; right:24px; z-index:5; width:38px; height:38px; border-radius:50%; border:none; background:rgba(255,255,255,0.18); color:#fff; cursor:pointer; font-size:15px;">
+          <i class="fas fa-pen"></i>
+      </button>
+  }
+  <div class="fd-hero-inner">
+    <div class="fd-hero-icon"><i class="@icon" id="fdHeroIcon"></i></div>
+    <div>
+      <div class="fd-hero-crumb"><a href="/">Home</a> <i class="fas fa-chevron-right"></i> <a href="/Faculties/Public@(editMode ? "?edit=true" : "")">Faculties</a> <i class="fas fa-chevron-right"></i> <span>@Model.Name</span></div>
+      <div class="fd-hero-label">FACULTY OVERVIEW</div>
+      <h1 id="fdHeroName">@Model.Name</h1>
+      <p id="fdHeroDesc">@Model.Description</p>
+      <div class="fd-hero-stats">
+        <div class="fd-stat"><strong>@deptGroups.Count</strong><span>Department@(deptGroups.Count == 1 ? "" : "s")</span></div>
+        <div class="fd-stat"><strong>@programs.Count</strong><span>Degree Program@(programs.Count == 1 ? "" : "s")</span></div>
+        <div class="fd-stat"><strong>3</strong><span>Study Levels</span></div>
+        <div class="fd-stat"><strong>2026</strong><span>Est.</span></div>
+      </div>
+
+      @if (editMode)
+      {
+          <div id="fdHeroEditForm" style="display:none; margin-top:20px; max-width:640px; background:rgba(255,255,255,0.12); border:1px dashed rgba(255,255,255,0.5); border-radius:10px; padding:16px 18px;">
+              <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">FACULTY NAME</label>
+              <input id="fdEditName" type="text" value="@Model.Name" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:10px;">
+              <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">ICON (Font Awesome class)</label>
+              <input id="fdEditIcon" type="text" value="@icon" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:10px;">
+              <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">COLOR (hex)</label>
+              <input id="fdEditColor" type="text" value="@color" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:10px;">
+              <label style="display:block;font-size:11.5px;font-weight:700;color:#fff;opacity:.85;margin-bottom:4px;">DESCRIPTION</label>
+              <textarea id="fdEditDesc" rows="3" style="width:100%;padding:8px 10px;border-radius:6px;border:1px solid #cfe8d8;font-family:'Poppins',sans-serif;font-size:14px;margin-bottom:10px;">@Model.Description</textarea>
+              <div style="display:flex; gap:10px; align-items:center;">
+                  <button type="button" onclick="fdSaveHeroEdit(this)" style="background:#1e8e3e;color:#fff;border:none;padding:9px 18px;border-radius:6px;font-weight:700;cursor:pointer;">Save</button>
+                  <button type="button" onclick="document.getElementById('fdHeroEditForm').style.display='none';" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:9px 18px;border-radius:6px;font-weight:700;cursor:pointer;">Cancel</button>
+                  <span id="fdEditError" style="display:none;color:#ffd2d2;font-size:12.5px;"></span>
+              </div>
+          </div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (editMode)
+{
+    <form id="fdAntiForgeryForm">@Html.AntiForgeryToken()</form>
+    <script>
+      function fdOpenHeroEdit(){
+        document.getElementById('fdHeroEditForm').style.display = 'block';
+      }
+      async function fdSaveHeroEdit(btn){
+        var name = document.getElementById('fdEditName').value.trim();
+        var icon = document.getElementById('fdEditIcon').value.trim();
+        var color = document.getElementById('fdEditColor').value.trim();
+        var desc = document.getElementById('fdEditDesc').value.trim();
+        var errorBox = document.getElementById('fdEditError');
+        errorBox.style.display = 'none';
+
+        if (!name){
+          errorBox.textContent = 'Faculty name is required.';
+          errorBox.style.display = 'inline';
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+
+        try {
+          var token = document.querySelector('#fdAntiForgeryForm input[name="__RequestVerificationToken"]').value;
+          var res = await fetch('@Url.Action("QuickUpdateFaculty", "Faculties")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+            body: JSON.stringify({ FacultyId: @Model.FacultyId, Name: name, Icon: icon, ColorHex: color, Description: desc })
+          });
+          var data = await res.json();
+          if (!res.ok || !data.success){
+            errorBox.textContent = data.message || 'Could not save changes.';
+            errorBox.style.display = 'inline';
+            btn.disabled = false;
+            btn.textContent = 'Save';
+            return;
+          }
+          location.reload();
+        } catch (err) {
+          errorBox.textContent = 'Network error, please try again.';
+          errorBox.style.display = 'inline';
+          btn.disabled = false;
+          btn.textContent = 'Save';
+        }
+      }
+
+      function fdOpenAboutEdit(){
+        var form = document.getElementById('fdAboutEditForm');
+        if (form) {
+          form.style.display = form.style.display === 'none' ? 'block' : 'none';
+          if (form.style.display === 'block') {
+            form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      }
+
+      async function fdSaveAboutEdit(){
+        var desc = document.getElementById('fdAboutDescInput').value.trim();
+        var errorBox = document.getElementById('fdAboutError');
+        var btn = document.getElementById('fdAboutSaveBtn');
+        if (errorBox) errorBox.style.display = 'none';
+
+        if (!desc) {
+          if (errorBox) { errorBox.textContent = 'Description cannot be empty.'; errorBox.style.display = 'inline'; }
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        try {
+          var r = await fdPost('@Url.Action("QuickUpdateFaculty", "Faculties")', {
+            FacultyId: fdFacultyId,
+            Name: '@Model.Name',
+            Icon: '@icon',
+            ColorHex: '@color',
+            Description: desc
+          });
+
+          if (!r.ok || !r.data || !r.data.success) {
+            if (errorBox) { errorBox.textContent = (r.data && r.data.message) || 'Failed to update About section.'; errorBox.style.display = 'inline'; }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Save About Section';
+            return;
+          }
+
+          var pText = document.getElementById('fdAboutDescText');
+          if (pText) {
+            pText.textContent = desc + " Our faculty is committed to academic excellence, cutting-edge research, and producing graduates who are industry-ready from day one.";
+          }
+          var heroDesc = document.getElementById('fdHeroDesc');
+          if (heroDesc) {
+            heroDesc.textContent = desc;
+          }
+
+          document.getElementById('fdAboutEditForm').style.display = 'none';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check"></i> Save About Section';
+          if (window.fdShowToast) window.fdShowToast('About section updated successfully!');
+        } catch (err) {
+          if (errorBox) { errorBox.textContent = 'Network error, please try again.'; errorBox.style.display = 'inline'; }
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-check"></i> Save About Section';
+        }
+      }
+    </script>
+}
+
+<!-- MAIN -->
+<div class="fd-main">
+  <div class="fd-intro">
+    <div class="fd-intro-text">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <h2 style="margin-bottom:0;">About the Faculty</h2>
+        @if (editMode)
+        {
+            <button type="button" class="fd-admin-btn fd-admin-btn-secondary" onclick="fdOpenAboutEdit()" title="Edit About Paragraph" style="width:34px;height:34px;padding:0;justify-content:center;border-radius:50%;">
+                <i class="fas fa-pen"></i>
+            </button>
+        }
+      </div>
+      <p id="fdAboutDescText">@Model.Description Our faculty is committed to academic excellence, cutting-edge research, and producing graduates who are industry-ready from day one.</p>
+    </div>
+    <div class="fd-intro-feats" id="fdIntroFeatsContainer">
+      <!-- Dynamic feature cards rendered via JS -->
+    </div>
+  </div>
+
+  @if (editMode)
+  {
+      <div id="fdAboutEditForm" style="display:none; margin-bottom:34px; background:#f0faf4; border:1.5px dashed #cfe8d8; border-radius:14px; padding:22px 26px; font-family:'Poppins',sans-serif;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid #d8ede0; padding-bottom:10px;">
+              <h3 style="font-family:'Montserrat',sans-serif; font-size:16px; font-weight:800; color:var(--primary); margin:0;">
+                  <i class="fas fa-edit" style="color:var(--green); margin-right:6px;"></i> Edit "About the Faculty" Section
+              </h3>
+              <button type="button" onclick="document.getElementById('fdAboutEditForm').style.display='none';" style="background:none; border:none; font-size:16px; cursor:pointer; color:#667;">&times;</button>
+          </div>
+
+          <div style="margin-bottom:14px;">
+              <label style="display:block; font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--primary); margin-bottom:6px;">
+                  Faculty Overview / About Paragraph
+              </label>
+              <textarea id="fdAboutDescInput" rows="4" style="width:100%; border:1.5px solid var(--border); border-radius:8px; padding:10px 14px; font-size:14px; font-family:'Poppins',sans-serif; color:var(--text);">@Model.Description</textarea>
+          </div>
+
+          <div style="display:flex; gap:10px; align-items:center; margin-top:16px;">
+              <button type="button" id="fdAboutSaveBtn" onclick="fdSaveAboutEdit()" style="background:var(--green); color:#fff; border:none; padding:10px 22px; border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Poppins',sans-serif; display:inline-flex; align-items:center; gap:6px;">
+                  <i class="fas fa-check"></i> Save About Section
+              </button>
+              <button type="button" onclick="document.getElementById('fdAboutEditForm').style.display='none';" style="background:var(--bg-light); color:var(--primary); border:1px solid var(--border); padding:10px 18px; border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; font-family:'Poppins',sans-serif;">
+                  Cancel
+              </button>
+              <span id="fdAboutError" style="display:none; color:#c0392b; font-size:13px; margin-left:8px; font-weight:600;"></span>
+          </div>
+      </div>
+  }
+
+  <div class="fd-section-title-wrap">
+    <div class="fd-section-title-heading">
+      <h2>Departments &amp; Programs</h2>
+      <div class="fd-title-line"></div>
+    </div>
+    @if (editMode)
+    {
+        <button type="button" class="fd-admin-btn fd-admin-btn-add" onclick="fdOpenAddProgram(null, @Model.FacultyId)">
+            <i class="fas fa-plus"></i> Add Department
+        </button>
+    }
+  </div>
+
+  <div class="fd-dept-grid" id="fdDeptGrid">
+    @foreach (var grp in deptGroups)
+    {
+        string deptDesc = "Focuses on academic instruction, research, and technical training in specialized fields of aviation and aerospace.";
+        if (grp.Key.Contains("Engineering", StringComparison.OrdinalIgnoreCase) || grp.Key.Contains("ANS", StringComparison.OrdinalIgnoreCase) || grp.Key.Contains("System", StringComparison.OrdinalIgnoreCase))
+        {
+            deptDesc = "Focuses on avionics systems, navigation systems, and advanced aviation engineering. Students gain hands-on experience with real-world aviation systems and cutting-edge simulation environments.";
+        }
+        else if (grp.Key.Contains("Management", StringComparison.OrdinalIgnoreCase))
+        {
+            deptDesc = "Focuses on the business, economics, and management dimensions of the aviation industry. Combines aviation-specific knowledge with modern management principles to develop well-rounded leaders.";
+        }
+        else if (grp.Key.Contains("Operation", StringComparison.OrdinalIgnoreCase) || grp.Key.Contains("Traffic", StringComparison.OrdinalIgnoreCase) || grp.Key.Contains("ATM", StringComparison.OrdinalIgnoreCase))
+        {
+            deptDesc = "Focuses on flight operations, air traffic control procedures, aerodrome management, and aviation safety protocols to ensure seamless airspace operations.";
+        }
+        else if (grp.Key.Contains("Cyber", StringComparison.OrdinalIgnoreCase) || grp.Key.Contains("IT", StringComparison.OrdinalIgnoreCase) || grp.Key.Contains("Technology", StringComparison.OrdinalIgnoreCase) || grp.Key.Contains("Computer", StringComparison.OrdinalIgnoreCase))
+        {
+            deptDesc = "Equips students with cutting-edge skills in aviation cyber security, software development, cloud systems, and digital infrastructure for modern airspace networks.";
+        }
+
+        <div class="fd-dept-card" data-department="@grp.Key">
+          <div class="fd-dept-header" style="background:@color">
+            <div class="fd-dept-icon"><i class="@(grp.FirstOrDefault()?.Icon ?? icon)"></i></div>
+            <div style="flex:1;min-width:0;">
+              <div class="fd-dept-label">Department</div>
+              <div class="fd-dept-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@grp.Key</div>
+            </div>
+            @if (editMode)
+            {
+                <button type="button" class="fd-dept-delete-btn" title="Delete this department" onclick="event.stopPropagation(); fdDeleteDepartment(@System.Text.Json.JsonSerializer.Serialize(grp.Key), @Model.FacultyId);">
+                    <i class="fas fa-trash"></i>
+                </button>
+            }
+          </div>
+          <div class="fd-dept-body">
+            <p class="fd-dept-desc">@deptDesc</p>
+            <div class="fd-programs-title">Degree Programs</div>
+            @foreach (var p in grp)
+            {
+                <div class="fd-prog-item" data-program-id="@p.ProgramId" onclick="openProgramModal(@p.ProgramId)">
+                  <div class="fd-prog-icon"><i class="@(string.IsNullOrWhiteSpace(p.Icon) ? "fas fa-graduation-cap" : p.Icon)"></i></div>
+                  <div>
+                    <div class="fd-prog-name">@p.Name</div>
+                    <div class="fd-prog-meta">
+                      @if (!string.IsNullOrWhiteSpace(p.UndergradYears)) { <span><i class="fas fa-clock"></i> @p.UndergradYears UG</span> }
+                      @if (!string.IsNullOrWhiteSpace(p.Adpyears)) { <span><i class="fas fa-award"></i> @p.Adpyears ADP</span> }
+                      @if (!string.IsNullOrWhiteSpace(p.GradYears)) { <span><i class="fas fa-graduation-cap"></i> @p.GradYears Grad</span> }
+                    </div>
+                  </div>
+                  @if (editMode)
+                  {
+                      <button type="button" class="fd-prog-icon-btn" title="Edit program" onclick="event.stopPropagation(); fdOpenEditProgram(@p.ProgramId);"><i class="fas fa-pen"></i></button>
+                      <button type="button" class="fd-prog-icon-btn fd-prog-icon-btn-danger" title="Delete program" onclick="event.stopPropagation(); fdDeleteProgram(@p.ProgramId, this);"><i class="fas fa-trash"></i></button>
+                  }
+                  <i class="fas fa-chevron-right fd-prog-arrow"></i>
+                </div>
+            }
+            @if (!grp.Any())
+            {
+                <div class="fd-no-programs">No programs listed yet.</div>
+            }
+            @if (editMode)
+            {
+                <button type="button" class="fd-admin-btn fd-admin-btn-add" style="margin-top:12px;width:100%;justify-content:center;" onclick="fdOpenAddProgram(@System.Text.Json.JsonSerializer.Serialize(grp.Key), @Model.FacultyId)">
+                    <i class="fas fa-plus"></i> Add Program
+                </button>
+            }
+          </div>
+        </div>
+    }
+  </div>
+</div>
+
+<!-- PROGRAM MODAL (read-only view + career/highlight chip admin controls) -->
+<div id="fdModal" class="fd-modal-backdrop" onclick="if(event.target===this)closeProgramModal()">
+  <div class="fd-modal">
+    <div class="fd-modal-hero" id="fdModalHero" style="background:linear-gradient(135deg,@color,@color2)">
+      @if (editMode)
+      {
+          <button class="fd-modal-delete-btn" title="Delete this program" onclick="fdDeleteProgram(window.fdCurrentProgramId, null, true)"><i class="fas fa-trash"></i></button>
+          <button class="fd-modal-edit-btn" title="Edit this program" onclick="fdOpenEditProgram(window.fdCurrentProgramId)"><i class="fas fa-pen"></i></button>
+      }
+      <button class="fd-modal-close" onclick="closeProgramModal()"><i class="fas fa-times"></i></button>
+      <div class="fd-modal-dept" id="fdModalDept"></div>
+      <div class="fd-modal-title" id="fdModalTitle"></div>
+    </div>
+    <div class="fd-modal-body">
+      <p class="fd-modal-desc" id="fdModalDesc"></p>
+      <div class="fd-dur-grid">
+        <div class="fd-dur-item"><label>Undergraduate</label><span id="fdUG"></span></div>
+        <div class="fd-dur-item"><label>ADP</label><span id="fdADP"></span></div>
+        <div class="fd-dur-item"><label>Graduate</label><span id="fdGrad"></span></div>
+      </div>
+      <p class="fd-section-label">Career Pathways</p>
+      <div class="fd-careers" id="fdModalCareers"></div>
+      @if (editMode)
+      {
+          <div class="fd-inline-add-row">
+              <input type="text" id="fdNewCareerInput" placeholder="e.g. Systems Engineer">
+              <button type="button" onclick="fdAddCareer()"><i class="fas fa-plus"></i> Add</button>
+          </div>
+      }
+      <p class="fd-section-label">Program Highlights</p>
+      <ul class="fd-highlights" id="fdModalHighlights"></ul>
+      @if (editMode)
+      {
+          <div class="fd-inline-add-row">
+              <input type="text" id="fdNewHighlightInput" placeholder="e.g. State-of-the-art robotics lab">
+              <button type="button" onclick="fdAddHighlight()"><i class="fas fa-plus"></i> Add</button>
+          </div>
+      }
+      <div class="fd-modal-actions">
+        <a href="/Account/Register" class="fd-action-btn enroll"><i class="fas fa-pen"></i> Enroll Now</a>
+        <a href="/Courses/Public" class="fd-action-btn catalog"><i class="fas fa-book-open"></i> Course Catalog</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (editMode)
+{
+    <!-- ADD / EDIT PROGRAM MODAL -->
+    <div id="fdFormModal" class="fd-form-modal-backdrop" onclick="if(event.target===this)fdCloseFormModal()">
+      <div class="fd-form-modal">
+        <div class="fd-form-modal-header">
+          <h3 id="fdFormModalTitle">Add Program</h3>
+          <button class="fd-form-modal-close" onclick="fdCloseFormModal()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="fd-form-modal-body">
+          <input type="hidden" id="fdFormProgramId" value="">
+          <input type="hidden" id="fdFormFacultyId" value="">
+          <div class="fd-form-row">
+            <label>Program Name *</label>
+            <input type="text" id="fdFormName" placeholder="e.g. Avionics Engineering">
+          </div>
+          <div class="fd-form-row">
+            <label>Department</label>
+            <input type="text" id="fdFormDepartment" placeholder="e.g. Dept. of Avionics Engineering">
+          </div>
+          <div class="fd-form-row">
+            <label>Icon (Font Awesome class)</label>
+            <input type="text" id="fdFormIcon" placeholder="fas fa-graduation-cap">
+          </div>
+          <div class="fd-form-row">
+            <label>Overview</label>
+            <textarea id="fdFormOverview" placeholder="Short description shown in the program modal"></textarea>
+          </div>
+          <div class="fd-form-row">
+            <label>Durations</label>
+            <div class="fd-form-grid3">
+              <input type="text" id="fdFormUG" placeholder="UG e.g. 4 Years">
+              <input type="text" id="fdFormADP" placeholder="ADP e.g. 2 Years">
+              <input type="text" id="fdFormGrad" placeholder="Grad e.g. 2 Years">
+            </div>
+          </div>
+          <div class="fd-form-row">
+            <label>Career Pathways (comma-separated)</label>
+            <input type="text" id="fdFormCareers" placeholder="e.g. ATC Engineer, CNS/ATM Specialist, Avionics Analyst">
+          </div>
+          <div class="fd-form-row">
+            <label>Program Highlights (line or semicolon separated)</label>
+            <textarea id="fdFormHighlights" placeholder="e.g. Simulation labs with real ATC equipment&#10;Industry placements with CAA"></textarea>
+          </div>
+          <div class="fd-form-error" id="fdFormError"></div>
+          <div class="fd-form-actions">
+            <button type="button" class="fd-form-btn-secondary" onclick="fdCloseFormModal()">Cancel</button>
+            <button type="button" class="fd-form-btn-primary" id="fdFormSaveBtn" onclick="fdSaveProgramForm()">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Add/Edit Feature Card Modal -->
+    <div class="fd-form-modal-backdrop" id="fdFeatFormModal">
+      <div class="fd-form-modal">
+        <div class="fd-form-modal-header">
+          <h3 id="fdFeatModalTitle">Add Feature Card</h3>
+          <button type="button" class="fd-form-modal-close" onclick="fdCloseFeatModal()">&times;</button>
+        </div>
+        <div class="fd-form-modal-body">
+          <input type="hidden" id="fdFeatIndex">
+          <div class="fd-form-row">
+            <label>Icon (Font Awesome class)</label>
+            <input type="text" id="fdFeatIconInput" placeholder="e.g. fas fa-chalkboard-teacher">
+          </div>
+          <div class="fd-form-row">
+            <label>Feature Text</label>
+            <input type="text" id="fdFeatTextInput" placeholder="e.g. Industry-experienced faculty members">
+          </div>
+          <div class="fd-form-error" id="fdFeatFormError"></div>
+          <div class="fd-form-actions">
+            <button type="button" class="fd-form-btn-secondary" onclick="fdCloseFeatModal()">Cancel</button>
+            <button type="button" class="fd-form-btn-primary" id="fdFeatSaveBtn" onclick="fdSaveFeatureForm()">Save Feature</button>
+          </div>
+        </div>
+      </div>
+    </div>
+}
+
+<partial name="_SiteFooter" />
+
+<script>
+  function toggleSearch() {
+    const box = document.getElementById("searchBox");
+    box.classList.toggle("open");
+    if (box.classList.contains("open")) box.focus();
+  }
+  function closeSearch() {
+    setTimeout(() => { document.getElementById("searchBox").classList.remove("open"); }, 150);
+  }
+
+  var fdEditMode = @Html.Raw(editMode ? "true" : "false");
+  var fdFacultyId = @Model.FacultyId;
+  window.fdCurrentProgramId = null;
+
+  var programData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+      programs.ToDictionary(p => p.ProgramId.ToString(), p => new
+      {
+          name = p.Name,
+          department = p.Department ?? "",
+          dept = string.IsNullOrWhiteSpace(p.Department) ? Model.Name : p.Department,
+          icon = p.Icon ?? "fas fa-graduation-cap",
+          overview = p.Overview ?? "",
+          ug = p.UndergradYears ?? "",
+          adp = p.Adpyears ?? "",
+          grad = p.GradYears ?? "",
+          careers = p.ProgramCareers.OrderBy(c => c.DisplayOrder).Select(c => new { id = c.ProgramCareerId, title = c.CareerTitle }),
+          highlights = p.ProgramHighlights.OrderBy(h => h.DisplayOrder).Select(h => new { id = h.ProgramHighlightId, text = h.HighlightText })
+      })
+  ).Replace("</", "<\\/"));
+
+  function fdAntiForgeryToken(){
+    var el = document.querySelector('#fdAntiForgeryForm input[name="__RequestVerificationToken"]');
+    return el ? el.value : '';
+  }
+
+  async function fdPost(url, body){
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': fdAntiForgeryToken() },
+      body: JSON.stringify(body)
+    });
+    var data = null;
+    try { data = await res.json(); } catch (e) {}
+    return { ok: res.ok, data: data };
+  }
+
+  var fdFeaturesList = @Html.Raw(ViewBag.FacultyFeaturesJson ?? "[]");
+
+  function renderFacultyFeatures(){
+    var container = document.getElementById('fdIntroFeatsContainer');
+    if (!container) return;
+    var html = '';
+    if (!fdFeaturesList || fdFeaturesList.length === 0){
+      html = '<div style="color:#999;font-size:13px;padding:10px;">No feature highlights added yet.</div>';
+    } else {
+      html = fdFeaturesList.map(function(f, idx){
+        var adminBtns = '';
+        if (fdEditMode){
+          adminBtns = '<div class="fd-feat-actions">' +
+            '<button type="button" class="fd-feat-act-btn" title="Edit Feature" onclick="fdOpenEditFeature(' + idx + ')"><i class="fas fa-pen"></i></button>' +
+            '<button type="button" class="fd-feat-act-btn fd-feat-act-btn-danger" title="Delete Feature" onclick="fdDeleteFeature(' + idx + ')"><i class="fas fa-trash"></i></button>' +
+            '</div>';
+        }
+        var iconClass = f.icon || 'fas fa-check-circle';
+        return '<div class="fd-feat-item"><i class="' + iconClass + ' fd-feat-icon"></i><span class="fd-feat-text">' + f.text + '</span>' + adminBtns + '</div>';
+      }).join('');
+    }
+
+    if (fdEditMode){
+      html += '<button type="button" class="fd-admin-btn fd-admin-btn-secondary" style="margin-top:10px;width:100%;justify-content:center;" onclick="fdOpenAddFeature()"><i class="fas fa-plus"></i> Add Feature Card</button>';
+    }
+    container.innerHTML = html;
+  }
+
+  function fdOpenAddFeature(){
+    document.getElementById('fdFeatModalTitle').textContent = 'Add Feature Card';
+    document.getElementById('fdFeatIndex').value = '';
+    document.getElementById('fdFeatIconInput').value = 'fas fa-award';
+    document.getElementById('fdFeatTextInput').value = '';
+    document.getElementById('fdFeatFormError').style.display = 'none';
+    document.getElementById('fdFeatFormModal').classList.add('open');
+  }
+
+  function fdOpenEditFeature(idx){
+    var item = fdFeaturesList[idx];
+    if (!item) return;
+    document.getElementById('fdFeatModalTitle').textContent = 'Edit Feature Card';
+    document.getElementById('fdFeatIndex').value = idx;
+    document.getElementById('fdFeatIconInput').value = item.icon || 'fas fa-check-circle';
+    document.getElementById('fdFeatTextInput').value = item.text || '';
+    document.getElementById('fdFeatFormError').style.display = 'none';
+    document.getElementById('fdFeatFormModal').classList.add('open');
+  }
+
+  function fdCloseFeatModal(){
+    var m = document.getElementById('fdFeatFormModal');
+    if (m) m.classList.remove('open');
+  }
+
+  async function fdSaveFeatureForm(){
+    var idx = document.getElementById('fdFeatIndex').value;
+    var icon = document.getElementById('fdFeatIconInput').value.trim();
+    var text = document.getElementById('fdFeatTextInput').value.trim();
+    var errorBox = document.getElementById('fdFeatFormError');
+    errorBox.style.display = 'none';
+
+    if (!text){
+      errorBox.textContent = 'Feature text is required.';
+      errorBox.style.display = 'block';
+      return;
+    }
+    if (!icon) icon = 'fas fa-check-circle';
+
+    var newList = Array.from(fdFeaturesList);
+    if (idx !== '' && idx !== null && idx !== undefined){
+      newList[parseInt(idx, 10)] = { icon: icon, text: text };
+    } else {
+      newList.push({ icon: icon, text: text });
+    }
+
+    var btn = document.getElementById('fdFeatSaveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    var r = await fdPost('@Url.Action("QuickSaveFacultyFeatures", "Faculties")', {
+      FacultyId: fdFacultyId,
+      FeaturesJson: JSON.stringify(newList)
+    });
+
+    btn.disabled = false;
+    btn.textContent = 'Save Feature';
+
+    if (!r.ok || !r.data || !r.data.success){
+      errorBox.textContent = (r.data && r.data.message) || 'Failed to save feature.';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    fdFeaturesList = newList;
+    renderFacultyFeatures();
+    fdCloseFeatModal();
+    if (window.fdShowToast) window.fdShowToast('Feature card saved!');
+  }
+
+  async function fdDeleteFeature(idx){
+    if (!confirm('Are you sure you want to delete this feature card?')) return;
+    var newList = fdFeaturesList.filter(function(_, i){ return i !== idx; });
+
+    var r = await fdPost('@Url.Action("QuickSaveFacultyFeatures", "Faculties")', {
+      FacultyId: fdFacultyId,
+      FeaturesJson: JSON.stringify(newList)
+    });
+
+    if (!r.ok || !r.data || !r.data.success){
+      alert((r.data && r.data.message) || 'Could not delete feature card.');
+      return;
+    }
+
+    fdFeaturesList = newList;
+    renderFacultyFeatures();
+    if (window.fdShowToast) window.fdShowToast('Feature card deleted!');
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    renderFacultyFeatures();
+  });
+
+  function renderModalCareers(programId, careers){
+    var box = document.getElementById('fdModalCareers');
+    if (!careers || careers.length === 0){
+      box.innerHTML = '<span style="color:#999;font-size:12.5px;">No careers listed yet.</span>';
+      return;
+    }
+    box.innerHTML = careers.map(function(c){
+      var delBtn = fdEditMode ? ('<button type="button" class="fd-chip-x" title="Remove" onclick="fdDeleteCareer(' + c.id + ')"><i class="fas fa-times"></i></button>') : '';
+      return '<span class="fd-career-pill">' + c.title + delBtn + '</span>';
+    }).join('');
+  }
+
+  function renderModalHighlights(programId, highlights){
+    var box = document.getElementById('fdModalHighlights');
+    if (!highlights || highlights.length === 0){
+      box.innerHTML = '<li style="color:#999;">No highlights listed yet.</li>';
+      return;
+    }
+    box.innerHTML = highlights.map(function(h){
+      var delBtn = fdEditMode ? ('<button type="button" class="fd-chip-x" title="Remove" onclick="fdDeleteHighlight(' + h.id + ')"><i class="fas fa-trash"></i></button>') : '';
+      return '<li><span class="fd-hl-text"><i class="fas fa-check-circle"></i> ' + h.text + '</span>' + delBtn + '</li>';
+    }).join('');
+  }
+
+  function openProgramModal(programId){
+    var data = programData[programId];
+    if (!data) return;
+    window.fdCurrentProgramId = programId;
+    document.getElementById('fdModalDept').textContent = data.dept;
+    document.getElementById('fdModalTitle').textContent = data.name;
+    document.getElementById('fdModalDesc').textContent = data.overview;
+    document.getElementById('fdUG').textContent = data.ug || '-';
+    document.getElementById('fdADP').textContent = data.adp || '-';
+    document.getElementById('fdGrad').textContent = data.grad || '-';
+    renderModalCareers(programId, data.careers);
+    renderModalHighlights(programId, data.highlights);
+    var newCareerInput = document.getElementById('fdNewCareerInput');
+    var newHighlightInput = document.getElementById('fdNewHighlightInput');
+    if (newCareerInput) newCareerInput.value = '';
+    if (newHighlightInput) newHighlightInput.value = '';
+    document.getElementById('fdModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeProgramModal(){
+    document.getElementById('fdModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ closeProgramModal(); fdCloseFormModal(); } });
+
+  // ===== Career chips: add / delete =====
+  async function fdAddCareer(){
+    var input = document.getElementById('fdNewCareerInput');
+    var title = input.value.trim();
+    if (!title || !window.fdCurrentProgramId) return;
+    var r = await fdPost('@Url.Action("QuickAddProgramCareer", "Faculties")', { ProgramId: window.fdCurrentProgramId, CareerTitle: title });
+    if (!r.ok || !r.data || !r.data.success){ alert((r.data && r.data.message) || 'Could not add career.'); return; }
+    programData[window.fdCurrentProgramId].careers.push({ id: r.data.careerId, title: r.data.careerTitle });
+    renderModalCareers(window.fdCurrentProgramId, programData[window.fdCurrentProgramId].careers);
+    input.value = '';
+  }
+  async function fdDeleteCareer(careerId){
+    if (!confirm('Remove this career?')) return;
+    var r = await fdPost('@Url.Action("QuickDeleteProgramCareer", "Faculties")', { CareerId: careerId });
+    if (!r.ok || !r.data || !r.data.success){ alert((r.data && r.data.message) || 'Could not remove career.'); return; }
+    var pid = window.fdCurrentProgramId;
+    programData[pid].careers = programData[pid].careers.filter(function(c){ return c.id !== careerId; });
+    renderModalCareers(pid, programData[pid].careers);
+  }
+
+  // ===== Highlights: add / delete =====
+  async function fdAddHighlight(){
+    var input = document.getElementById('fdNewHighlightInput');
+    var text = input.value.trim();
+    if (!text || !window.fdCurrentProgramId) return;
+    var r = await fdPost('@Url.Action("QuickAddProgramHighlight", "Faculties")', { ProgramId: window.fdCurrentProgramId, HighlightText: text });
+    if (!r.ok || !r.data || !r.data.success){ alert((r.data && r.data.message) || 'Could not add highlight.'); return; }
+    programData[window.fdCurrentProgramId].highlights.push({ id: r.data.highlightId, text: r.data.highlightText });
+    renderModalHighlights(window.fdCurrentProgramId, programData[window.fdCurrentProgramId].highlights);
+    input.value = '';
+  }
+  async function fdDeleteHighlight(highlightId){
+    if (!confirm('Remove this highlight?')) return;
+    var r = await fdPost('@Url.Action("QuickDeleteProgramHighlight", "Faculties")', { HighlightId: highlightId });
+    if (!r.ok || !r.data || !r.data.success){ alert((r.data && r.data.message) || 'Could not remove highlight.'); return; }
+    var pid = window.fdCurrentProgramId;
+    programData[pid].highlights = programData[pid].highlights.filter(function(h){ return h.id !== highlightId; });
+    renderModalHighlights(pid, programData[pid].highlights);
+  }
+
+  // ===== Add / Edit Program form modal =====
+  function fdOpenAddProgram(department, facultyId){
+    document.getElementById('fdFormModalTitle').textContent = 'Add Program';
+    document.getElementById('fdFormProgramId').value = '';
+    document.getElementById('fdFormFacultyId').value = facultyId;
+    document.getElementById('fdFormName').value = '';
+    document.getElementById('fdFormDepartment').value = department || '';
+    document.getElementById('fdFormIcon').value = 'fas fa-graduation-cap';
+    document.getElementById('fdFormOverview').value = '';
+    document.getElementById('fdFormUG').value = '4 Years';
+    document.getElementById('fdFormADP').value = '2 Years';
+    document.getElementById('fdFormGrad').value = '2 Years';
+    var cInput = document.getElementById('fdFormCareers');
+    var hInput = document.getElementById('fdFormHighlights');
+    if (cInput) cInput.value = '';
+    if (hInput) hInput.value = '';
+    document.getElementById('fdFormError').style.display = 'none';
+    document.getElementById('fdFormModal').classList.add('open');
+  }
+  function fdOpenEditProgram(programId){
+    var data = programData[programId];
+    if (!data) return;
+    document.getElementById('fdFormModalTitle').textContent = 'Edit Program';
+    document.getElementById('fdFormProgramId').value = programId;
+    document.getElementById('fdFormFacultyId').value = fdFacultyId;
+    document.getElementById('fdFormName').value = data.name || '';
+    document.getElementById('fdFormDepartment').value = data.department || '';
+    document.getElementById('fdFormIcon').value = data.icon || 'fas fa-graduation-cap';
+    document.getElementById('fdFormOverview').value = data.overview || '';
+    document.getElementById('fdFormUG').value = data.ug || '';
+    document.getElementById('fdFormADP').value = data.adp || '';
+    document.getElementById('fdFormGrad').value = data.grad || '';
+    var cInput = document.getElementById('fdFormCareers');
+    var hInput = document.getElementById('fdFormHighlights');
+    if (cInput) cInput.value = (data.careers || []).map(function(c){ return c.title; }).join(', ');
+    if (hInput) hInput.value = (data.highlights || []).map(function(h){ return h.text; }).join('\n');
+    document.getElementById('fdFormError').style.display = 'none';
+    closeProgramModal();
+    document.getElementById('fdFormModal').classList.add('open');
+  }
+  function fdCloseFormModal(){
+    var m = document.getElementById('fdFormModal');
+    if (m) m.classList.remove('open');
+  }
+  async function fdSaveProgramForm(){
+    var programId = document.getElementById('fdFormProgramId').value;
+    var facultyId = document.getElementById('fdFormFacultyId').value;
+    var name = document.getElementById('fdFormName').value.trim();
+    var department = document.getElementById('fdFormDepartment').value.trim();
+    var icon = document.getElementById('fdFormIcon').value.trim();
+    var overview = document.getElementById('fdFormOverview').value.trim();
+    var ug = document.getElementById('fdFormUG').value.trim();
+    var adp = document.getElementById('fdFormADP').value.trim();
+    var grad = document.getElementById('fdFormGrad').value.trim();
+    var cInput = document.getElementById('fdFormCareers');
+    var hInput = document.getElementById('fdFormHighlights');
+    var careers = cInput ? cInput.value.trim() : '';
+    var highlights = hInput ? hInput.value.trim() : '';
+    var errorBox = document.getElementById('fdFormError');
+    errorBox.style.display = 'none';
+
+    if (!name){
+      errorBox.textContent = 'Program name is required.';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    var btn = document.getElementById('fdFormSaveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    var url, body;
+    if (programId){
+      url = '@Url.Action("QuickUpdateProgram", "Faculties")';
+      body = { ProgramId: parseInt(programId, 10), Name: name, Department: department, Icon: icon, Overview: overview, UndergradYears: ug, Adpyears: adp, GradYears: grad, Careers: careers, Highlights: highlights };
+    } else {
+      url = '@Url.Action("QuickAddProgram", "Faculties")';
+      body = { FacultyId: parseInt(facultyId, 10), Name: name, Department: department, Icon: icon, Overview: overview, UndergradYears: ug, Adpyears: adp, GradYears: grad, Careers: careers, Highlights: highlights };
+    }
+
+    var r = await fdPost(url, body);
+    if (!r.ok || !r.data || !r.data.success){
+      errorBox.textContent = (r.data && r.data.message) || 'Could not save program.';
+      errorBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Save';
+      return;
+    }
+    // Departments/programs are grouped server-side on render, so the
+    // simplest reliable way to reflect an add/rename/move is a reload --
+    // same pattern used for the hero edit above.
+    location.reload();
+  }
+
+  // ===== Delete program (from the list row, or from inside the modal) =====
+  async function fdDeleteProgram(programId, rowEl, fromModal){
+    if (!programId) return;
+    if (!confirm('Delete this program? This also removes its careers and highlights.')) return;
+    var r = await fdPost('@Url.Action("QuickDeleteProgram", "Faculties")', { ProgramId: programId });
+    if (!r.ok || !r.data || !r.data.success){ alert((r.data && r.data.message) || 'Could not delete program.'); return; }
+    if (fromModal) { closeProgramModal(); }
+    location.reload();
+  }
+
+  // ===== Delete entire department (and all its programs) =====
+  async function fdDeleteDepartment(department, facultyId){
+    if (!department || !facultyId) return;
+    if (!confirm('Are you sure you want to delete the entire department "' + department + '" and all programs inside it? This will remove all associated programs, careers, and highlights from the database.')) return;
+    var r = await fdPost('@Url.Action("QuickDeleteDepartment", "Faculties")', {
+      FacultyId: facultyId,
+      Department: department
+    });
+    if (!r.ok || !r.data || !r.data.success){
+      alert((r.data && r.data.message) || 'Could not delete department.');
+      return;
+    }
+    location.reload();
+  }
+</script>
+
+<!-- ===== ACCOUNT DROPDOWN (Log In / Sign Up, or user name + Log Out) =====
+     Same canonical implementation as home-scripts.js (the Homepage).
+     IMPORTANT: the menu is appended directly to document.body with position:fixed,
+     computed from the button's on-screen location -- NOT left nested inside
+     .announcement. .announcement has overflow:hidden (see courses-page.css /
+     faculties-page.css), so a menu nested inside it gets silently clipped
+     and never becomes visible on hover, even though the JS logic runs fine.
+     That was the bug on this page. Keep this "append to body" pattern on
+     any future account-dropdown so this issue can't come back. ===== -->
+<script>
+window.NAU_AUTH = {
+    isAuthenticated: @Html.Raw(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false"),
+    isAdmin: @Html.Raw(isAdmin ? "true" : "false"),
+    userName: @Html.Raw(System.Text.Json.JsonSerializer.Serialize((string)(ViewBag.CurrentUserName ?? "")))
+};
+
+(function setupAccountDropdown() {
+    var enhancedButtons = new WeakSet();
+    var auth = window.NAU_AUTH || { isAuthenticated: false, isAdmin: false, userName: '' };
+
+    function enhance(btn) {
+        if (enhancedButtons.has(btn)) return;
+
+        var alreadyWrapped = !!btn.closest('.account-dropdown');
+        var isPristineAccountBtn = btn.textContent.trim().toLowerCase() === 'account';
+        var looksAlreadyEnhanced = btn.innerHTML.indexOf('fa-circle-user') !== -1;
+        if (!alreadyWrapped && !isPristineAccountBtn && !looksAlreadyEnhanced) return;
+
+        enhancedButtons.add(btn);
+
+        var wrap = btn.closest('.account-dropdown');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'account-dropdown';
+            btn.parentNode.insertBefore(wrap, btn);
+            wrap.appendChild(btn);
+        }
+
+        btn.removeAttribute('href');
+        btn.setAttribute('role', 'button');
+
+        if (auth.isAuthenticated) {
+            btn.innerHTML = '<i class="fas fa-circle-user" style="margin-right:6px;"></i>' + (auth.userName || 'My Account');
+        } else {
+            btn.innerHTML = 'Account';
+        }
+
+        // Appended to document.body, not to `wrap` -- see note above.
+        var menu = document.createElement('div');
+        menu.className = 'account-dropdown-menu';
+        if (auth.isAuthenticated) {
+            menu.innerHTML =
+                '<a href="#" id="navLogoutLink"><i class="fas fa-right-from-bracket" style="margin-right:8px;"></i>Log Out</a>';
+        } else {
+            menu.innerHTML =
+                '<a href="/Account/Login"><i class="fas fa-right-to-bracket" style="margin-right:8px;"></i>Log In</a>';
+        }
+        menu.style.position = 'fixed';
+        menu.style.display = 'none';
+        menu.style.zIndex = '2147483647';
+        menu.style.background = '#fff';
+        menu.style.minWidth = '150px';
+        menu.style.borderRadius = '8px';
+        menu.style.boxShadow = '0 10px 28px rgba(0,0,0,0.2)';
+        menu.style.overflow = 'hidden';
+        document.body.appendChild(menu);
+
+        if (auth.isAuthenticated) {
+            var logoutLink = menu.querySelector('#navLogoutLink');
+            logoutLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                var form = document.createElement('form');
+                form.method = 'post';
+                form.action = '/Account/Logout';
+                document.body.appendChild(form);
+                form.submit();
+            });
+        }
+
+        function positionMenu() {
+            var r = btn.getBoundingClientRect();
+            menu.style.top = (r.bottom + 8) + 'px';
+            menu.style.left = 'auto';
+            menu.style.right = (window.innerWidth - r.right) + 'px';
+        }
+
+        var closeTimer;
+        function openMenu() {
+            clearTimeout(closeTimer);
+            positionMenu();
+            menu.style.display = 'block';
+            wrap.classList.add('open');
+        }
+        function closeMenu() {
+            closeTimer = setTimeout(function () {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }, 150);
+        }
+
+        // Hover for mouse users.
+        wrap.addEventListener('mouseenter', openMenu);
+        wrap.addEventListener('mouseleave', closeMenu);
+        menu.addEventListener('mouseenter', function () { clearTimeout(closeTimer); });
+        menu.addEventListener('mouseleave', closeMenu);
+
+        // Click/tap for touch users (also acts as a toggle).
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            } else {
+                openMenu();
+            }
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!wrap.contains(e.target) && !menu.contains(e.target)) {
+                menu.style.display = 'none';
+                wrap.classList.remove('open');
+            }
+        });
+
+        window.addEventListener('scroll', function () {
+            if (menu.style.display === 'block') positionMenu();
+        }, true);
+        window.addEventListener('resize', function () {
+            if (menu.style.display === 'block') positionMenu();
+        });
+    }
+
+    function run() {
+        document.querySelectorAll('.apply-btn').forEach(enhance);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+    } else {
+        run();
+    }
+
+    // Re-run if admin content edits change the DOM later. Without this, the
+    // dropdown and its listeners can disappear after an edit is saved.
+    var observer = new MutationObserver(run);
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+
+
+<script src="~/js/global-search.js" asp-append-version="true"></script>
+<script src="~/js/mobile-nav.js" asp-append-version="true"></script>
+<script src="~/js/schools-submenu.js" asp-append-version="true"></script>
+
+<partial name="_PublicModals" />
+<script src="~/js/public-modals.js" asp-append-version="true"></script>
+</body>
+</html>

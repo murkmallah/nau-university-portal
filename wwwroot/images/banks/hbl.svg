@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="hblGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#006b52"/>
+      <stop offset="100%" stop-color="#004d3a"/>
+    </linearGradient>
+    <filter id="hblShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  <rect width="120" height="120" rx="20" fill="url(#hblGrad)"/>
+  
+  <!-- HBL 3D Faceted Diamond Prism Logo -->
+  <g transform="translate(60, 48) scale(0.9)" filter="url(#hblShadow)">
+    <!-- Top left facet -->
+    <polygon points="0,-32 -24,-8 0,-8" fill="#48d6a8"/>
+    <!-- Top right facet -->
+    <polygon points="0,-32 24,-8 0,-8" fill="#a7f3d0"/>
+    <!-- Middle center diamond -->
+    <polygon points="0,-8 24,-8 0,16 -24,-8" fill="#10b981"/>
+    <!-- Left outer facet -->
+    <polygon points="-24,-8 0,16 -16,32 -32,8" fill="#047857"/>
+    <!-- Right outer facet -->
+    <polygon points="24,-8 32,8 16,32 0,16" fill="#34d399"/>
+    <!-- Bottom center tip facet -->
+    <polygon points="0,16 -16,32 0,38 16,32" fill="#065f46"/>
+    <!-- Center light spark -->
+    <polygon points="0,-8 12,-8 0,4 -12,-8" fill="#ffffff" opacity="0.6"/>
+  </g>
+  
+  <!-- HBL Wordmark -->
+  <text x="60" y="103" text-anchor="middle" fill="#ffffff" font-family="'Montserrat', 'Arial Black', sans-serif" font-weight="900" font-size="20" letter-spacing="2.5">HBL</text>
+</svg>

@@ -1,0 +1,96 @@
+@model NAU_Web.Models.Facility
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Edit Facility</h1>
+
+<h4>Facility</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="FacilityId" />
+
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Slug" class="control-label"></label>
+                <input asp-for="Slug" class="form-control" />
+                <span asp-validation-for="Slug" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Category" class="control-label"></label>
+                <input asp-for="Category" class="form-control" />
+                <span asp-validation-for="Category" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IntroText" class="control-label"></label>
+                <textarea asp-for="IntroText" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="IntroText" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="HeroImageUrl" class="control-label"></label>
+                <input asp-for="HeroImageUrl" class="form-control" />
+                <span asp-validation-for="HeroImageUrl" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="CardIcon" class="control-label"></label>
+                <input asp-for="CardIcon" class="form-control" />
+                <span asp-validation-for="CardIcon" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ColorHex" class="control-label"></label>
+                <input asp-for="ColorHex" class="form-control" />
+                <span asp-validation-for="ColorHex" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="GradientColorHex2" class="control-label"></label>
+                <input asp-for="GradientColorHex2" class="form-control" />
+                <span asp-validation-for="GradientColorHex2" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ShortHours" class="control-label"></label>
+                <input asp-for="ShortHours" class="form-control" />
+                <span asp-validation-for="ShortHours" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DisplayOrder" class="control-label"></label>
+                <input asp-for="DisplayOrder" class="form-control" />
+                <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-3 p-3" style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;">
+                <input asp-for="IsAvailable" class="form-check-input" />
+                <label asp-for="IsAvailable" class="form-check-label"><strong>Show this facility on the public website</strong></label>
+                <div class="form-text">If this is unchecked, the facility will be saved here but will <strong>not</strong> appear on the "All Facilities" page.</div>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

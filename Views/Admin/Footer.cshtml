@@ -1,0 +1,1210 @@
+@model NAU_Web.Models.FooterSetting
+@{
+    ViewData["Title"] = "Site Footer Manager";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Footer Manager - NAU CMS</title>
+    <partial name="_Favicon" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Poppins:wght@400;500;600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0b2c4d;
+            --primary-dark: #071f36;
+            --indigo: #6366f1;
+            --green: #1e8e3e;
+            --gray-bg: #f4f7fa;
+            --border: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-bg);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        /* Top Header */
+        .admin-nav-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            padding: 24px 36px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .header-left i.title-icon {
+            font-size: 28px;
+            color: #38bdf8;
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .header-left h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+        .header-left p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+            margin-top: 2px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .btn-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        .btn-nav-outline {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-nav-outline:hover {
+            background: rgba(255,255,255,0.22);
+        }
+        .btn-nav-accent {
+            background: #10b981;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .btn-nav-accent:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        /* Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 32px auto 0;
+            padding: 0 24px;
+        }
+
+        /* Status Banner */
+        .status-alert {
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+        .status-alert.success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        .status-alert.error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* Card Section */
+        .card-panel {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 20px 28px;
+            background: #fafbfc;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .card-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-body {
+            padding: 28px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        .form-group input[type="text"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-dark);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Items List (Social & Links) */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            gap: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            transition: all 0.2s;
+        }
+        .item-row:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        }
+        .item-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex: 1;
+            overflow: hidden;
+        }
+        .item-icon-badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+        }
+        .item-text h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .item-text p {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 500px;
+            margin-top: 2px;
+        }
+        .icon-code-badge {
+            font-size: 11px;
+            font-weight: 600;
+            font-family: monospace;
+            background: #f1f5f9;
+            color: #475569;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-icon {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+            border-color: #94a3b8;
+        }
+        .btn-icon.danger {
+            color: #ef4444;
+        }
+        .btn-icon.danger:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #e0f2fe;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-add:hover {
+            background: #0284c7;
+            color: #fff;
+        }
+
+        /* Footer Column Box */
+        .column-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .column-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .column-box-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: modalIn 0.25s ease-out;
+        }
+        @@keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            padding: 18px 24px;
+            background: var(--primary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .modal-header button {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .modal-header button:hover { color: #fff; }
+        .modal-body {
+            padding: 24px;
+        }
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Footer Live Preview */
+        .footer-preview {
+            background: #0b2c4d;
+            color: #e2e8f0;
+            padding: 36px 32px;
+            border-radius: 14px;
+            font-size: 14px;
+        }
+        .footer-preview .fp-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 28px 40px;
+            margin-bottom: 28px;
+        }
+        .footer-preview h4 {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .footer-preview p {
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .footer-preview .fp-social {
+            display: flex;
+            gap: 10px;
+        }
+        .footer-preview .fp-social span {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        .footer-preview ul { list-style: none; padding: 0; }
+        .footer-preview ul li { margin-bottom: 8px; }
+        .footer-preview ul li a { color: #94a3b8; text-decoration: none; font-size: 14px; }
+        .footer-preview .fp-contact div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        .footer-preview .fp-contact i {
+            color: #f97316;
+            width: 18px;
+            text-align: center;
+        }
+        .footer-preview .fp-bottom {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #64748b;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Bar -->
+    <header class="admin-nav-header">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-shoe-prints title-icon" style="transform: rotate(-90deg);"></i>
+                <div>
+                    <h1>Site Footer &amp; Links Manager</h1>
+                    <p>Manage footer branding text, contact details, social links, and copyright text across all pages.</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/Admin" class="btn-nav btn-nav-outline"><i class="fas fa-arrow-left"></i> Dashboard</a>
+                <a href="/" target="_blank" class="btn-nav btn-nav-outline"><i class="fas fa-globe"></i> View Site</a>
+                <button type="button" class="btn-nav btn-nav-accent" onclick="saveAllFooterSettings()"><i class="fas fa-save"></i> Save All Changes</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Status Alert -->
+        <div id="statusAlert" class="status-alert"></div>
+
+        <!-- Section 1: General & Contact Settings -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h2><i class="fas fa-building"></i> General &amp; Contact Information</h2>
+                <button type="button" class="btn-icon" title="Reset to Defaults" onclick="resetFooterDefaults()"><i class="fas fa-rotate-left"></i> Reset Defaults</button>
+            </div>
+            <div class="card-body">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label for="inpAboutText">Footer About / Brand Description</label>
+                        <textarea id="inpAboutText" placeholder="A premier institution dedicated to excellence in aviation education...">@Model.AboutText</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="inpContactAddress">Campus / Contact Address</label>
+                        <input type="text" id="inpContactAddress" value="@Model.ContactAddress" placeholder="e.g. Airport Road, Hyderabad Sindh, Pakistan">
+                    </div>
+                    <div class="form-group">
+                        <label for="inpContactPhone">Contact Phone Number(s)</label>
+                        <input type="text" id="inpContactPhone" value="@Model.ContactPhone" placeholder="e.g. +92 22 9260310-19">
+                    </div>
+                    <div class="form-group">
+                        <label for="inpContactEmail">Official Contact Email</label>
+                        <input type="text" id="inpContactEmail" value="@Model.ContactEmail" placeholder="e.g. AdID.Academics@paa.gov.pk">
+                    </div>
+                    <div class="form-group">
+                        <label for="inpContactWebsite">Website Address</label>
+                        <input type="text" id="inpContactWebsite" value="@Model.ContactWebsite" placeholder="e.g. https://catipakistan.com.pk">
+                    </div>
+                    <div class="form-group full">
+                        <label for="inpCopyrightText">Footer Copyright Text</label>
+                        <input type="text" id="inpCopyrightText" value="@Model.CopyrightText" placeholder="e.g. © 2026 National Aviation University. All Rights Reserved.">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Social Media Links (CRUD) -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h2><i class="fas fa-share-nodes"></i> Social Media Links (CRUD)</h2>
+                <button type="button" class="btn-add" onclick="openAddSocialModal()"><i class="fas fa-plus"></i> Add Social Link</button>
+            </div>
+            <div class="card-body">
+                <div id="socialLinksList" class="item-list">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3: Footer Link Columns (CRUD) -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h2><i class="fas fa-list-check"></i> Footer Navigation Columns (CRUD)</h2>
+                <button type="button" class="btn-add" onclick="openAddColumnModal()"><i class="fas fa-folder-plus"></i> Add Column</button>
+            </div>
+            <div class="card-body">
+                <div id="quickColumnsList">
+                    <!-- Dynamic rendering via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4: Live Preview -->
+        <div class="card-panel">
+            <div class="card-header">
+                <h2><i class="fas fa-eye"></i> Live Footer Preview</h2>
+            </div>
+            <div class="card-body">
+                <div class="footer-preview">
+                    <div class="fp-inner">
+                        <div>
+                            <h4 style="text-transform:none;font-size:18px;">National Aviation University</h4>
+                            <p id="prevAbout">A premier institution dedicated to excellence in aviation education...</p>
+                            <div class="fp-social" id="prevSocial"></div>
+                        </div>
+                        <div id="prevColumns"></div>
+                        <div class="fp-contact">
+                            <h4>Contact Us</h4>
+                            <div id="prevAddr"><i class="fas fa-map-marker-alt"></i> <span>Airport Road...</span></div>
+                            <div id="prevPhone"><i class="fas fa-phone"></i> <span>+92 22 9260310</span></div>
+                            <div id="prevEmail"><i class="fas fa-envelope"></i> <span>AdID.Academics@paa.gov.pk</span></div>
+                            <div id="prevWeb"><i class="fas fa-globe"></i> <span>https://catipakistan.com.pk</span></div>
+                        </div>
+                    </div>
+                    <div class="fp-bottom">
+                        <span id="prevCopyright">© 2026 National Aviation University. All Rights Reserved.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ===== MODAL DIALOG FOR SOCIAL / LINK EDITING ===== -->
+    <div id="itemModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Item</h3>
+                <button type="button" onclick="closeItemModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="modalMode">
+                <input type="hidden" id="modalIndex">
+                <input type="hidden" id="modalSubIndex">
+
+                <div class="form-group" id="groupTitle">
+                    <label id="labelTitle">Title / Platform Name</label>
+                    <input type="text" id="modalInputTitle" placeholder="e.g. Facebook, Instagram, LinkedIn, YouTube, WhatsApp">
+                </div>
+
+                <div class="form-group" id="groupIcon">
+                    <label>FontAwesome Icon Class</label>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="modalInputIcon" placeholder="e.g. fab fa-facebook-f">
+                        <select id="modalSelectPreset" onchange="onPresetSelected(this.value)">
+                            <option value="">Choose Social Preset...</option>
+                            <option value="Facebook|fab fa-facebook-f|https://www.facebook.com/CATI.PK/">Facebook</option>
+                            <option value="Instagram|fab fa-instagram|https://www.instagram.com/cati.gov.pk?igsh=NzE1anhjOGJkemNh">Instagram</option>
+                            <option value="LinkedIn|fab fa-linkedin-in|https://www.linkedin.com/company/civil-aviation-training-institute-cati/posts/">LinkedIn</option>
+                            <option value="YouTube|fab fa-youtube|https://www.youtube.com/@@CATIHyderabad">YouTube</option>
+                            <option value="WhatsApp|fab fa-whatsapp|https://wa.me/92229260310">WhatsApp</option>
+                            <option value="X (Twitter)|fab fa-x-twitter|https://twitter.com/">X / Twitter</option>
+                            <option value="TikTok|fab fa-tiktok|https://tiktok.com/">TikTok</option>
+                            <option value="GitHub|fab fa-github|https://github.com/">GitHub</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="groupUrl">
+                    <label>URL / Link Address</label>
+                    <input type="text" id="modalInputUrl" placeholder="e.g. https://www.facebook.com/...">
+                </div>
+
+                <div class="form-group" id="groupTarget">
+                    <label>Open Link In</label>
+                    <select id="modalInputTarget">
+                        <option value="_blank">New Tab (_blank)</option>
+                        <option value="_self">Same Tab (_self)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-nav btn-nav-outline" style="color:var(--text-dark);" onclick="closeItemModal()">Cancel</button>
+                <button type="button" class="btn-nav btn-nav-accent" onclick="saveItemModal()"><i class="fas fa-check"></i> Save Link</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Arrays
+        let socialLinks = @Html.Raw(Model.SocialLinksJson ?? "[]");
+        let quickColumns = @Html.Raw(Model.QuickLinksJson ?? "[]");
+        let bottomLinks = @Html.Raw(Model.BottomLinksJson ?? "[]");
+
+        if (typeof socialLinks === 'string') { try { socialLinks = JSON.parse(socialLinks); } catch { socialLinks = []; } }
+        if (typeof quickColumns === 'string') { try { quickColumns = JSON.parse(quickColumns); } catch { quickColumns = []; } }
+        if (typeof bottomLinks === 'string') { try { bottomLinks = JSON.parse(bottomLinks); } catch { bottomLinks = []; } }
+
+        // Sanitize social links if generic or empty
+        function getDefaultSocials() {
+            return [
+                { title: "Facebook", icon: "fab fa-facebook-f", url: "https://www.facebook.com/CATI.PK/", target: "_blank" },
+                { title: "Instagram", icon: "fab fa-instagram", url: "https://www.instagram.com/cati.gov.pk?igsh=NzE1anhjOGJkemNh", target: "_blank" },
+                { title: "LinkedIn", icon: "fab fa-linkedin-in", url: "https://www.linkedin.com/company/civil-aviation-training-institute-cati/posts/", target: "_blank" },
+                { title: "YouTube", icon: "fab fa-youtube", url: "https://www.youtube.com/@@CATIHyderabad", target: "_blank" },
+                { title: "WhatsApp", icon: "fab fa-whatsapp", url: "https://wa.me/92229260310", target: "_blank" }
+            ];
+        }
+
+        function getDefaultQuickCols() {
+            return [
+                {
+                    columnTitle: "QUICK LINKS",
+                    links: [
+                        { text: "About Us", url: "/about.html", target: "_self" },
+                        { text: "Academics", url: "/Faculties/Public", target: "_self" },
+                        { text: "Admissions", url: "/Account/Register", target: "_self" },
+                        { text: "Training", url: "/SimulationLabs/Public", target: "_self" },
+                        { text: "Campus Life", url: "/facilities.html", target: "_self" },
+                        { text: "Contact Us", url: "/Contact", target: "_self" }
+                    ]
+                }
+            ];
+        }
+
+        function getDefaultBottomLinks() {
+            return [
+                { text: "Privacy Policy", url: "#", target: "_self" },
+                { text: "Terms of Use", url: "#", target: "_self" },
+                { text: "Sitemap", url: "#", target: "_self" }
+            ];
+        }
+
+        // Auto repair generic/placeholder state
+        if (!socialLinks || socialLinks.length === 0 || (socialLinks.length === 5 && socialLinks[0].title === 'Social Link' && socialLinks[0].url === '#')) {
+            socialLinks = getDefaultSocials();
+        } else {
+            // Repair individual generic items
+            const defs = getDefaultSocials();
+            socialLinks.forEach((item, i) => {
+                if ((!item.title || item.title === 'Social Link') && defs[i]) {
+                    item.title = defs[i].title;
+                    item.icon = defs[i].icon;
+                    if (!item.url || item.url === '#') item.url = defs[i].url;
+                }
+            });
+        }
+
+        if (!quickColumns || quickColumns.length === 0) {
+            quickColumns = getDefaultQuickCols();
+        }
+
+        if (!bottomLinks || bottomLinks.length === 0) {
+            bottomLinks = getDefaultBottomLinks();
+        }
+
+        function getSocialBrandColor(icon) {
+            if (!icon) return '#0b2c4d';
+            if (icon.includes('facebook')) return '#1877f2';
+            if (icon.includes('instagram')) return 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)';
+            if (icon.includes('linkedin')) return '#0a66c2';
+            if (icon.includes('youtube')) return '#ff0000';
+            if (icon.includes('whatsapp')) return '#25d366';
+            if (icon.includes('twitter') || icon.includes('x-')) return '#000000';
+            if (icon.includes('tiktok')) return '#000000';
+            return '#0b2c4d';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSocialLinks();
+            renderQuickColumns();
+            renderBottomLinks();
+            updateLivePreview();
+
+            ['inpAboutText', 'inpContactAddress', 'inpContactPhone', 'inpContactEmail', 'inpContactWebsite', 'inpCopyrightText'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', updateLivePreview);
+            });
+        });
+
+        /* ===== SOCIAL LINKS CRUD ===== */
+        function renderSocialLinks() {
+            const container = document.getElementById('socialLinksList');
+            if (!container) return;
+            container.innerHTML = '';
+            if (socialLinks.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No social media links added yet.</p>';
+                return;
+            }
+            socialLinks.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                const bgStyle = getSocialBrandColor(item.icon);
+                const bgCss = bgStyle.includes('gradient') ? `background:${bgStyle}` : `background-color:${bgStyle}`;
+
+                div.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-icon-badge" style="${bgCss}">
+                            <i class="${item.icon || 'fas fa-link'}"></i>
+                        </div>
+                        <div class="item-text">
+                            <h4>${item.title || 'Social Platform'} <span class="icon-code-badge"><i class="${item.icon}"></i> ${item.icon}</span></h4>
+                            <p><i class="fas fa-link" style="margin-right:4px;"></i>${item.url || '#'}</p>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button type="button" class="btn-icon" title="Move Up" onclick="moveSocial(${idx}, -1)"><i class="fas fa-arrow-up"></i></button>
+                        <button type="button" class="btn-icon" title="Move Down" onclick="moveSocial(${idx}, 1)"><i class="fas fa-arrow-down"></i></button>
+                        <button type="button" class="btn-icon" title="Edit Link" onclick="editSocial(${idx})"><i class="fas fa-pen"></i> Edit</button>
+                        <button type="button" class="btn-icon danger" title="Delete" onclick="deleteSocial(${idx})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            updateLivePreview();
+        }
+
+        function onPresetSelected(val) {
+            if (!val) return;
+            const parts = val.split('|');
+            if (parts.length >= 3) {
+                document.getElementById('modalInputTitle').value = parts[0];
+                document.getElementById('modalInputIcon').value = parts[1];
+                document.getElementById('modalInputUrl').value = parts[2];
+            }
+        }
+
+        function openAddSocialModal() {
+            document.getElementById('modalMode').value = 'social';
+            document.getElementById('modalIndex').value = '-1';
+            document.getElementById('modalTitle').textContent = 'Add Social Media Link';
+            document.getElementById('labelTitle').textContent = 'Platform Name';
+            document.getElementById('modalInputTitle').value = '';
+            document.getElementById('modalInputIcon').value = 'fab fa-facebook-f';
+            document.getElementById('modalInputUrl').value = 'https://';
+            document.getElementById('modalInputTarget').value = '_blank';
+            document.getElementById('modalSelectPreset').value = '';
+            document.getElementById('groupIcon').style.display = 'block';
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        function editSocial(idx) {
+            const item = socialLinks[idx];
+            if (!item) return;
+            document.getElementById('modalMode').value = 'social';
+            document.getElementById('modalIndex').value = idx;
+            document.getElementById('modalTitle').textContent = 'Edit Social Link (' + (item.title || 'Platform') + ')';
+            document.getElementById('labelTitle').textContent = 'Platform Name';
+            document.getElementById('modalInputTitle').value = item.title || '';
+            document.getElementById('modalInputIcon').value = item.icon || 'fas fa-link';
+            document.getElementById('modalInputUrl').value = item.url || '';
+            document.getElementById('modalInputTarget').value = item.target || '_blank';
+            document.getElementById('modalSelectPreset').value = '';
+            document.getElementById('groupIcon').style.display = 'block';
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        function deleteSocial(idx) {
+            if (confirm('Delete this social link?')) {
+                socialLinks.splice(idx, 1);
+                renderSocialLinks();
+            }
+        }
+
+        function moveSocial(idx, dir) {
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= socialLinks.length) return;
+            const temp = socialLinks[idx];
+            socialLinks[idx] = socialLinks[newIdx];
+            socialLinks[newIdx] = temp;
+            renderSocialLinks();
+        }
+
+        /* ===== QUICK COLUMNS CRUD ===== */
+        function renderQuickColumns() {
+            const container = document.getElementById('quickColumnsList');
+            if (!container) return;
+            container.innerHTML = '';
+            if (quickColumns.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No navigation columns added yet.</p>';
+                return;
+            }
+            quickColumns.forEach((col, colIdx) => {
+                const box = document.createElement('div');
+                box.className = 'column-box';
+                let linksHtml = '';
+                const linksList = col.links || col.Links || [];
+                linksList.forEach((link, linkIdx) => {
+                    const lText = link.text || link.Text || 'Link';
+                    const lUrl = link.url || link.Url || '#';
+                    const lTarget = link.target || link.Target || '_self';
+                    linksHtml += `
+                        <div class="item-row" style="margin-bottom:8px;">
+                            <div class="item-info">
+                                <div class="item-text">
+                                    <h4><i class="fas fa-angle-right" style="color:var(--primary);"></i> ${lText}</h4>
+                                    <p>${lUrl} (${lTarget})</p>
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button type="button" class="btn-icon" title="Move Up" onclick="moveColumnLink(${colIdx}, ${linkIdx}, -1)"><i class="fas fa-arrow-up"></i></button>
+                                <button type="button" class="btn-icon" title="Move Down" onclick="moveColumnLink(${colIdx}, ${linkIdx}, 1)"><i class="fas fa-arrow-down"></i></button>
+                                <button type="button" class="btn-icon" title="Edit Link" onclick="editColumnLink(${colIdx}, ${linkIdx})"><i class="fas fa-pen"></i></button>
+                                <button type="button" class="btn-icon danger" title="Delete Link" onclick="deleteColumnLink(${colIdx}, ${linkIdx})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+                const colHeaderTitle = col.columnTitle || col.ColumnTitle || 'QUICK LINKS';
+                box.innerHTML = `
+                    <div class="column-box-header">
+                        <h3><i class="fas fa-folder"></i> <span style="text-transform:uppercase;font-weight:700;">${colHeaderTitle}</span></h3>
+                        <div style="display:flex;gap:6px;">
+                            <button type="button" class="btn-add" onclick="openAddColumnLinkModal(${colIdx})"><i class="fas fa-plus"></i> Add Link</button>
+                            <button type="button" class="btn-icon" title="Rename Column" onclick="editColumnTitle(${colIdx})"><i class="fas fa-pen"></i></button>
+                            <button type="button" class="btn-icon danger" title="Delete Column" onclick="deleteColumn(${colIdx})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <div class="item-list">
+                        ${linksHtml || '<p style="color:var(--text-muted);font-size:12px;">No links in this column yet.</p>'}
+                    </div>
+                `;
+                container.appendChild(box);
+            });
+            updateLivePreview();
+        }
+
+        function openAddColumnModal() {
+            const title = prompt('Enter Column Title (e.g. QUICK LINKS):', 'QUICK LINKS');
+            if (title && title.trim()) {
+                const upperTitle = title.trim().toUpperCase();
+                quickColumns.push({ columnTitle: upperTitle, ColumnTitle: upperTitle, links: [], Links: [] });
+                renderQuickColumns();
+            }
+        }
+
+        function editColumnTitle(colIdx) {
+            const current = quickColumns[colIdx]?.columnTitle || quickColumns[colIdx]?.ColumnTitle || '';
+            const updated = prompt('Edit Column Title:', current);
+            if (updated && updated.trim()) {
+                const upperTitle = updated.trim().toUpperCase();
+                quickColumns[colIdx].columnTitle = upperTitle;
+                quickColumns[colIdx].ColumnTitle = upperTitle;
+                renderQuickColumns();
+            }
+        }
+
+        function deleteColumn(colIdx) {
+            if (confirm('Delete this entire column and all its links?')) {
+                quickColumns.splice(colIdx, 1);
+                renderQuickColumns();
+            }
+        }
+
+        function openAddColumnLinkModal(colIdx) {
+            document.getElementById('modalMode').value = 'columnLink';
+            document.getElementById('modalIndex').value = colIdx;
+            document.getElementById('modalSubIndex').value = '-1';
+            document.getElementById('modalTitle').textContent = 'Add Column Link';
+            document.getElementById('labelTitle').textContent = 'Link Text';
+            document.getElementById('modalInputTitle').value = '';
+            document.getElementById('modalInputUrl').value = '/';
+            document.getElementById('modalInputTarget').value = '_self';
+            document.getElementById('groupIcon').style.display = 'none';
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        function editColumnLink(colIdx, linkIdx) {
+            const colLinks = quickColumns[colIdx]?.links || quickColumns[colIdx]?.Links || [];
+            const link = colLinks[linkIdx];
+            if (!link) return;
+            document.getElementById('modalMode').value = 'columnLink';
+            document.getElementById('modalIndex').value = colIdx;
+            document.getElementById('modalSubIndex').value = linkIdx;
+            document.getElementById('modalTitle').textContent = 'Edit Column Link';
+            document.getElementById('labelTitle').textContent = 'Link Text';
+            document.getElementById('modalInputTitle').value = link.text || link.Text || '';
+            document.getElementById('modalInputUrl').value = link.url || link.Url || '';
+            document.getElementById('modalInputTarget').value = link.target || link.Target || '_self';
+            document.getElementById('groupIcon').style.display = 'none';
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        function deleteColumnLink(colIdx, linkIdx) {
+            if (confirm('Delete this link?')) {
+                const colLinks = quickColumns[colIdx].links || quickColumns[colIdx].Links;
+                if (colLinks) colLinks.splice(linkIdx, 1);
+                renderQuickColumns();
+            }
+        }
+
+        function moveColumnLink(colIdx, linkIdx, dir) {
+            const links = quickColumns[colIdx].links || quickColumns[colIdx].Links || [];
+            const newIdx = linkIdx + dir;
+            if (newIdx < 0 || newIdx >= links.length) return;
+            const temp = links[linkIdx];
+            links[linkIdx] = links[newIdx];
+            links[newIdx] = temp;
+            renderQuickColumns();
+        }
+
+        /* ===== BOTTOM LINKS CRUD ===== */
+        function renderBottomLinks() {
+            const container = document.getElementById('bottomLinksList');
+            if (!container) return;
+            container.innerHTML = '';
+            if (bottomLinks.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No bottom bar links added yet.</p>';
+                return;
+            }
+            bottomLinks.forEach((link, idx) => {
+                const bText = link.text || link.Text || 'Link';
+                const bUrl = link.url || link.Url || '#';
+                const bTarget = link.target || link.Target || '_self';
+
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                div.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-text">
+                            <h4><i class="fas fa-external-link-alt" style="color:var(--primary);"></i> ${bText}</h4>
+                            <p>${bUrl} (${bTarget})</p>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button type="button" class="btn-icon" title="Move Left" onclick="moveBottomLink(${idx}, -1)"><i class="fas fa-arrow-left"></i></button>
+                        <button type="button" class="btn-icon" title="Move Right" onclick="moveBottomLink(${idx}, 1)"><i class="fas fa-arrow-right"></i></button>
+                        <button type="button" class="btn-icon" title="Edit Link" onclick="editBottomLink(${idx})"><i class="fas fa-pen"></i> Edit</button>
+                        <button type="button" class="btn-icon danger" title="Delete Link" onclick="deleteBottomLink(${idx})"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            updateLivePreview();
+        }
+
+        function openAddBottomLinkModal() {
+            document.getElementById('modalMode').value = 'bottom';
+            document.getElementById('modalIndex').value = '-1';
+            document.getElementById('modalTitle').textContent = 'Add Bottom Bar Link';
+            document.getElementById('labelTitle').textContent = 'Link Text';
+            document.getElementById('modalInputTitle').value = '';
+            document.getElementById('modalInputUrl').value = '#';
+            document.getElementById('modalInputTarget').value = '_self';
+            document.getElementById('groupIcon').style.display = 'none';
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        function editBottomLink(idx) {
+            const link = bottomLinks[idx];
+            if (!link) return;
+            document.getElementById('modalMode').value = 'bottom';
+            document.getElementById('modalIndex').value = idx;
+            document.getElementById('modalTitle').textContent = 'Edit Bottom Link';
+            document.getElementById('labelTitle').textContent = 'Link Text';
+            document.getElementById('modalInputTitle').value = link.text || link.Text || '';
+            document.getElementById('modalInputUrl').value = link.url || link.Url || '';
+            document.getElementById('modalInputTarget').value = link.target || link.Target || '_self';
+            document.getElementById('groupIcon').style.display = 'none';
+            document.getElementById('itemModal').style.display = 'flex';
+        }
+
+        function deleteBottomLink(idx) {
+            if (confirm('Delete this bottom link?')) {
+                bottomLinks.splice(idx, 1);
+                renderBottomLinks();
+            }
+        }
+
+        function moveBottomLink(idx, dir) {
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= bottomLinks.length) return;
+            const temp = bottomLinks[idx];
+            bottomLinks[idx] = bottomLinks[newIdx];
+            bottomLinks[newIdx] = temp;
+            renderBottomLinks();
+        }
+
+        /* ===== COMMON MODAL SAVE ===== */
+        function closeItemModal() {
+            document.getElementById('itemModal').style.display = 'none';
+        }
+
+        function saveItemModal() {
+            const mode = document.getElementById('modalMode').value;
+            const idx = parseInt(document.getElementById('modalIndex').value);
+            const subIdx = parseInt(document.getElementById('modalSubIndex').value);
+            const title = document.getElementById('modalInputTitle').value.trim();
+            const icon = document.getElementById('modalInputIcon').value.trim();
+            const url = document.getElementById('modalInputUrl').value.trim();
+            const target = document.getElementById('modalInputTarget').value;
+
+            if (!title) { alert('Please enter a title/label.'); return; }
+
+            if (mode === 'social') {
+                const item = { title, Title: title, icon: icon || 'fas fa-link', Icon: icon || 'fas fa-link', url: url || '#', Url: url || '#', target: target || '_blank', Target: target || '_blank' };
+                if (idx >= 0) socialLinks[idx] = item;
+                else socialLinks.push(item);
+                renderSocialLinks();
+            } else if (mode === 'columnLink') {
+                const item = { text: title, Text: title, url: url || '#', Url: url || '#', target: target || '_self', Target: target || '_self' };
+                if (idx >= 0 && quickColumns[idx]) {
+                    const colLinks = quickColumns[idx].links || quickColumns[idx].Links;
+                    if (subIdx >= 0) colLinks[subIdx] = item;
+                    else colLinks.push(item);
+                }
+                renderQuickColumns();
+            } else if (mode === 'bottom') {
+                const item = { text: title, Text: title, url: url || '#', Url: url || '#', target: target || '_self', Target: target || '_self' };
+                if (idx >= 0) bottomLinks[idx] = item;
+                else bottomLinks.push(item);
+                renderBottomLinks();
+            }
+            closeItemModal();
+        }
+
+        function formatExternalUrl(url) {
+            if (!url) return '#';
+            url = url.trim();
+            if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('mailto:') || url.startsWith('tel:')) return url;
+            return 'https://' + url;
+        }
+
+        /* ===== LIVE PREVIEW UPDATE ===== */
+        function updateLivePreview() {
+            document.getElementById('prevAbout').textContent = document.getElementById('inpAboutText').value || '';
+            document.getElementById('prevAddr').innerHTML = '<i class="fas fa-map-marker-alt"></i> <span>' + (document.getElementById('inpContactAddress').value || '') + '</span>';
+            
+            const rawPhone = document.getElementById('inpContactPhone').value || '';
+            document.getElementById('prevPhone').innerHTML = '<i class="fas fa-phone"></i> <a href="tel:' + rawPhone.replace(/\s+/g, '') + '" style="color:inherit;text-decoration:none;">' + (rawPhone || '') + '</a>';
+            
+            const rawEmail = document.getElementById('inpContactEmail').value || '';
+            document.getElementById('prevEmail').innerHTML = '<i class="fas fa-envelope"></i> <a href="mailto:' + rawEmail + '" style="color:inherit;text-decoration:none;">' + (rawEmail || '') + '</a>';
+            
+            const rawWeb = document.getElementById('inpContactWebsite').value || '';
+            const webTargetUrl = formatExternalUrl(rawWeb);
+            document.getElementById('prevWeb').innerHTML = '<i class="fas fa-globe"></i> <a href="' + webTargetUrl + '" target="_blank" style="color:inherit;text-decoration:none;">' + (rawWeb || 'https://catipakistan.com.pk') + '</a>';
+            
+            document.getElementById('prevCopyright').textContent = document.getElementById('inpCopyrightText').value || '';
+
+            // Social preview
+            const socBox = document.getElementById('prevSocial');
+            socBox.innerHTML = '';
+            socialLinks.forEach(s => {
+                const sIcon = s.icon || s.Icon || 'fas fa-link';
+                const span = document.createElement('span');
+                span.innerHTML = `<i class="${sIcon}"></i>`;
+                socBox.appendChild(span);
+            });
+
+            // Columns preview
+            const colBox = document.getElementById('prevColumns');
+            colBox.innerHTML = '';
+            quickColumns.forEach(c => {
+                const cTitle = c.columnTitle || c.ColumnTitle || 'QUICK LINKS';
+                const div = document.createElement('div');
+                let linksHtml = '';
+                const cLinks = c.links || c.Links || [];
+                cLinks.forEach(l => {
+                    const lText = l.text || l.Text || 'Link';
+                    linksHtml += `<li><a href="#">${lText}</a></li>`;
+                });
+                div.innerHTML = `<h4 style="font-weight:700;text-transform:uppercase;">${cTitle}</h4><ul>${linksHtml}</ul>`;
+                colBox.appendChild(div);
+            });
+
+            // Bottom links preview
+            const botBox = document.getElementById('prevBottomLinks');
+            botBox.innerHTML = '';
+            bottomLinks.forEach(b => {
+                const bText = b.text || b.Text || 'Link';
+                const a = document.createElement('a');
+                a.href = '#';
+                a.textContent = bText;
+                botBox.appendChild(a);
+            });
+        }
+
+        /* ===== SAVE TO SERVER ===== */
+        async function saveAllFooterSettings() {
+            const data = {
+                Id: @Model.Id,
+                AboutText: document.getElementById('inpAboutText').value.trim(),
+                ContactAddress: document.getElementById('inpContactAddress').value.trim(),
+                ContactPhone: document.getElementById('inpContactPhone').value.trim(),
+                ContactEmail: document.getElementById('inpContactEmail').value.trim(),
+                ContactWebsite: document.getElementById('inpContactWebsite').value.trim(),
+                CopyrightText: document.getElementById('inpCopyrightText').value.trim(),
+                SocialLinksJson: JSON.stringify(socialLinks),
+                QuickLinksJson: JSON.stringify(quickColumns),
+                BottomLinksJson: JSON.stringify(bottomLinks)
+            };
+
+            const alertEl = document.getElementById('statusAlert');
+            alertEl.style.display = 'none';
+
+            try {
+                const res = await fetch('/Admin/UpdateFooter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    alertEl.className = 'status-alert success';
+                    alertEl.innerHTML = '<i class="fas fa-check-circle"></i> ' + result.message;
+                    alertEl.style.display = 'flex';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                } else {
+                    alertEl.className = 'status-alert error';
+                    alertEl.innerHTML = '<i class="fas fa-triangle-exclamation"></i> ' + (result.message || 'Error saving settings.');
+                    alertEl.style.display = 'flex';
+                }
+            } catch (err) {
+                alertEl.className = 'status-alert error';
+                alertEl.innerHTML = '<i class="fas fa-triangle-exclamation"></i> Request failed: ' + err.message;
+                alertEl.style.display = 'flex';
+            }
+        }
+
+        async function resetFooterDefaults() {
+            if (!confirm('Are you sure you want to reset footer settings to default values?')) return;
+            const alertEl = document.getElementById('statusAlert');
+            try {
+                const res = await fetch('/Admin/ResetFooter', { method: 'POST' });
+                const result = await res.json();
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert(result.message || 'Failed to reset footer defaults.');
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

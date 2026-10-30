@@ -1,0 +1,83 @@
+@model NAU_Web.Models.SimulationLabSection
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create Section</h1>
+
+<h4>Simulation Lab Section</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" placeholder="e.g. Flight Simulators" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="SectionKey" class="control-label"></label>
+                <input asp-for="SectionKey" class="form-control" placeholder="e.g. flight-simulators" />
+                <small class="form-text text-muted">Used as the anchor id on the public page: #&lt;section-key&gt;</small>
+                <span asp-validation-for="SectionKey" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Tag" class="control-label"></label>
+                <input asp-for="Tag" class="form-control" placeholder="e.g. Simulation & Labs — 01" />
+                <span asp-validation-for="Tag" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="IconClass" class="control-label"></label>
+                <input asp-for="IconClass" class="form-control" placeholder="fas fa-plane" />
+                <span asp-validation-for="IconClass" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ColorHex" class="control-label"></label>
+                <input asp-for="ColorHex" class="form-control" placeholder="#0d6efd" />
+                <span asp-validation-for="ColorHex" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="ColorHex2" class="control-label"></label>
+                <input asp-for="ColorHex2" class="form-control" placeholder="#4ea8ff" />
+                <span asp-validation-for="ColorHex2" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DisplayOrder" class="control-label"></label>
+                <input asp-for="DisplayOrder" class="form-control" />
+                <span asp-validation-for="DisplayOrder" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-3 p-3" style="background:#fff8e1;border:1px solid #ffe082;border-radius:6px;">
+                <input asp-for="IsAvailable" class="form-check-input" />
+                <label asp-for="IsAvailable" class="form-check-label"><strong>Show this section on the public website</strong></label>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
